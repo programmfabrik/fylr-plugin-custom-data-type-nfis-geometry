@@ -1,0 +1,25 @@
+key,de-DE,en-US
+custom.data.type.nfis.geometry.name,NFIS-Geometrie,NFIS Geometry
+custom.data.type.nfis.geometry.geometry_id.label,Geometrie-ID,Geometry ID
+custom.data.type.nfis.geometry.geometry_id.placeholder,Geben Sie bitte die ID ein,Please enter the ID
+custom.data.type.nfis.geometry.edit.no_data,Keine Daten vorhanden,No data present
+custom.data.type.nfis.geometry.createGeometries,Geometrien anlegen,Create geometries
+custom.data.type.nfis.geometry.editGeometries,Geometrien bearbeiten,Edit geometries
+custom.data.type.nfis.geometry.viewGeometries,Geometrien im Masterportal ansehen,View geometries in Masterportal
+server.config.group.system.nfisGeometry.title,Weblink,Weblink
+server.config.group.system.nfisGeometry.introduction,Mit Hilfe des Weblink-Plugins lassen sich Templates für Links erstellen um die Eingabe zu erleichtern.,Configure templates to create weblinks faster.
+server.config.name.system.nfisGeometry,Konfiguration für Weblinks,Configuration for weblinks
+server.config.parameter.system.nfisGeometry.templates.label,Templates,Templates
+server.config.parameter.system.nfisGeometry.templates.name.label,Name,Name
+server.config.parameter.system.nfisGeometry.templates.url.label,URL,URL
+server.config.parameter.system.nfisGeometry.templates.displayname.label,Anzeigetext,Display text
+server.config.parameter.system.nfisGeometry.templates.placeholders.label,Variablen,Variables
+server.config.parameter.system.nfisGeometry.placeholders.displayname.label,Name,Label
+server.config.parameter.system.nfisGeometry.placeholders.key.label,Variable,Variable
+server.config.parameter.system.nfisGeometry.templates.placeholders.key.label,Key,Key
+server.config.parameter.system.nfisGeometry.templates.placeholders.displayname.label,Anzeigename,Displayname
+server.config.name.system.nfisGeoservices,NFIS-Geodienste,NFIS Geoservices
+server.config.parameter.system.nfisGeoservices.masterportal_url.label,Masterportal-URL,Masterportal URL
+server.config.parameter.system.nfisGeoservices.wfs_url.label,Geoserver: WFS-URL,Geoserver: WFS URL
+server.config.parameter.system.nfisGeoservices.geoserver_username.label,Geoserver: Username,Geoserver: User name
+server.config.parameter.system.nfisGeoservices.geoserver_password.label,Geoserver: Passwort,Geoserver: Password

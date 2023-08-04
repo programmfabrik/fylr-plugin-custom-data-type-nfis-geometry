@@ -1,0 +1,38 @@
+plugin:
+  name: custom-data-type-nfis-geometry
+  version: 1.0
+  displayname:
+    de-DE: NFIS-Geometrie
+    en-US: NFIS Geometry
+  info:
+    de-DE: NFIS-Geometrie
+    en-US: NFIS Geometry
+  server:
+    api-version:
+      require: 1
+  webfrontend:
+    url: custom-data-type-nfis-geometry.js
+    css: custom-data-type-nfis-geometry.css
+  l10n: l10n/custom-data-type-nfis-geometry.csv
+
+custom_types:
+  nfis-geometry:
+    mapping:
+      geometry_id:
+        type: text_oneline
+
+base_config:
+  - name: nfisGeoservices
+    parameters:
+      masterportal_url:
+        type: text
+        position: 0
+      wfs_url:
+        type: text
+        position: 1
+      geoserver_username:
+        type: text
+        position: 2
+      geoserver_password:
+        type: text
+        position: 3

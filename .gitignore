@@ -1,0 +1,8 @@
+*~
+*.coffee.js
+*.spec.coffee
+.#*
+\#*\#
+
+node_modules/
+.idea
