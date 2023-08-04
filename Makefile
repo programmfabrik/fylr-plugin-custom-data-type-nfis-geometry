@@ -34,8 +34,7 @@ clean:
 	rm -rf build
 
 zip:
-	cd build
-	zip $(ZIP_NAME) -r $(PLUGIN_NAME)/
+	cd build && zip $(ZIP_NAME) -r $(PLUGIN_NAME)/
 	cp -r build/$(PLUGIN_NAME)/* build/
 	rm -rf build/${PLUGIN_NAME}
 	rm build/manifest.yml
