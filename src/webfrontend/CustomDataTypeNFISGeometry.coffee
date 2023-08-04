@@ -126,7 +126,7 @@ class CustomDataTypeNFISGeometry extends CustomDataType
             if (mode === 'detail') {
                 this.__renderViewGeometriesButton(contentElement, geometryId);
             } else if (mode === 'editor') {
-                this.__renderEditGeometrieBeispiel!metryId);
+                this.__renderEditGeometriesButton(contentElement, geometryId);
             }
         } else if (mode === 'editor') {
             this.__renderCreateGeometriesButton(contentElement);
