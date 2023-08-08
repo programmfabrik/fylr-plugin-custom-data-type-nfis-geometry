@@ -109,7 +109,7 @@ class CustomDataTypeNFISGeometry extends CustomDataType
     __renderDetailContent: (contentElement, geometryId, totalFeatures) ->
         if totalFeatures > 0
             @__renderMap(contentElement, geometryId)
-            @__renderViewGeometriesButton(contentElement, geometryId)
+            @__renderViewGeometryButton(contentElement, geometryId)
 
     __renderEditorContent: (contentElement, cdata, totalFeatures) ->
         inputElement = @__createGeometryIdInput(cdata)
@@ -117,9 +117,9 @@ class CustomDataTypeNFISGeometry extends CustomDataType
         
         if totalFeatures > 0
             @__renderMap(contentElement, cdata.geometry_id)
-            @__renderEditGeometriesButton(contentElement, cdata.geometry_id)
+            @__renderEditGeometryButton(contentElement, cdata.geometry_id)
         else
-            @__renderCreateGeometriesButton(contentElement, inputElement, formElement)
+            @__renderCreateGeometryButton(contentElement, inputElement, formElement)
 
         CUI.dom.append(contentElement, formElement)
 
@@ -147,37 +147,37 @@ class CustomDataTypeNFISGeometry extends CustomDataType
         CUI.dom.append(contentElement, mapElement)
         @__initializeMap(mapElement, geometryId)
 
-    __renderCreateGeometriesButton: (contentElement, inputElement, formElement) ->
-        createGeometriesButton = new CUI.Button
-            text: $$('custom.data.type.nfis.geometry.createGeometries')
+    __renderCreateGeometryButton: (contentElement, inputElement, formElement) ->
+        createGeometryButton = new CUI.Button
+            text: $$('custom.data.type.nfis.geometry.createGeometry')
             onClick: () =>
                 newGeometryId = window.crypto.randomUUID()
                 navigator.clipboard.writeText(newGeometryId)
                 inputElement.setValue(newGeometryId)
                 @__triggerFormChanged(formElement)
-                window.open(@__getCreateGeometriesUrl(), '_blank')
+                window.open(@__getCreateGeometryUrl(), '_blank')
 
-        CUI.dom.append(contentElement, createGeometriesButton)
+        CUI.dom.append(contentElement, createGeometryButton)
 
-    __renderEditGeometriesButton: (contentElement, geometryId) ->
-        editGeometriesButton = new CUI.ButtonHref
-            id: 'edit-geometries-button'
-            href: @__getEditGeometriesUrl(geometryId)
+    __renderEditGeometryButton: (contentElement, geometryId) ->
+        editGeometryButton = new CUI.ButtonHref
+            id: 'edit-geometry-button'
+            href: @__getEditGeometryUrl(geometryId)
             target: '_blank'
             icon_left: new CUI.Icon(class: 'fa-external-link')
-            text: $$('custom.data.type.nfis.geometry.editGeometries')
+            text: $$('custom.data.type.nfis.geometry.editGeometry')
 
-        CUI.dom.append(contentElement, editGeometriesButton)
+        CUI.dom.append(contentElement, editGeometryButton)
 
-    __renderViewGeometriesButton: (contentElement, geometryId) ->
-        showGeometriesButton = new CUI.ButtonHref
-            id: 'view-geometries-button'
-            href: @__getViewGeometriesUrl(geometryId)
+    __renderViewGeometryButton: (contentElement, geometryId) ->
+        showGeometryButton = new CUI.ButtonHref
+            id: 'view-geometry-button'
+            href: @__getViewGeometryUrl(geometryId)
             target: '_blank'
             icon_left: new CUI.Icon(class: 'fa-external-link')
-            text: $$('custom.data.type.nfis.geometry.viewGeometries')
+            text: $$('custom.data.type.nfis.geometry.viewGeometry')
 
-        CUI.dom.append(contentElement, showGeometriesButton)
+        CUI.dom.append(contentElement, showGeometryButton)
 
     __initializeMap: (mapElement, geometryId, delay = 0) ->
         ```
@@ -262,19 +262,19 @@ class CustomDataTypeNFISGeometry extends CustomDataType
         ```
         return
     
-    __getViewGeometriesUrl: (geometryId) ->
+    __getViewGeometryUrl: (geometryId) ->
         masterportalUrl = @__getBaseConfig().masterportal_url
         if !masterportalUrl
             return ''
         return masterportalUrl + '?api/highlightFeaturesByAttribute=1279&wfsId=1279&attributeName=fylr_id&attributeValue=' + geometryId + '&attributeQuery=isequal&zoomToGeometry=' + geometryId;
 
-    __getEditGeometriesUrl: (geometryId) ->
+    __getEditGeometryUrl: (geometryId) ->
         masterportalUrl = @__getBaseConfig().masterportal_url
         if !masterportalUrl
             return ''
         return masterportalUrl + '?api/highlightFeaturesByAttribute=1279&wfsId=1279&attributeName=fylr_id&attributeValue=' + geometryId + '&attributeQuery=isequal&zoomToGeometry=' + geometryId + '&isinitopen=wfst';
 
-    __getCreateGeometriesUrl: () ->
+    __getCreateGeometryUrl: () ->
         masterportalUrl = @__getBaseConfig().masterportal_url
         if !masterportalUrl
             return ''

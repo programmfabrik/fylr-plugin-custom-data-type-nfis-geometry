@@ -3,9 +3,9 @@ custom.data.type.nfis.geometry.name,NFIS-Geometrie,NFIS Geometry
 custom.data.type.nfis.geometry.geometry_id.label,Geometrie-ID,Geometry ID
 custom.data.type.nfis.geometry.geometry_id.placeholder,Geben Sie bitte die ID ein,Please enter the ID
 custom.data.type.nfis.geometry.edit.no_data,Keine Daten vorhanden,No data present
-custom.data.type.nfis.geometry.createGeometries,Geometrien anlegen,Create geometries
-custom.data.type.nfis.geometry.editGeometries,Geometrien bearbeiten,Edit geometries
-custom.data.type.nfis.geometry.viewGeometries,Geometrien im Masterportal ansehen,View geometries in Masterportal
+custom.data.type.nfis.geometry.createGeometry,Geometrie anlegen,Create geometry
+custom.data.type.nfis.geometry.editGeometry,Geometrie bearbeiten,Edit geometry
+custom.data.type.nfis.geometry.viewGeometry,Geometrie im Masterportal ansehen,View geometry in Masterportal
 server.config.name.system.nfisGeoservices,NFIS-Geodienste,NFIS Geoservices
 server.config.parameter.system.nfisGeoservices.masterportal_url.label,Masterportal-URL,Masterportal URL
 server.config.parameter.system.nfisGeoservices.wfs_url.label,Geoserver: WFS-URL,Geoserver: WFS URL
