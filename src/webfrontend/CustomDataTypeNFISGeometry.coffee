@@ -127,9 +127,9 @@ class CustomDataTypeNFISGeometry extends CustomDataType
         new CUI.Input
             undo_and_changed_support: false
             form:
-                label: $$("custom.data.type.nfis.geometry.geometry_id.label")
-            placeholder: $$("custom.data.type.nfis.geometry.geometry_id.placeholder")
-            name: "geometry_id"
+                label: $$('custom.data.type.nfis.geometry.geometry_id.label')
+            placeholder: $$('custom.data.type.nfis.geometry.geometry_id.placeholder')
+            name: 'geometry_id'
             onDataChanged: (data, field) =>
                 cdata.geometry_id = data.geometry_id
 
@@ -153,11 +153,29 @@ class CustomDataTypeNFISGeometry extends CustomDataType
             onClick: () =>
                 newGeometryId = window.crypto.randomUUID()
                 navigator.clipboard.writeText(newGeometryId)
-                inputElement.setValue(newGeometryId)
-                @__triggerFormChanged(formElement)
                 window.open(@__getCreateGeometryUrl(), '_blank')
+                @__openCreateGeometryModal(inputElement, formElement, newGeometryId)
 
         CUI.dom.append(contentElement, createGeometryButton)
+
+    __openCreateGeometryModal: (inputElement, formElement, newGeometryId) ->
+        modalDialog = new CUI.ConfirmationDialog
+                title: $$('custom.data.type.nfis.geometry.createGeometry')
+                text: $$('custom.data.type.nfis.geometry.create.modal.text.1') + '\n\n' + newGeometryId + '\n\n' + $$('custom.data.type.nfis.geometry.create.modal.text.2') 
+                cancel: false
+                buttons: [
+                    text: $$('custom.data.type.nfis.geometry.create.modal.cancel')
+                    onClick: =>
+                        modalDialog.destroy()
+                ,
+                    text: $$('custom.data.type.nfis.geometry.create.modal.ok')
+                    primary: true
+                    onClick: =>
+                        inputElement.setValue(newGeometryId)
+                        @__triggerFormChanged(formElement)
+                        modalDialog.destroy()
+                ]
+        modalDialog.show()
 
     __renderEditGeometryButton: (contentElement, geometryId) ->
         editGeometryButton = new CUI.ButtonHref
