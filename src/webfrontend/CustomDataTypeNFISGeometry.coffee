@@ -127,6 +127,7 @@ class CustomDataTypeNFISGeometry extends CustomDataType
             @__renderMap(contentElement, cdata.geometry_id)
             @__renderEditGeometryButton(contentElement, cdata.geometry_id)
             @__renderReplaceGeometryButton(contentElement, cdata)
+            @__renderRemoveGeometryButton(contentElement, cdata)
         else
             @__renderCreateGeometryButton(contentElement, cdata)
             @__renderLinkExistingGeometryButton(contentElement, cdata)
@@ -165,6 +166,14 @@ class CustomDataTypeNFISGeometry extends CustomDataType
                 navigator.clipboard.writeText(newGeometryId)
                 window.open(@__getCreateGeometryUrl(), '_blank')
                 @__openCreateGeometryModal(contentElement, cdata, newGeometryId)
+
+        CUI.dom.append(contentElement, createGeometryButton)
+
+    __renderRemoveGeometryButton: (contentElement, cdata) ->
+        createGeometryButton = new CUI.Button
+            text: $$('custom.data.type.nfis.geometry.removeGeometry')
+            onClick: () =>
+                @__removeGeometryId(contentElement, cdata)
 
         CUI.dom.append(contentElement, createGeometryButton)
 
@@ -218,6 +227,12 @@ class CustomDataTypeNFISGeometry extends CustomDataType
         });
         ```
         promise
+    
+    __removeGeometryId: (contentElement, cdata) ->
+        cdata.geometry_id = ''
+        CUI.dom.removeChildren(contentElement);
+        this.__renderContent(contentElement, cdata, 'editor', 0);
+        this.__triggerFormChanged(CUI.dom.findElement(contentElement, '.cui-form'))
 
     __renderEditGeometryButton: (contentElement, geometryId) ->
         editGeometryButton = new CUI.ButtonHref
