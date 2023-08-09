@@ -79,9 +79,10 @@ class CustomDataTypeNFISGeometry extends CustomDataType
     __loadContent: (contentElement, cdata, mode) ->
         ```
         this.__loadWFSData(cdata.geometry_id)
-            .then((wfsData) => {
-                this.__renderContent(contentElement, cdata, mode, wfsData ? wfsData.totalFeatures : 0);
-            }).catch(error => console.error(error));
+            .then(
+                wfsData => this.__renderContent(contentElement, cdata, mode, wfsData ? wfsData.totalFeatures : 0),
+                error => console.error(error)
+            );
         ```
         return
 
@@ -125,6 +126,7 @@ class CustomDataTypeNFISGeometry extends CustomDataType
         if totalFeatures > 0
             @__renderMap(contentElement, cdata.geometry_id)
             @__renderEditGeometryButton(contentElement, cdata.geometry_id)
+            @__renderReplaceGeometryButton(contentElement, cdata)
         else
             @__renderCreateGeometryButton(contentElement, cdata)
 
@@ -168,48 +170,56 @@ class CustomDataTypeNFISGeometry extends CustomDataType
     __openCreateGeometryModal: (contentElement, cdata, newGeometryId, error) ->
         text = ''
         if error
-            text += $$('custom.data.type.nfis.geometry.create.error.notFound') + '\n\n'
+            text += $$('custom.data.type.nfis.geometry.create.modal.error.notFound') + '\n\n'
         text += $$('custom.data.type.nfis.geometry.create.modal.text.1') + '\n\n' + newGeometryId + '\n\n' + $$('custom.data.type.nfis.geometry.create.modal.text.2') 
 
+        that = this
         modalDialog = new CUI.ConfirmationDialog
             title: $$('custom.data.type.nfis.geometry.createGeometry')
             text: text
             cancel: false
             buttons: [
-                text: $$('custom.data.type.nfis.geometry.create.modal.cancel')
+                text: $$('custom.data.type.nfis.geometry.modal.cancel')
                 onClick: =>
                     modalDialog.destroy()
             ,
-                text: $$('custom.data.type.nfis.geometry.create.modal.ok')
+                text: $$('custom.data.type.nfis.geometry.modal.ok')
                 primary: true
                 onClick: =>
-                    @__storeNewGeometry(contentElement, cdata, newGeometryId)
+                    ```
+                    that.__setGeometryId(contentElement, cdata, newGeometryId).then(
+                        () => {},
+                        error => {
+                            if (error) console.error(error);
+                            that.__openCreateGeometryModal(contentElement, cdata, newGeometryId, true);
+                        }
+                    );
+                    ```
                     modalDialog.destroy()
             ]
         modalDialog.show()
 
-    __storeNewGeometry: (contentElement, cdata, newGeometryId) ->
+    __setGeometryId: (contentElement, cdata, newGeometryId) ->
         ```
-        this.__loadWFSData(newGeometryId)
+        promise = new Promise((resolve, reject) => {
+            this.__loadWFSData(newGeometryId)
             .then((wfsData) => {
                 if (wfsData.totalFeatures > 0) {
                     cdata.geometry_id = newGeometryId;
                     CUI.dom.removeChildren(contentElement);
                     this.__renderContent(contentElement, cdata, 'editor', wfsData.totalFeatures);
                     this.__triggerFormChanged(CUI.dom.findElement(contentElement, '.cui-form'))
+                    resolve();
                 } else {
-                    this.__openCreateGeometryModal(contentElement, cdata, newGeometryId, true);
+                    reject();
                 }
-            }).catch(error => {
-                console.error(error);
-                this.__openCreateGeometryModal(contentElement, cdata, newGeometryId, true);
-            });
+            }).catch(error => reject(error));
+        });
         ```
-        return
+        promise
 
     __renderEditGeometryButton: (contentElement, geometryId) ->
         editGeometryButton = new CUI.ButtonHref
-            id: 'edit-geometry-button'
             href: @__getEditGeometryUrl(geometryId)
             target: '_blank'
             icon_left: new CUI.Icon(class: 'fa-external-link')
@@ -217,9 +227,38 @@ class CustomDataTypeNFISGeometry extends CustomDataType
 
         CUI.dom.append(contentElement, editGeometryButton)
 
+    __renderReplaceGeometryButton: (contentElement, cdata) ->
+        replaceGeometryButton = new CUI.Button
+            text: $$('custom.data.type.nfis.geometry.replaceGeometry')
+            onClick: () =>
+                @__openReplaceGeometryModal(contentElement, cdata)
+
+        CUI.dom.append(contentElement, replaceGeometryButton)
+
+    __openReplaceGeometryModal: (contentElement, cdata, error) ->
+        text = $$('custom.data.type.nfis.geometry.replace.modal.text')
+        if error
+            text = $$('custom.data.type.nfis.geometry.replace.modal.error.notFound') + '\n\n' + text
+
+        ```
+        CUI.prompt({
+            title: $$('custom.data.type.nfis.geometry.replaceGeometry'),
+            text: text,
+            min_length: 36
+        }).done(geometryId => {
+            this.__setGeometryId(contentElement, cdata, geometryId).then(
+                () => {},
+                error => {
+                    if (error) console.error(error);
+                    this.__openReplaceGeometryModal(contentElement, cdata, true);
+                }
+            );
+        });
+        ```   
+        return
+
     __renderViewGeometryButton: (contentElement, geometryId) ->
         showGeometryButton = new CUI.ButtonHref
-            id: 'view-geometry-button'
             href: @__getViewGeometryUrl(geometryId)
             target: '_blank'
             icon_left: new CUI.Icon(class: 'fa-external-link')
