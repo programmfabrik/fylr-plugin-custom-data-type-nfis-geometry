@@ -122,15 +122,14 @@ class CustomDataTypeNFISGeometry extends CustomDataType
             @__renderViewGeometryButton(contentElement, geometryId)
 
     __renderEditorContent: (contentElement, cdata, totalFeatures) ->
-        inputElement = @__createGeometryIdInput(cdata)
-        formElement = @__createForm(cdata, [inputElement])
-        
         if totalFeatures > 0
             @__renderMap(contentElement, cdata.geometry_id)
             @__renderEditGeometryButton(contentElement, cdata.geometry_id)
         else
-            @__renderCreateGeometryButton(contentElement, inputElement, formElement)
+            @__renderCreateGeometryButton(contentElement, cdata)
 
+        inputElement = @__createGeometryIdInput(cdata)
+        formElement = @__createForm(cdata, [inputElement])
         CUI.dom.append(contentElement, formElement)
 
     __createGeometryIdInput: (cdata) ->
@@ -157,18 +156,18 @@ class CustomDataTypeNFISGeometry extends CustomDataType
         CUI.dom.append(contentElement, mapElement)
         @__initializeMap(mapElement, geometryId)
 
-    __renderCreateGeometryButton: (contentElement, inputElement, formElement) ->
+    __renderCreateGeometryButton: (contentElement, cdata) ->
         createGeometryButton = new CUI.Button
             text: $$('custom.data.type.nfis.geometry.createGeometry')
             onClick: () =>
                 newGeometryId = window.crypto.randomUUID()
                 navigator.clipboard.writeText(newGeometryId)
                 window.open(@__getCreateGeometryUrl(), '_blank')
-                @__openCreateGeometryModal(inputElement, formElement, newGeometryId)
+                @__openCreateGeometryModal(contentElement, cdata, newGeometryId)
 
         CUI.dom.append(contentElement, createGeometryButton)
 
-    __openCreateGeometryModal: (inputElement, formElement, newGeometryId, error) ->
+    __openCreateGeometryModal: (contentElement, cdata, newGeometryId, error) ->
         text = ''
         if error
             text += $$('custom.data.type.nfis.geometry.create.error.notFound') + '\n\n'
@@ -186,24 +185,26 @@ class CustomDataTypeNFISGeometry extends CustomDataType
                     text: $$('custom.data.type.nfis.geometry.create.modal.ok')
                     primary: true
                     onClick: =>
-                        @__storeNewGeometry(inputElement, formElement, newGeometryId)
+                        @__storeNewGeometry(contentElement, cdata, newGeometryId)
                         modalDialog.destroy()
                 ]
         modalDialog.show()
 
-    __storeNewGeometry: (inputElement, formElement, newGeometryId) ->
+    __storeNewGeometry: (contentElement, cdata, newGeometryId) ->
         ```
         this.__loadWFSData(newGeometryId)
             .then((wfsData) => {
                 if (wfsData.totalFeatures > 0) {
-                    inputElement.setValue(newGeometryId);
-                    this.__triggerFormChanged(formElement);
+                    cdata.geometry_id = newGeometryId;
+                    CUI.dom.removeChildren(contentElement);
+                    this.__renderContent(contentElement, cdata, 'editor', wfsData.totalFeatures);
+                    this.__triggerFormChanged(CUI.dom.findElement(contentElement, '.cui-form'))
                 } else {
-                    this.__openCreateGeometryModal(inputElement, formElement, newGeometryId, true);
+                    this.__openCreateGeometryModal(contentElement, cdata, newGeometryId, true);
                 }
             }).catch(error => {
                 console.error(error);
-                this.__openCreateGeometryModal(inputElement, formElement, newGeometryId, true);
+                this.__openCreateGeometryModal(contentElement, cdata, newGeometryId, true);
             });
         ```
         return
