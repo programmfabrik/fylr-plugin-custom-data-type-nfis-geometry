@@ -135,10 +135,8 @@ class CustomDataTypeNFISGeometry extends CustomDataType
     __createGeometryIdInput: (cdata) ->
         new CUI.Input
             undo_and_changed_support: false
-            form:
-                label: $$('custom.data.type.nfis.geometry.geometry_id.label')
-            placeholder: $$('custom.data.type.nfis.geometry.geometry_id.placeholder')
             name: 'geometry_id'
+            class: 'nfis-geometry-id-input'
             onDataChanged: (data, field) =>
                 cdata.geometry_id = data.geometry_id
 
@@ -174,20 +172,20 @@ class CustomDataTypeNFISGeometry extends CustomDataType
         text += $$('custom.data.type.nfis.geometry.create.modal.text.1') + '\n\n' + newGeometryId + '\n\n' + $$('custom.data.type.nfis.geometry.create.modal.text.2') 
 
         modalDialog = new CUI.ConfirmationDialog
-                title: $$('custom.data.type.nfis.geometry.createGeometry')
-                text: text
-                cancel: false
-                buttons: [
-                    text: $$('custom.data.type.nfis.geometry.create.modal.cancel')
-                    onClick: =>
-                        modalDialog.destroy()
-                ,
-                    text: $$('custom.data.type.nfis.geometry.create.modal.ok')
-                    primary: true
-                    onClick: =>
-                        @__storeNewGeometry(contentElement, cdata, newGeometryId)
-                        modalDialog.destroy()
-                ]
+            title: $$('custom.data.type.nfis.geometry.createGeometry')
+            text: text
+            cancel: false
+            buttons: [
+                text: $$('custom.data.type.nfis.geometry.create.modal.cancel')
+                onClick: =>
+                    modalDialog.destroy()
+            ,
+                text: $$('custom.data.type.nfis.geometry.create.modal.ok')
+                primary: true
+                onClick: =>
+                    @__storeNewGeometry(contentElement, cdata, newGeometryId)
+                    modalDialog.destroy()
+            ]
         modalDialog.show()
 
     __storeNewGeometry: (contentElement, cdata, newGeometryId) ->

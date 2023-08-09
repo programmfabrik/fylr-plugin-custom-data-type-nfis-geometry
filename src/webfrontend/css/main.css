@@ -6,3 +6,7 @@
 .nfis-plugin-content .cui-button-href {
   margin-top: 10px;
 }
+
+.nfis-geometry-id-input {
+  display: none;
+}

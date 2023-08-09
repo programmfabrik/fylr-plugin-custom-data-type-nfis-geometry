@@ -1,7 +1,5 @@
 key,de-DE,en-US
 custom.data.type.nfis.geometry.name,NFIS-Geometrie,NFIS Geometry
-custom.data.type.nfis.geometry.geometry_id.label,Geometrie-ID,Geometry ID
-custom.data.type.nfis.geometry.geometry_id.placeholder,Geben Sie bitte die ID ein,Please enter the ID
 custom.data.type.nfis.geometry.edit.no_data,Keine Daten vorhanden,No data present
 custom.data.type.nfis.geometry.createGeometry,Geometrie anlegen,Create geometry
 custom.data.type.nfis.geometry.editGeometry,Geometrie bearbeiten,Edit geometry
