@@ -78,27 +78,37 @@ class CustomDataTypeNFISGeometry extends CustomDataType
 
     __loadContent: (contentElement, cdata, mode) ->
         ```
-        const geometryId = cdata.geometry_id;
-        const wfsUrl = geometryId ? this.__getWfsUrl(geometryId) : undefined;
-        if (!wfsUrl) return this.__renderContent(contentElement, cdata, mode, 0)
-
-        const xhr = new XMLHttpRequest();
-        xhr.open('GET', wfsUrl);
-        xhr.setRequestHeader('Authorization', this.__getAuthenticationString());
-        xhr.onload = () => {
-            if (xhr.status == 200) {
-                const data = JSON.parse(xhr.responseText);
-                this.__renderContent(contentElement, cdata, mode, data.totalFeatures);
-            } else {
-                console.error('Failed to load data from WFS service');
-            }
-        };
-        xhr.onerror = error => {
-            console.error(error);
-        };
-        xhr.send();
+        this.__loadWFSData(cdata.geometry_id)
+            .then((wfsData) => {
+                this.__renderContent(contentElement, cdata, mode, wfsData ? wfsData.totalFeatures : 0);
+            }).catch(error => console.error(error));
         ```
         return
+
+    __loadWFSData: (geometryId) ->
+        ```
+        promise = new Promise((resolve, reject) => {
+            const wfsUrl = geometryId ? this.__getWfsUrl(geometryId) : undefined;
+            if (!wfsUrl) resolve(undefined);
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', wfsUrl);
+            xhr.setRequestHeader('Authorization', this.__getAuthenticationString());
+            xhr.onload = () => {
+                if (xhr.status == 200) {
+                    const data = JSON.parse(xhr.responseText);
+                    resolve(data)
+                } else {
+                    reject('Failed to load data from WFS service');
+                }
+            };
+            xhr.onerror = error => {
+                reject(error);
+            };
+            xhr.send();
+        });
+        ```
+        return promise
 
     __renderContent: (contentElement, cdata, mode, totalFeatures) ->
         if mode == 'detail'
