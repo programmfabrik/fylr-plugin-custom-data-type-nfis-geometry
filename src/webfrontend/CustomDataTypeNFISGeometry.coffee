@@ -89,7 +89,7 @@ class CustomDataTypeNFISGeometry extends CustomDataType
         ```
         promise = new Promise((resolve, reject) => {
             const wfsUrl = geometryId ? this.__getWfsUrl(geometryId) : undefined;
-            if (!wfsUrl) resolve(undefined);
+            if (!wfsUrl) return resolve(undefined);
 
             const xhr = new XMLHttpRequest();
             xhr.open('GET', wfsUrl);
@@ -168,10 +168,15 @@ class CustomDataTypeNFISGeometry extends CustomDataType
 
         CUI.dom.append(contentElement, createGeometryButton)
 
-    __openCreateGeometryModal: (inputElement, formElement, newGeometryId) ->
+    __openCreateGeometryModal: (inputElement, formElement, newGeometryId, error) ->
+        text = ''
+        if error
+            text += $$('custom.data.type.nfis.geometry.create.error.notFound') + '\n\n'
+        text += $$('custom.data.type.nfis.geometry.create.modal.text.1') + '\n\n' + newGeometryId + '\n\n' + $$('custom.data.type.nfis.geometry.create.modal.text.2') 
+
         modalDialog = new CUI.ConfirmationDialog
                 title: $$('custom.data.type.nfis.geometry.createGeometry')
-                text: $$('custom.data.type.nfis.geometry.create.modal.text.1') + '\n\n' + newGeometryId + '\n\n' + $$('custom.data.type.nfis.geometry.create.modal.text.2') 
+                text: text
                 cancel: false
                 buttons: [
                     text: $$('custom.data.type.nfis.geometry.create.modal.cancel')
@@ -181,11 +186,27 @@ class CustomDataTypeNFISGeometry extends CustomDataType
                     text: $$('custom.data.type.nfis.geometry.create.modal.ok')
                     primary: true
                     onClick: =>
-                        inputElement.setValue(newGeometryId)
-                        @__triggerFormChanged(formElement)
+                        @__storeNewGeometry(inputElement, formElement, newGeometryId)
                         modalDialog.destroy()
                 ]
         modalDialog.show()
+
+    __storeNewGeometry: (inputElement, formElement, newGeometryId) ->
+        ```
+        this.__loadWFSData(newGeometryId)
+            .then((wfsData) => {
+                if (wfsData.totalFeatures > 0) {
+                    inputElement.setValue(newGeometryId);
+                    this.__triggerFormChanged(formElement);
+                } else {
+                    this.__openCreateGeometryModal(inputElement, formElement, newGeometryId, true);
+                }
+            }).catch(error => {
+                console.error(error);
+                this.__openCreateGeometryModal(inputElement, formElement, newGeometryId, true);
+            });
+        ```
+        return
 
     __renderEditGeometryButton: (contentElement, geometryId) ->
         editGeometryButton = new CUI.ButtonHref
