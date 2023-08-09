@@ -129,6 +129,7 @@ class CustomDataTypeNFISGeometry extends CustomDataType
             @__renderReplaceGeometryButton(contentElement, cdata)
         else
             @__renderCreateGeometryButton(contentElement, cdata)
+            @__renderLinkExistingGeometryButton(contentElement, cdata)
 
         inputElement = @__createGeometryIdInput(cdata)
         formElement = @__createForm(cdata, [inputElement])
@@ -158,7 +159,7 @@ class CustomDataTypeNFISGeometry extends CustomDataType
 
     __renderCreateGeometryButton: (contentElement, cdata) ->
         createGeometryButton = new CUI.Button
-            text: $$('custom.data.type.nfis.geometry.createGeometry')
+            text: $$('custom.data.type.nfis.geometry.createNewGeometry')
             onClick: () =>
                 newGeometryId = window.crypto.randomUUID()
                 navigator.clipboard.writeText(newGeometryId)
@@ -175,7 +176,7 @@ class CustomDataTypeNFISGeometry extends CustomDataType
 
         that = this
         modalDialog = new CUI.ConfirmationDialog
-            title: $$('custom.data.type.nfis.geometry.createGeometry')
+            title: $$('custom.data.type.nfis.geometry.createNewGeometry')
             text: text
             cancel: false
             buttons: [
@@ -228,29 +229,39 @@ class CustomDataTypeNFISGeometry extends CustomDataType
         CUI.dom.append(contentElement, editGeometryButton)
 
     __renderReplaceGeometryButton: (contentElement, cdata) ->
+        label = $$('custom.data.type.nfis.geometry.replaceGeometry')
         replaceGeometryButton = new CUI.Button
-            text: $$('custom.data.type.nfis.geometry.replaceGeometry')
+            text: label
             onClick: () =>
-                @__openReplaceGeometryModal(contentElement, cdata)
+                @__openSetGeometryModal(contentElement, cdata, label)
 
         CUI.dom.append(contentElement, replaceGeometryButton)
+    
+    __renderLinkExistingGeometryButton: (contentElement, cdata) ->
+        label = $$('custom.data.type.nfis.geometry.linkExistingGeometry')
+        linkExistingGeometryButton = new CUI.Button
+            text: label
+            onClick: () =>
+                @__openSetGeometryModal(contentElement, cdata, label)
 
-    __openReplaceGeometryModal: (contentElement, cdata, error) ->
-        text = $$('custom.data.type.nfis.geometry.replace.modal.text')
+        CUI.dom.append(contentElement, linkExistingGeometryButton)
+
+    __openSetGeometryModal: (contentElement, cdata, title, error) ->
+        text = $$('custom.data.type.nfis.geometry.set.modal.text')
         if error
-            text = $$('custom.data.type.nfis.geometry.replace.modal.error.notFound') + '\n\n' + text
+            text = $$('custom.data.type.nfis.geometry.set.modal.error.notFound') + '\n\n' + text
 
         ```
         CUI.prompt({
-            title: $$('custom.data.type.nfis.geometry.replaceGeometry'),
-            text: text,
+            title,
+            text,
             min_length: 36
         }).done(geometryId => {
             this.__setGeometryId(contentElement, cdata, geometryId).then(
                 () => {},
                 error => {
                     if (error) console.error(error);
-                    this.__openReplaceGeometryModal(contentElement, cdata, true);
+                    this.__openSetGeometryModal(contentElement, cdata, title, true);
                 }
             );
         });
