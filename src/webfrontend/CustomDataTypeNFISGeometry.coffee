@@ -125,16 +125,32 @@ class CustomDataTypeNFISGeometry extends CustomDataType
     __renderEditorContent: (contentElement, cdata, totalFeatures) ->
         if totalFeatures > 0
             @__renderMap(contentElement, cdata.geometry_id)
-            @__renderEditGeometryButton(contentElement, cdata.geometry_id)
-            @__renderReplaceGeometryButton(contentElement, cdata)
-            @__renderRemoveGeometryButton(contentElement, cdata)
+            @__renderEditorButtonsForExistingGeometry(contentElement, cdata)
         else
-            @__renderCreateGeometryButton(contentElement, cdata)
-            @__renderLinkExistingGeometryButton(contentElement, cdata)
+            @__renderEditorButtonsForMissingGeometry(contentElement, cdata)
 
         inputElement = @__createGeometryIdInput(cdata)
         formElement = @__createForm(cdata, [inputElement])
         CUI.dom.append(contentElement, formElement)
+
+    __renderEditorButtonsForExistingGeometry: (contentElement, cdata) ->
+        buttonBarElement = new CUI.Buttonbar
+            buttons: [
+                @__createEditGeometryButton(contentElement, cdata.geometry_id)
+                @__createReplaceGeometryButton(contentElement, cdata)
+                @__createRemoveGeometryButton(contentElement, cdata)
+            ]
+
+        CUI.dom.append(contentElement, buttonBarElement)
+
+    __renderEditorButtonsForMissingGeometry: (contentElement, cdata) ->
+        buttonBarElement = new CUI.Buttonbar
+            buttons: [
+                @__createCreateGeometryButton(contentElement, cdata)
+                @__createLinkExistingGeometryButton(contentElement, cdata)
+            ]
+        
+        CUI.dom.append(contentElement, buttonBarElement)
 
     __createGeometryIdInput: (cdata) ->
         new CUI.Input
@@ -157,25 +173,6 @@ class CustomDataTypeNFISGeometry extends CustomDataType
         mapElement = CUI.dom.div('nfis-geometry-map')
         CUI.dom.append(contentElement, mapElement)
         @__initializeMap(mapElement, geometryId)
-
-    __renderCreateGeometryButton: (contentElement, cdata) ->
-        createGeometryButton = new CUI.Button
-            text: $$('custom.data.type.nfis.geometry.createNewGeometry')
-            onClick: () =>
-                newGeometryId = window.crypto.randomUUID()
-                navigator.clipboard.writeText(newGeometryId)
-                window.open(@__getCreateGeometryUrl(), '_blank')
-                @__openCreateGeometryModal(contentElement, cdata, newGeometryId)
-
-        CUI.dom.append(contentElement, createGeometryButton)
-
-    __renderRemoveGeometryButton: (contentElement, cdata) ->
-        createGeometryButton = new CUI.Button
-            text: $$('custom.data.type.nfis.geometry.removeGeometry')
-            onClick: () =>
-                @__removeGeometryId(contentElement, cdata)
-
-        CUI.dom.append(contentElement, createGeometryButton)
 
     __openCreateGeometryModal: (contentElement, cdata, newGeometryId, error) ->
         text = ''
@@ -235,32 +232,48 @@ class CustomDataTypeNFISGeometry extends CustomDataType
         this.__renderContent(contentElement, cdata, 'editor', totalFeatures);
         this.__triggerFormChanged(CUI.dom.findElement(contentElement, '.cui-form'))
 
-    __renderEditGeometryButton: (contentElement, geometryId) ->
-        editGeometryButton = new CUI.ButtonHref
-            href: @__getEditGeometryUrl(geometryId)
-            target: '_blank'
-            icon_left: new CUI.Icon(class: 'fa-external-link')
-            text: $$('custom.data.type.nfis.geometry.editGeometry')
-
-        CUI.dom.append(contentElement, editGeometryButton)
-
-    __renderReplaceGeometryButton: (contentElement, cdata) ->
-        label = $$('custom.data.type.nfis.geometry.replaceGeometry')
-        replaceGeometryButton = new CUI.Button
-            text: label
+    __createCreateGeometryButton: (contentElement, cdata) ->
+        new CUI.Button
+            text: $$('custom.data.type.nfis.geometry.createNewGeometry')
+            icon_left: new CUI.Icon(class: 'fa-plus')
             onClick: () =>
-                @__openSetGeometryModal(contentElement, cdata, label)
+                @__createGeometry(contentElement, cdata)    
 
-        CUI.dom.append(contentElement, replaceGeometryButton)
-    
-    __renderLinkExistingGeometryButton: (contentElement, cdata) ->
+    __createLinkExistingGeometryButton: (contentElement, cdata) ->
         label = $$('custom.data.type.nfis.geometry.linkExistingGeometry')
-        linkExistingGeometryButton = new CUI.Button
+        new CUI.Button
             text: label
+            icon_left: new CUI.Icon(class: 'fa-link')
             onClick: () =>
                 @__openSetGeometryModal(contentElement, cdata, label)
 
-        CUI.dom.append(contentElement, linkExistingGeometryButton)
+    __createEditGeometryButton: (contentElement, geometryId) ->
+        editGeometryButton = new CUI.Button
+            text: $$('custom.data.type.nfis.geometry.editGeometry')
+            icon_left: new CUI.Icon(class: 'fa-pencil')
+            onClick: () =>
+                window.open(@__getEditGeometryUrl(geometryId), '_blank')
+
+    __createReplaceGeometryButton: (contentElement, cdata) ->
+        label = $$('custom.data.type.nfis.geometry.replaceGeometry')
+        new CUI.Button
+            text: label
+            icon_left: new CUI.Icon(class: 'fa-repeat')
+            onClick: () =>
+                @__openSetGeometryModal(contentElement, cdata, label)
+
+    __createRemoveGeometryButton: (contentElement, cdata) ->
+        new CUI.Button
+            text: $$('custom.data.type.nfis.geometry.removeGeometry')
+            icon_left: new CUI.Icon(class: 'fa-trash')
+            onClick: () =>
+                @__removeGeometryId(contentElement, cdata)
+
+    __createGeometry: (contentElement, cdata) ->
+        newGeometryId = window.crypto.randomUUID()
+        navigator.clipboard.writeText(newGeometryId)
+        window.open(@__getCreateGeometryUrl(), '_blank')
+        @__openCreateGeometryModal(contentElement, cdata, newGeometryId)
 
     __openSetGeometryModal: (contentElement, cdata, title, error) ->
         text = $$('custom.data.type.nfis.geometry.set.modal.text')
