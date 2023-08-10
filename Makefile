@@ -28,7 +28,7 @@ build: clean
 
 	cp l10n/$(PLUGIN_NAME).csv build/$(PLUGIN_NAME)/l10n/$(PLUGIN_NAME).csv
 
-	cp manifest.yml build/$(PLUGIN_NAME)/manifest.yml
+	cp manifest.master.yml build/$(PLUGIN_NAME)/manifest.yml
 
 clean:
 	rm -rf build
@@ -37,4 +37,3 @@ zip:
 	cd build && zip $(ZIP_NAME) -r $(PLUGIN_NAME)/
 	cp -r build/$(PLUGIN_NAME)/* build/
 	rm -rf build/${PLUGIN_NAME}
-	rm build/manifest.yml

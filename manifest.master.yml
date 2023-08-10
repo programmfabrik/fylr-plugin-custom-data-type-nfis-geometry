@@ -22,6 +22,16 @@ custom_types:
     mapping:
       geometry_id:
         type: text_oneline
+    config:
+      schema:
+        - name: wfs_id
+          parameters:
+            value:
+              type: text
+        - name: wfs_url
+          parameters:
+            value:
+              type: text
 
 base_config:
   - name: nfisGeoservices
