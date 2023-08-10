@@ -12,7 +12,19 @@ class CustomDataTypeNFISGeometry extends CustomDataType
             true
 
     getCustomDataOptionsInDatamodelInfo: (custom_settings) ->
-        []
+        tags = []
+
+        if custom_settings.wfs_id?.value
+            tags.push $$("custom.data.type.nfis.geometry.wfsId") + ': ' + custom_settings.wfs_id.value
+        else
+            tags.push $$("custom.data.type.nfis.geometry.wfsId.none")
+
+        if custom_settings.wfs_url?.value
+            tags.push $$("custom.data.type.nfis.geometry.wfsUrl") + ': ' + custom_settings.wfs_url.value
+        else
+            tags.push $$("custom.data.type.nfis.geometry.wfsUrl.none")
+
+        tags
 
     initData: (data) ->
         if not data[@name()]
@@ -443,15 +455,17 @@ class CustomDataTypeNFISGeometry extends CustomDataType
 
     __getViewGeometryUrl: (geometryId) ->
         masterportalUrl = @__getBaseConfig().masterportal_url
-        if !masterportalUrl
+        wfsId = @getCustomSchemaSettings().wfs_id?.value
+        if !masterportalUrl or !wfsId
             return ''
-        masterportalUrl + '?api/highlightFeaturesByAttribute=1279&wfsId=1279&attributeName=fylr_id&attributeValue=' + geometryId + '&attributeQuery=isequal&zoomToGeometry=' + geometryId;
+        masterportalUrl + '?api/highlightFeaturesByAttribute=' + wfsId + '&wfsId='+ wfsId + '&attributeName=fylr_id&attributeValue=' + geometryId + '&attributeQuery=isequal&zoomToGeometry=' + geometryId;
 
     __getEditGeometryUrl: (geometryId) ->
         masterportalUrl = @__getBaseConfig().masterportal_url
-        if !masterportalUrl
+        wfsId = @getCustomSchemaSettings().wfs_id?.value
+        if !masterportalUrl or !wfsId
             return ''
-        masterportalUrl + '?api/highlightFeaturesByAttribute=1279&wfsId=1279&attributeName=fylr_id&attributeValue=' + geometryId + '&attributeQuery=isequal&zoomToGeometry=' + geometryId + '&isinitopen=wfst';
+        masterportalUrl + '?api/highlightFeaturesByAttribute=' + wfsId + '&wfsId=' + wfsId + '&attributeName=fylr_id&attributeValue=' + geometryId + '&attributeQuery=isequal&zoomToGeometry=' + geometryId + '&isinitopen=wfst';
 
     __getCreateGeometryUrl: () ->
         masterportalUrl = @__getBaseConfig().masterportal_url
@@ -460,11 +474,11 @@ class CustomDataTypeNFISGeometry extends CustomDataType
         masterportalUrl + '?isinitopen=wfst';
 
     __getWfsUrl: (geometryId) ->
-        wfsUrl = @__getBaseConfig().wfs_url
+        wfsUrl = @getCustomSchemaSettings().wfs_url?.value
         if !wfsUrl
             return ''
         wfsUrl += '/' if !wfsUrl.endsWith('/')
-        wfsUrl + '?service=WFS&' + 'version=1.1.0&request=GetFeature&typename=nfis_wfs&outputFormat=application/json&srsname=EPSG:25832&cql_filter=fylr_id=\'' + geometryId + '\''
+        wfsUrl + '?service=WFS&version=1.1.0&request=GetFeature&typename=nfis_wfs&outputFormat=application/json&srsname=EPSG:25832&cql_filter=fylr_id=\'' + geometryId + '\''
 
     __getAuthenticationString: () ->
         username = @__getBaseConfig().geoserver_username
