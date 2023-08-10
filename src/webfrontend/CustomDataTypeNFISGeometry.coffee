@@ -408,7 +408,16 @@ class CustomDataTypeNFISGeometry extends CustomDataType
                 center: [561397, 5709705],
                 maxZoom: 19,
                 zoom: 7,
-            })
+            }),
+            interactions: ol.interaction.defaults.defaults({ mouseWheelZoom: false })
+        });
+
+        const mouseWheelInteraction = new ol.interaction.MouseWheelZoom();
+        map.addInteraction(mouseWheelInteraction);
+        map.on('wheel', event => {
+            mouseWheelInteraction.setActive(
+                ol.events.condition.shiftKeyOnly(event) || ol.events.condition.platformModifierKeyOnly(event)
+            );
         });
         ```
         return
