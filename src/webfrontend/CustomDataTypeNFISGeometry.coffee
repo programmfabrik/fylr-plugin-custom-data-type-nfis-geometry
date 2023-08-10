@@ -216,9 +216,7 @@ class CustomDataTypeNFISGeometry extends CustomDataType
             .then((wfsData) => {
                 if (wfsData.totalFeatures > 0) {
                     cdata.geometry_id = newGeometryId;
-                    CUI.dom.removeChildren(contentElement);
-                    this.__renderContent(contentElement, cdata, 'editor', wfsData.totalFeatures);
-                    this.__triggerFormChanged(CUI.dom.findElement(contentElement, '.cui-form'))
+                    this.__updateEditorContent(contentElement, cdata, wfsData.totalFeatures);
                     resolve();
                 } else {
                     reject();
@@ -230,8 +228,11 @@ class CustomDataTypeNFISGeometry extends CustomDataType
     
     __removeGeometryId: (contentElement, cdata) ->
         cdata.geometry_id = ''
+        @__updateEditorContent(contentElement, cdata, 0)
+
+    __updateEditorContent: (contentElement, cdata, totalFeatures) ->
         CUI.dom.removeChildren(contentElement);
-        this.__renderContent(contentElement, cdata, 'editor', 0);
+        this.__renderContent(contentElement, cdata, 'editor', totalFeatures);
         this.__triggerFormChanged(CUI.dom.findElement(contentElement, '.cui-form'))
 
     __renderEditGeometryButton: (contentElement, geometryId) ->
