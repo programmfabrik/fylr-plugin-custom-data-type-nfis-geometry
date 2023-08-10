@@ -338,7 +338,7 @@ class CustomDataTypeNFISGeometry extends CustomDataType
         });
 
         vectorSource.on('featuresloadend', () => {
-            map.getView().fit(vectorSource.getExtent());
+            map.getView().fit(vectorSource.getExtent(), { padding: [20, 20, 20, 20] });
         });
 
         const rasterSource = new ol.source.TileWMS({
