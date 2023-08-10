@@ -136,7 +136,7 @@ class CustomDataTypeNFISGeometry extends CustomDataType
     __renderEditorButtonsForExistingGeometry: (contentElement, cdata) ->
         buttonBarElement = new CUI.Buttonbar
             buttons: [
-                @__createEditGeometryButton(contentElement, cdata.geometry_id)
+                @__createEditGeometryButton(contentElement, cdata)
                 @__createReplaceGeometryButton(contentElement, cdata)
                 @__createRemoveGeometryButton(contentElement, cdata)
             ]
@@ -206,6 +206,22 @@ class CustomDataTypeNFISGeometry extends CustomDataType
             ]
         modalDialog.show()
 
+    __openEditGeometryModal: (contentElement, cdata) ->
+
+        that = this
+        modalDialog = new CUI.ConfirmationDialog
+            title: $$('custom.data.type.nfis.geometry.editGeometry')
+            text: $$('custom.data.type.nfis.geometry.edit.modal.text')
+            cancel: false
+            buttons: [
+                text: $$('custom.data.type.nfis.geometry.modal.ok')
+                primary: true
+                onClick: =>
+                    @__updateEditorContent(contentElement, cdata)
+                    modalDialog.destroy()
+            ]
+        modalDialog.show()
+
     __setGeometryId: (contentElement, cdata, newGeometryId) ->
         ```
         promise = new Promise((resolve, reject) => {
@@ -213,7 +229,7 @@ class CustomDataTypeNFISGeometry extends CustomDataType
             .then((wfsData) => {
                 if (wfsData.totalFeatures > 0) {
                     cdata.geometry_id = newGeometryId;
-                    this.__updateEditorContent(contentElement, cdata, wfsData.totalFeatures);
+                    this.__updateEditorContentAfterChanges(contentElement, cdata, wfsData.totalFeatures);
                     resolve();
                 } else {
                     reject();
@@ -225,9 +241,13 @@ class CustomDataTypeNFISGeometry extends CustomDataType
     
     __removeGeometryId: (contentElement, cdata) ->
         cdata.geometry_id = ''
-        @__updateEditorContent(contentElement, cdata, 0)
+        @__updateEditorContentAfterChanges(contentElement, cdata, 0)
 
-    __updateEditorContent: (contentElement, cdata, totalFeatures) ->
+    __updateEditorContent: (contentElement, cdata) ->
+        CUI.dom.removeChildren(contentElement)
+        @.__loadContent(contentElement, cdata, 'editor')
+
+    __updateEditorContentAfterChanges: (contentElement, cdata, totalFeatures) ->
         CUI.dom.removeChildren(contentElement);
         this.__renderContent(contentElement, cdata, 'editor', totalFeatures);
         this.__triggerFormChanged(CUI.dom.findElement(contentElement, '.cui-form'))
@@ -247,12 +267,12 @@ class CustomDataTypeNFISGeometry extends CustomDataType
             onClick: () =>
                 @__openSetGeometryModal(contentElement, cdata, label)
 
-    __createEditGeometryButton: (contentElement, geometryId) ->
+    __createEditGeometryButton: (contentElement, cdata) ->
         editGeometryButton = new CUI.Button
             text: $$('custom.data.type.nfis.geometry.editGeometry')
             icon_left: new CUI.Icon(class: 'fa-pencil')
             onClick: () =>
-                window.open(@__getEditGeometryUrl(geometryId), '_blank')
+                @__editGeometry(contentElement, cdata)
 
     __createReplaceGeometryButton: (contentElement, cdata) ->
         label = $$('custom.data.type.nfis.geometry.replaceGeometry')
@@ -274,6 +294,10 @@ class CustomDataTypeNFISGeometry extends CustomDataType
         navigator.clipboard.writeText(newGeometryId)
         window.open(@__getCreateGeometryUrl(), '_blank')
         @__openCreateGeometryModal(contentElement, cdata, newGeometryId)
+
+    __editGeometry: (contentElement, cdata) ->
+        window.open(@__getEditGeometryUrl(cdata.geometry_id), '_blank')
+        @__openEditGeometryModal(contentElement, cdata)
 
     __openSetGeometryModal: (contentElement, cdata, title, error) ->
         text = $$('custom.data.type.nfis.geometry.set.modal.text')

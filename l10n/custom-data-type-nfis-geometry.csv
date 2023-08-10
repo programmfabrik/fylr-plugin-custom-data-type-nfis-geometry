@@ -14,6 +14,7 @@ custom.data.type.nfis.geometry.create.modal.text.2,Übernehmen Sie die neue Geom
 custom.data.type.nfis.geometry.create.modal.error.notFound,Die neue Geometrie konnte nicht gefunden werden.,The new geometry could not be found.
 custom.data.type.nfis.geometry.set.modal.text,Bitte geben Sie die ID der Geometrie an.,Please enter the ID of the geometry.
 custom.data.type.nfis.geometry.set.modal.error.notFound,Die Geometrie konnte nicht gefunden werden.,The geometry could not be found.
+custom.data.type.nfis.geometry.edit.modal.text,"Bearbeiten Sie die Geometrie im Masterportal und betätigen Sie anschließend den Ok-Button, um die Kartenanzeige zu aktualisieren.","Edit the geometry in Masterportal and then press the Ok button to update the map view."
 server.config.name.system.nfisGeoservices,NFIS-Geodienste,NFIS Geoservices
 server.config.parameter.system.nfisGeoservices.masterportal_url.label,Masterportal-URL,Masterportal URL
 server.config.parameter.system.nfisGeoservices.wfs_url.label,Geoserver: WFS-URL,Geoserver: WFS URL
