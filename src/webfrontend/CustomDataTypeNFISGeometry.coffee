@@ -210,7 +210,7 @@ class CustomDataTypeNFISGeometry extends CustomDataType
 
         that = this
         modalDialog = new CUI.ConfirmationDialog
-            title: $$('custom.data.type.nfis.geometry.editGeometry')
+            title: $$('custom.data.type.nfis.geometry.edit.modal.title')
             text: $$('custom.data.type.nfis.geometry.edit.modal.text')
             cancel: false
             buttons: [
@@ -275,12 +275,11 @@ class CustomDataTypeNFISGeometry extends CustomDataType
                 @__editGeometry(contentElement, cdata)
 
     __createReplaceGeometryButton: (contentElement, cdata) ->
-        label = $$('custom.data.type.nfis.geometry.replaceGeometry')
         new CUI.Button
-            text: label
+            text: $$('custom.data.type.nfis.geometry.replaceGeometry')
             icon_left: new CUI.Icon(class: 'fa-repeat')
             onClick: () =>
-                @__openSetGeometryModal(contentElement, cdata, label)
+                @__openSetGeometryModal(contentElement, cdata, $$('custom.data.type.nfis.geometry.replaceGeometry.modal.title'))
 
     __createRemoveGeometryButton: (contentElement, cdata) ->
         new CUI.Button
