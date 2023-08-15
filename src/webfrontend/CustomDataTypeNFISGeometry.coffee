@@ -15,14 +15,14 @@ class CustomDataTypeNFISGeometry extends CustomDataType
         tags = []
 
         if custom_settings.wfs_id?.value
-            tags.push $$("custom.data.type.nfis.geometry.wfsId") + ': ' + custom_settings.wfs_id.value
+            tags.push $$('custom.data.type.nfis.geometry.wfsId') + ': ' + custom_settings.wfs_id.value
         else
-            tags.push $$("custom.data.type.nfis.geometry.wfsId.none")
+            tags.push $$('custom.data.type.nfis.geometry.wfsId.none')
 
         if custom_settings.wfs_url?.value
-            tags.push $$("custom.data.type.nfis.geometry.wfsUrl") + ': ' + custom_settings.wfs_url.value
+            tags.push $$('custom.data.type.nfis.geometry.wfsUrl') + ': ' + custom_settings.wfs_url.value
         else
-            tags.push $$("custom.data.type.nfis.geometry.wfsUrl.none")
+            tags.push $$('custom.data.type.nfis.geometry.wfsUrl.none')
 
         tags
 
@@ -233,7 +233,6 @@ class CustomDataTypeNFISGeometry extends CustomDataType
         @__openCreateGeometryModal(contentElement, cdata, newGeometryId)
 
     __openEditGeometryModal: (contentElement, cdata) ->
-
         that = this
         modalDialog = new CUI.ConfirmationDialog
             title: $$('custom.data.type.nfis.geometry.edit.modal.title')
