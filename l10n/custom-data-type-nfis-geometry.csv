@@ -25,6 +25,5 @@ custom.data.type.nfis.geometry.config.parameter.schema.wfs_url.value.label,WFS-U
 custom.data.type.nfis.geometry.config.parameter.schema.wfs_id.value.label,WFS-ID im Masterportal,WFS-ID in Masterportal
 server.config.name.system.nfisGeoservices,NFIS-Geodienste,NFIS Geoservices
 server.config.parameter.system.nfisGeoservices.masterportal_url.label,Masterportal-URL,Masterportal URL
-server.config.parameter.system.nfisGeoservices.wfs_url.label,Geoserver: WFS-URL,Geoserver: WFS URL
 server.config.parameter.system.nfisGeoservices.geoserver_username.label,Geoserver: Username,Geoserver: User name
 server.config.parameter.system.nfisGeoservices.geoserver_password.label,Geoserver: Passwort,Geoserver: Password

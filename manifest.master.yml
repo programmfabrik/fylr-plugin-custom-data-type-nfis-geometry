@@ -39,9 +39,6 @@ base_config:
       masterportal_url:
         type: text
         position: 0
-      wfs_url:
-        type: text
-        position: 1
       geoserver_username:
         type: text
         position: 2
