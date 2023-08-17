@@ -19,9 +19,6 @@ base_url_prefix: "webfrontend"
 
 custom_types:
   nfis-geometry:
-    mapping:
-      geometry_id:
-        type: text_oneline
     config:
       schema:
         - name: wfs_id
@@ -32,6 +29,10 @@ custom_types:
           parameters:
             value:
               type: text
+        - name: multi_select
+          parameters:
+            value:
+              type: bool
 
 base_config:
   - name: nfisGeoservices

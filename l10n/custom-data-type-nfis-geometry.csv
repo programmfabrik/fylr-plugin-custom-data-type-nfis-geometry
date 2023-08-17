@@ -4,16 +4,16 @@ custom.data.type.nfis.geometry.wfsId,WFS-ID im Masterportal,WFS ID in Masterport
 custom.data.type.nfis.geometry.wfsId.none,Keine WFS-ID gesetzt,No WFS ID specified
 custom.data.type.nfis.geometry.wfsUrl,WFS-URL,WFS URL
 custom.data.type.nfis.geometry.wfsUrl.none,Keine WFS-URL angegeben,No WFS URL specified
+custom.data.type.nfis.geometry.multiSelect.yes,Mehrfachauswahl,Multi selection
+custom.data.type.nfis.geometry.multiSelect.no,Keine Mehrfachauswahl,No multi selection
 custom.data.type.nfis.geometry.edit.no_data,Keine Daten vorhanden,No data present
 custom.data.type.nfis.geometry.createNewGeometry,Neue Geometrie anlegen,Create new geometry
 custom.data.type.nfis.geometry.linkExistingGeometry,Existierende Geometrie verknüpfen,Link existing geometry
-custom.data.type.nfis.geometry.replaceGeometry,Austauschen,Replace
 custom.data.type.nfis.geometry.editGeometry,Bearbeiten,Edit
 custom.data.type.nfis.geometry.removeGeometry,Entfernen,Remove
 custom.data.type.nfis.geometry.viewGeometry,Im Masterportal anzeigen,View in Masterportal
 custom.data.type.nfis.geometry.modal.cancel,Abbrechen,cancel
 custom.data.type.nfis.geometry.modal.ok,Ok,Ok
-custom.data.type.nfis.geometry.replaceGeometry.modal.title,Geometrie austauschen,Replace geometry
 custom.data.type.nfis.geometry.create.modal.text.1,Legen Sie die neue Geometrie im Masterportal an und geben Sie dabei die folgende Geometrie-ID an:,Create the new geometry in Masterpotal using the following geometry ID:
 custom.data.type.nfis.geometry.create.modal.text.2,Übernehmen Sie die neue Geometrie anschließend per Klick auf den Ok-Button.,Then save the new geometry by clicking the Ok button.
 custom.data.type.nfis.geometry.create.modal.error.notFound,Die neue Geometrie konnte nicht gefunden werden.,The new geometry could not be found.
@@ -23,6 +23,8 @@ custom.data.type.nfis.geometry.edit.modal.title,Geometrie bearbeiten,Edit geomet
 custom.data.type.nfis.geometry.edit.modal.text,"Bearbeiten Sie die Geometrie im Masterportal und betätigen Sie anschließend den Ok-Button, um die Kartenanzeige zu aktualisieren.","Edit the geometry in Masterportal and then press the Ok button to update the map view."
 custom.data.type.nfis.geometry.config.parameter.schema.wfs_url.value.label,WFS-URL,WFS URL
 custom.data.type.nfis.geometry.config.parameter.schema.wfs_id.value.label,WFS-ID im Masterportal,WFS-ID in Masterportal
+custom.data.type.nfis.geometry.config.parameter.schema.multi_select.value.label,Mehrfachauswahl,Multi selection
+custom.data.type.nfis.geometry.config.parameter.schema.multi_select.value.checkbox,Erlauben,Allow
 server.config.name.system.nfisGeoservices,NFIS-Geodienste,NFIS Geoservices
 server.config.parameter.system.nfisGeoservices.masterportal_url.label,Masterportal-URL,Masterportal URL
 server.config.parameter.system.nfisGeoservices.geoserver_username.label,Geoserver: Username,Geoserver: User name
