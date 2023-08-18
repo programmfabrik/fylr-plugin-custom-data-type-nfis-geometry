@@ -134,7 +134,7 @@ class CustomDataTypeNFISGeometry extends CustomDataType
             selectedGeometryId = cdata.geometry_ids[0]
 
         if totalFeatures > 0
-            @__renderMap(contentElement, cdata, totalFeatures, selectedGeometryId, true)
+            @__renderMap(contentElement, cdata, totalFeatures, selectedGeometryId, multiSelect)
 
         @__renderEditorButtons(contentElement, cdata, multiSelect, selectedGeometryId)
 
@@ -300,7 +300,7 @@ class CustomDataTypeNFISGeometry extends CustomDataType
             .then((wfsData) => {
                 if (wfsData.totalFeatures > 0) {
                     cdata.geometry_ids = cdata.geometry_ids.concat([newGeometryId]);
-                    this.__rerenderEditorContent(contentElement, cdata, wfsData.totalFeatures, newGeometryId, true);
+                    this.__applyChanges(contentElement, cdata, wfsData.totalFeatures, newGeometryId);
                     resolve();
                 } else {
                     reject();
@@ -314,17 +314,21 @@ class CustomDataTypeNFISGeometry extends CustomDataType
         ```
         cdata.geometry_ids = cdata.geometry_ids.filter(geometryId => geometryId !== uuid);
         ```
-        @__rerenderEditorContent(contentElement, cdata, cdata.geometry_ids.length, undefined, true)
+        @__applyChanges(contentElement, cdata, cdata.geometry_ids.length, undefined)
 
     __reloadEditorContent: (contentElement, cdata, uuid) ->
         CUI.dom.removeChildren(contentElement)
-        @.__loadContent(contentElement, cdata, 'editor', uuid)
+        @__loadContent(contentElement, cdata, 'editor', uuid)
 
-    __rerenderEditorContent: (contentElement, cdata, totalFeatures, selectedGeometryId, changed) ->
+    __applyChanges: (contentElement, cdata, totalFeatures, selectedGeometryId) ->
         CUI.dom.removeChildren(contentElement);
-        this.__renderContent(contentElement, cdata, 'editor', totalFeatures, selectedGeometryId);
-        if changed
-            this.__triggerFormChanged(CUI.dom.findElement(contentElement, '.cui-form'))
+        @__renderContent(contentElement, cdata, 'editor', totalFeatures, selectedGeometryId);
+        @__triggerFormChanged(CUI.dom.findElement(contentElement, '.cui-form'))
+
+    __rerenderEditorButtons: (contentElement, cdata, multiSelect, selectedGeometryId) ->
+        buttonsBarElement = CUI.dom.findElement(contentElement, '.cui-buttonbar')
+        CUI.dom.remove(buttonsBarElement)
+        @__renderEditorButtons(contentElement, cdata, multiSelect, selectedGeometryId)
 
     __triggerFormChanged: (form) ->
         CUI.Events.trigger
@@ -357,7 +361,10 @@ class CustomDataTypeNFISGeometry extends CustomDataType
         ]);
 
         this.__configureMouseWheelZoom(map);
-        if (allowSelection) this.__configureGeometrySelection(map, contentElement, cdata, totalFeatures);
+        if (allowSelection) {
+            this.__configureGeometrySelection(map, contentElement, cdata, totalFeatures);
+            this.__configureCursor(map);
+        }
         ```
         return
 
@@ -401,17 +408,15 @@ class CustomDataTypeNFISGeometry extends CustomDataType
 
         const vectorLayer = new ol.layer.Vector({
             source: vectorSource,
-            style: (feature) => {
-                return new ol.style.Style({
-                    stroke: new ol.style.Stroke({
-                        width: 1.5,
-                        color: feature.get('ouuid') === selectedGeometryId ? 'white' : 'black'
-                    }),
-                    fill: new ol.style.Fill({
-                        color: 'rgba(100,100,100,0.25)'
-                    })
-                });
-            }
+            style: new ol.style.Style({
+                stroke: new ol.style.Stroke({
+                    width: 1.5,
+                    color: 'black'
+                }),
+                fill: new ol.style.Fill({
+                    color: 'rgba(100,100,100,0.25)'
+                })
+            })
         });
         ```
         vectorLayer
@@ -462,7 +467,16 @@ class CustomDataTypeNFISGeometry extends CustomDataType
     __configureGeometrySelection: (map, contentElement, cdata, totalFeatures) ->
         ```
         const select = new ol.interaction.Select({
-            condition: ol.events.condition.click
+            condition: ol.events.condition.click,
+            style: new ol.style.Style({
+                stroke: new ol.style.Stroke({
+                    width: 1.5,
+                    color: 'white'
+                }),
+                fill: new ol.style.Fill({
+                    color: 'rgba(255,255,255,0.25)'
+                })
+            })
         });
 
         map.addInteraction(select);
@@ -470,7 +484,17 @@ class CustomDataTypeNFISGeometry extends CustomDataType
             const selectedGeometryId = event.selected.length > 0
                 ? event.selected[0].get('ouuid')
                 : undefined;
-            this.__rerenderEditorContent(contentElement, cdata, totalFeatures, selectedGeometryId, false);
+            this.__rerenderEditorButtons(contentElement, cdata, true, selectedGeometryId);
+        });
+        ```
+        return
+
+    __configureCursor: (map) ->
+        ```
+        map.on('pointermove', event => {
+            if (event.dragging) return;
+            const mouseOverFeature = map.hasFeatureAtPixel(map.getEventPixel(event.originalEvent));
+            map.getTargetElement().style.cursor = mouseOverFeature ? 'pointer' : 'default';
         });
         ```
         return
