@@ -118,18 +118,22 @@ class CustomDataTypeNFISGeometry extends CustomDataType
         promise
 
     __renderContent: (contentElement, cdata, mode, totalFeatures, selectedGeometryId) ->
-        if mode == 'detail'
-            @__renderDetailContent(contentElement, cdata, totalFeatures, selectedGeometryId)
-        else
-            @__renderEditorContent(contentElement, cdata, totalFeatures, selectedGeometryId)
-
-    __renderDetailContent: (contentElement, cdata, totalFeatures, selectedGeometryId) ->
-        if totalFeatures > 0
-            @__renderMap(contentElement, cdata, totalFeatures, undefined, false)
-            @__renderViewGeometryButton(contentElement, @__getGeometryId(cdata))
-
-    __renderEditorContent: (contentElement, cdata, totalFeatures, selectedGeometryId) ->
         multiSelect = @getCustomSchemaSettings().multi_select?.value
+
+        if mode == 'detail'
+            @__renderDetailContent(contentElement, cdata, totalFeatures, multiSelect)
+        else
+            @__renderEditorContent(contentElement, cdata, totalFeatures, selectedGeometryId, multiSelect)
+
+    __renderDetailContent: (contentElement, cdata, totalFeatures, multiSelect) ->
+        if totalFeatures > 0
+            if multiSelect
+                @__renderMap(contentElement, cdata, totalFeatures, undefined, false, @__renderViewGeometriesButton(contentElement))
+            else
+                @__renderMap(contentElement, cdata, totalFeatures, undefined, false)
+                @__renderViewGeometryButton(contentElement, @__getGeometryId(cdata))
+
+    __renderEditorContent: (contentElement, cdata, totalFeatures, selectedGeometryId, multiSelect) ->
         if !multiSelect and cdata.geometry_ids?.length > 0
             selectedGeometryId = cdata.geometry_ids[0]
 
@@ -156,7 +160,7 @@ class CustomDataTypeNFISGeometry extends CustomDataType
 
         CUI.dom.append(contentElement, buttonBarElement)
 
-    __renderViewGeometryButton: (contentElement, geometryId) ->
+     __renderViewGeometryButton: (contentElement, geometryId) ->
         showGeometryButton = new CUI.ButtonHref
             href: @__getViewGeometryUrl(geometryId)
             target: '_blank'
@@ -164,6 +168,17 @@ class CustomDataTypeNFISGeometry extends CustomDataType
             text: $$('custom.data.type.nfis.geometry.viewGeometry')
 
         CUI.dom.append(contentElement, showGeometryButton)
+
+    __renderViewGeometriesButton: (contentElement) ->
+        that = @
+        return (extent) -> 
+            showGeometryButton = new CUI.ButtonHref
+                href: that.__getViewGeometriesUrl(extent)
+                target: '_blank'
+                icon_left: new CUI.Icon(class: 'fa-external-link')
+                text: $$('custom.data.type.nfis.geometry.viewGeometry')
+
+            CUI.dom.append(contentElement, showGeometryButton)
 
     __createEditGeometryButton: (contentElement, cdata, uuid) ->
         editGeometryButton = new CUI.Button
@@ -335,12 +350,12 @@ class CustomDataTypeNFISGeometry extends CustomDataType
             node: form
             type: 'editor-changed'
 
-    __renderMap: (contentElement, cdata, totalFeatures, selectedGeometryId, allowSelection) ->
+    __renderMap: (contentElement, cdata, totalFeatures, selectedGeometryId, allowSelection, onLoad) ->
         mapElement = CUI.dom.div('nfis-geometry-map')
         CUI.dom.append(contentElement, mapElement)
-        @__initializeMap(contentElement, mapElement, cdata, totalFeatures, selectedGeometryId, allowSelection)
+        @__initializeMap(contentElement, mapElement, cdata, totalFeatures, selectedGeometryId, allowSelection, onLoad)
 
-    __initializeMap: (contentElement, mapElement, cdata, totalFeatures, selectedGeometryId, allowSelection) ->
+    __initializeMap: (contentElement, mapElement, cdata, totalFeatures, selectedGeometryId, allowSelection, onLoad) ->
         ```
         const projection = this.__getMapProjection()
 
@@ -357,7 +372,7 @@ class CustomDataTypeNFISGeometry extends CustomDataType
 
         map.setLayers([
             this.__getRasterLayer(projection),
-            this.__getVectorLayer(map, cdata.geometry_ids, selectedGeometryId)
+            this.__getVectorLayer(map, cdata.geometry_ids, selectedGeometryId, onLoad)
         ]);
 
         this.__configureMouseWheelZoom(map);
@@ -396,14 +411,16 @@ class CustomDataTypeNFISGeometry extends CustomDataType
                 LAYERS: 'de_basemapde_web_raster_farbe'
             projection
 
-    __getVectorLayer: (map, geometryIds, selectedGeometryId) ->
+    __getVectorLayer: (map, geometryIds, selectedGeometryId, onLoad) ->
         ```
         const wfsUrl = this.__getWfsUrl(geometryIds);
         const authenticationString = this.__getAuthenticationString();
-        const vectorSource = this.__getVectorSource(wfsUrl, authenticationString)
+        const vectorSource = this.__getVectorSource(wfsUrl, authenticationString, onLoad)
 
         vectorSource.on('featuresloadend', () => {
-            map.getView().fit(vectorSource.getExtent(), { padding: [20, 20, 20, 20] });
+            const extent = vectorSource.getExtent();
+            map.getView().fit(extent, { padding: [20, 20, 20, 20] });
+            if (onLoad) onLoad(extent);
         });
 
         const vectorLayer = new ol.layer.Vector({
@@ -505,6 +522,13 @@ class CustomDataTypeNFISGeometry extends CustomDataType
         if !masterportalUrl or !wfsId
             return ''
         masterportalUrl + '?api/highlightFeaturesByAttribute=' + wfsId + '&wfsId='+ wfsId + '&attributeName=ouuid&attributeValue=' + geometryId + '&attributeQuery=isequal&zoomToGeometry=' + geometryId;
+
+    __getViewGeometriesUrl: (extent) ->
+        masterportalUrl = @__getBaseConfig().masterportal_url
+        wfsId = @getCustomSchemaSettings().wfs_id?.value
+        if !masterportalUrl or !wfsId
+            return ''
+        masterportalUrl + '?zoomToExtent=' + extent.join(',')
 
     __getEditGeometryUrl: (geometryId) ->
         masterportalUrl = @__getBaseConfig().masterportal_url
