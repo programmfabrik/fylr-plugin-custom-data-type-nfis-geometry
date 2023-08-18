@@ -6,7 +6,7 @@ class CustomDataTypeNFISGeometry extends CustomDataType
         $$('custom.data.type.nfis.geometry.name')
 
     isEmpty: (data, top_level_data, opts={}) ->
-        if data[@name()]?.geometry_ids
+        if data[@name()]?.geometry_ids?.length
             false
         else
             true
