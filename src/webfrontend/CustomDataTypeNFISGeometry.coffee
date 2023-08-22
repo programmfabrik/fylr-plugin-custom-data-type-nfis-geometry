@@ -148,10 +148,10 @@ class CustomDataTypeNFISGeometry extends CustomDataType
 
     __renderEditorButtons: (contentElement, cdata, multiSelect, selectedGeometryId) ->
         buttons = []
-        if multiSelect or !selectedGeometryId
+        if !selectedGeometryId
             buttons.push @__createCreateGeometryButton(contentElement, cdata)
             buttons.push @__createLinkExistingGeometryButton(contentElement, cdata)
-        if selectedGeometryId
+        else
             buttons.push @__createEditGeometryButton(contentElement, cdata, selectedGeometryId)
             buttons.push @__createRemoveGeometryButton(contentElement, cdata, selectedGeometryId)
 
