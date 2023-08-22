@@ -10,7 +10,7 @@ custom.data.type.nfis.geometry.edit.no_data,Keine Daten vorhanden,No data presen
 custom.data.type.nfis.geometry.createNewGeometry,Neue Geometrie anlegen,Create new geometry
 custom.data.type.nfis.geometry.linkExistingGeometry,Existierende Geometrie verknüpfen,Link existing geometry
 custom.data.type.nfis.geometry.editGeometry,Bearbeiten,Edit
-custom.data.type.nfis.geometry.removeGeometry,Entfernen,Remove
+custom.data.type.nfis.geometry.removeGeometry,Verknüpfung entfernen,Remove link
 custom.data.type.nfis.geometry.viewGeometry,Im Masterportal anzeigen,View in Masterportal
 custom.data.type.nfis.geometry.modal.cancel,Abbrechen,cancel
 custom.data.type.nfis.geometry.modal.ok,Ok,Ok
