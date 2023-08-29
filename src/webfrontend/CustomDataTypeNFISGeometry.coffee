@@ -521,7 +521,7 @@ class CustomDataTypeNFISGeometry extends CustomDataType
         wfsId = @getCustomSchemaSettings().wfs_id?.value
         if !masterportalUrl or !wfsId
             return ''
-        masterportalUrl + '?api/highlightFeaturesByAttribute=' + wfsId + '&wfsId='+ wfsId + '&attributeName=ouuid&attributeValue=' + geometryId + '&attributeQuery=isequal&zoomToGeometry=' + geometryId;
+        masterportalUrl + '?zoomToGeometry=' + geometryId;
 
     __getViewGeometriesUrl: (extent) ->
         masterportalUrl = @__getBaseConfig().masterportal_url
@@ -535,7 +535,7 @@ class CustomDataTypeNFISGeometry extends CustomDataType
         wfsId = @getCustomSchemaSettings().wfs_id?.value
         if !masterportalUrl or !wfsId
             return ''
-        masterportalUrl + '?api/highlightFeaturesByAttribute=' + wfsId + '&wfsId=' + wfsId + '&attributeName=ouuid&attributeValue=' + geometryId + '&attributeQuery=isequal&zoomToGeometry=' + geometryId + '&isinitopen=wfst';
+        masterportalUrl + '?zoomToGeometry=' + geometryId + '&isinitopen=wfst';
 
     __getCreateGeometryUrl: () ->
         masterportalUrl = @__getBaseConfig().masterportal_url
