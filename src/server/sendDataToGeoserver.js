@@ -1,9 +1,3 @@
-let info = undefined;
-if (process.argv.length >= 3) {
-    info = JSON.parse(process.argv[2])
-}
-
-
 let input = '';
 process.stdin.on('data', d => {
     try {
