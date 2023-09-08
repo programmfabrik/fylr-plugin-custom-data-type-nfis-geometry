@@ -1,7 +1,8 @@
 ZIP_NAME ?= "CustomDataTypeNFISGeometry.zip"
 PLUGIN_NAME = custom-data-type-nfis-geometry
 
-COFFEE_FILES = CustomDataTypeNFISGeometry.coffee
+COFFEE_FILE = CustomDataTypeNFISGeometry.coffee
+SERVER_FILE = sendDataToGeoserver.js
 MAIN_CSS = src/webfrontend/css/main.css
 OPENLAYERS = src/external/openLayers/ol.js
 OPENLAYERS_CSS = src/external/openLayers/ol.css
@@ -13,15 +14,18 @@ build: clean
 	mkdir -p build
 	mkdir -p build/$(PLUGIN_NAME)
 	mkdir -p build/$(PLUGIN_NAME)/webfrontend
+	mkdir -p build/$(PLUGIN_NAME)/server
 	mkdir -p build/$(PLUGIN_NAME)/l10n
 
 	mkdir -p src/tmp
 	cp src/webfrontend/*.coffee src/tmp
-	cd src/tmp && coffee -b --compile $(COFFEE_FILES)
+	cd src/tmp && coffee -b --compile $(COFFEE_FILE)
 	cat src/tmp/*.js > build/$(PLUGIN_NAME)/webfrontend/$(PLUGIN_NAME).js
 	cat $(OPENLAYERS) >> build/$(PLUGIN_NAME)/webfrontend/$(PLUGIN_NAME).js
 	cat $(PROJ4) >> build/$(PLUGIN_NAME)/webfrontend/$(PLUGIN_NAME).js
 	rm -rf src/tmp
+
+	cp src/server/${SERVER_FILE} build/${PLUGIN_NAME}/server/${SERVER_FILE}
 
 	cp $(MAIN_CSS) build/$(PLUGIN_NAME)/webfrontend/${PLUGIN_NAME}.css
 	cat $(OPENLAYERS_CSS) >> build/$(PLUGIN_NAME)/webfrontend/${PLUGIN_NAME}.css

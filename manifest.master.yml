@@ -46,3 +46,39 @@ base_config:
       geoserver_password:
         type: text
         position: 3
+      wfs_configuration:
+        type: table
+        fields:
+          - name: object_type
+            type: text
+            position: 0
+          - name: fields
+            type: table
+            fields:
+              - name: field_path
+                type: text
+                position: 0
+              - name: wfs_url
+                type: text
+                position: 1
+            position: 1
+        position: 4
+
+callbacks:
+  db_pre_save:
+    steps:
+      - name: "Send updated data to Geoserver"
+        callback: sendDataToGeoserver
+    callbacks:
+      sendDataToGeoserver:
+        exec:
+          service: "node"
+          commands:
+            - prog: "node"
+              stdin:
+                type: body
+              stdout:
+                type: body
+              args:
+                - type: "value"
+                  value: "%_exec.pluginDir%/server/sendDataToGeoserver.js"
