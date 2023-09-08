@@ -54,14 +54,10 @@ function getAuthorizationString(data) {
 
 async function updateObject(object, wfsConfiguration, authorizationString) {
 
-    wfsConfiguration.fields.shift();
-
     for (let fieldConfiguration of wfsConfiguration.fields) {
         const geometryIds = getGeometryIds(object, fieldConfiguration.field_path.split('/'));
-        if (!geometryIds?.length) continue;
-
-        for (let geometryId of geometryIds) {
-            await updateGeometry(geometryId, object.name, fieldConfiguration.wfs_url, authorizationString);
+        if (geometryIds?.length) {
+            await performTransaction(geometryIds, object.name, fieldConfiguration.wfs_url, authorizationString);
         }
     }
 }
@@ -86,13 +82,13 @@ function getGeometryIds(object, pathSegments) {
 }
 
 
-async function updateGeometry(geometryId, name, wfsUrl, authorizationString) {
+async function performTransaction(geometryIds, name, wfsUrl, authorizationString) {
 
     const changeMap = {
         layer: name
     };
 
-    const requestXml = getRequestXml(geometryId, changeMap);
+    const requestXml = getRequestXml(geometryIds, changeMap);
     const transactionUrl = wfsUrl + '?service=WFS&version=1.1.0&request=Transaction';
 
     try {
@@ -105,7 +101,7 @@ async function updateGeometry(geometryId, name, wfsUrl, authorizationString) {
             body: requestXml
         });
         const xmlResult = await response.text();
-        if (!/<wfs:totalUpdated>1<\/wfs:totalUpdated>/.test(xmlResult)) {
+        if (!new RegExp('<wfs:totalUpdated>' + geometryIds.length + '<\/wfs:totalUpdated>').test(xmlResult)) {
             throwErrorToFrontend('Failed to update PostGIS database');
         }
     } catch (err) {
@@ -114,7 +110,7 @@ async function updateGeometry(geometryId, name, wfsUrl, authorizationString) {
 }
 
 
-function getRequestXml(geometryId, changeMap) {
+function getRequestXml(geometryIds, changeMap) {
 
     return '<?xml version="1.0" ?>'
         + '<wfs:Transaction '
@@ -126,7 +122,7 @@ function getRequestXml(geometryId, changeMap) {
         + 'xsi:schemaLocation="http://www.opengis.net/wfs">'
         + '<wfs:Update typeName="adabweb:nfis_wfs">'
         + getPropertiesXml(changeMap)
-        + getFilterXml(geometryId)
+        + getFilterXml(geometryIds)
         + '</wfs:Update>'
         + '</wfs:Transaction>';
 }
@@ -143,14 +139,23 @@ function getPropertiesXml(changeMap) {
 }
 
 
-function getFilterXml(geometryId) {
+function getFilterXml(geometryIds) {
 
     return '<ogc:Filter>'
-            + '<ogc:PropertyIsEqualTo>'
-            + '<ogc:PropertyName>ouuid</ogc:PropertyName>'
-            + '<ogc:Literal>' + geometryId + '</ogc:Literal>'
-            + '</ogc:PropertyIsEqualTo>'
+        + (geometryIds.length === 1
+            ? getGeometryFilterXml(geometryIds[0])
+            : '<ogc:Or>' + geometryIds.map(getGeometryFilterXml).join('') + '</ogc:Or>'
+        )
         + '</ogc:Filter>';
+}
+
+
+function getGeometryFilterXml(geometryId) {
+
+    return '<ogc:PropertyIsEqualTo>'
+        + '<ogc:PropertyName>ouuid</ogc:PropertyName>'
+        + '<ogc:Literal>' + geometryId + '</ogc:Literal>'
+        + '</ogc:PropertyIsEqualTo>';
 }
 
 
