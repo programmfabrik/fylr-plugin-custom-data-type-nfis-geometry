@@ -100,7 +100,7 @@ class CustomDataTypeNFISGeometry extends CustomDataType
 
             const xhr = new XMLHttpRequest();
             xhr.open('GET', wfsUrl);
-            xhr.setRequestHeader('Authorization', this.__getAuthenticationString());
+            xhr.setRequestHeader('Authorization', this.__getAuthorizationString());
             xhr.onload = () => {
                 if (xhr.status == 200) {
                     const data = JSON.parse(xhr.responseText);
@@ -414,8 +414,8 @@ class CustomDataTypeNFISGeometry extends CustomDataType
     __getVectorLayer: (map, geometryIds, selectedGeometryId, onLoad) ->
         ```
         const wfsUrl = this.__getWfsUrl(geometryIds);
-        const authenticationString = this.__getAuthenticationString();
-        const vectorSource = this.__getVectorSource(wfsUrl, authenticationString, onLoad)
+        const authorizationString = this.__getAuthorizationString();
+        const vectorSource = this.__getVectorSource(wfsUrl, authorizationString, onLoad)
 
         vectorSource.on('featuresloadend', () => {
             const extent = vectorSource.getExtent();
@@ -438,14 +438,14 @@ class CustomDataTypeNFISGeometry extends CustomDataType
         ```
         vectorLayer
 
-    __getVectorSource: (wfsUrl, authenticationString) ->
+    __getVectorSource: (wfsUrl, authorizationString) ->
         ```
         const vectorSource = new ol.source.Vector({
             format: new ol.format.GeoJSON(),
             loader: function(extent, resolution, projection, success, failure) {
                 const xhr = new XMLHttpRequest();
                 xhr.open('GET', wfsUrl);
-                xhr.setRequestHeader('Authorization', authenticationString);
+                xhr.setRequestHeader('Authorization', authorizationString);
 
                 const onError = () => {
                     vectorSource.removeLoadedExtent(extent);
@@ -555,7 +555,7 @@ class CustomDataTypeNFISGeometry extends CustomDataType
         ```
         wfsUrl
 
-    __getAuthenticationString: () ->
+    __getAuthorizationString: () ->
         username = @__getBaseConfig().geoserver_username
         password = @__getBaseConfig().geoserver_password
         'Basic ' + window.btoa(username + ':' + password)
