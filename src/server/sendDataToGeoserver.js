@@ -51,7 +51,10 @@ async function updateObject(object, wfsConfiguration, authorizationString) {
     for (let fieldConfiguration of wfsConfiguration.fields) {
         const geometryIds = getGeometryIds(object, fieldConfiguration.field_path.split('/'));
         if (geometryIds?.length) {
-            await performTransaction(geometryIds, object.name, fieldConfiguration.wfs_url, authorizationString);
+            await performTransaction(
+                geometryIds, object.name, fieldConfiguration.wfs_url, fieldConfiguration.wfs_feature_type,
+                authorizationString
+            );
         }
     }
 }
@@ -76,13 +79,13 @@ function getGeometryIds(object, pathSegments) {
 }
 
 
-async function performTransaction(geometryIds, name, wfsUrl, authorizationString) {
+async function performTransaction(geometryIds, name, wfsUrl, wfsFeatureType, authorizationString) {
 
     const changeMap = {
         layer: name
     };
 
-    const requestXml = getRequestXml(geometryIds, changeMap);
+    const requestXml = getRequestXml(geometryIds, changeMap, wfsFeatureType);
     const transactionUrl = wfsUrl + '?service=WFS&version=1.1.0&request=Transaction';
 
     try {
@@ -104,7 +107,7 @@ async function performTransaction(geometryIds, name, wfsUrl, authorizationString
 }
 
 
-function getRequestXml(geometryIds, changeMap) {
+function getRequestXml(geometryIds, changeMap, featureType) {
 
     return '<?xml version="1.0" ?>'
         + '<wfs:Transaction '
@@ -114,7 +117,7 @@ function getRequestXml(geometryIds, changeMap) {
         + 'xmlns:wfs="http://www.opengis.net/wfs" '
         + 'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" '
         + 'xsi:schemaLocation="http://www.opengis.net/wfs">'
-        + '<wfs:Update typeName="adabweb:nfis_wfs">'
+        + '<wfs:Update typeName="' + featureType + '">'
         + getPropertiesXml(changeMap)
         + getFilterXml(geometryIds)
         + '</wfs:Update>'

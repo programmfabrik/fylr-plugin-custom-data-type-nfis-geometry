@@ -23,6 +23,11 @@ class CustomDataTypeNFISGeometry extends CustomDataType
             tags.push $$('custom.data.type.nfis.geometry.wfsUrl') + ': ' + custom_settings.wfs_url.value
         else
             tags.push $$('custom.data.type.nfis.geometry.wfsUrl.none')
+            
+        if custom_settings.wfs_feature_type?.value
+            tags.push $$('custom.data.type.nfis.geometry.wfsFeatureType') + ': ' + custom_settings.wfs_feature_type.value
+        else
+            tags.push $$('custom.data.type.nfis.geometry.wfsFeatureType.none')
 
         if custom_settings.multi_select?.value
             tags.push $$('custom.data.type.nfis.geometry.multiSelect.yes')
@@ -546,10 +551,13 @@ class CustomDataTypeNFISGeometry extends CustomDataType
     __getWfsUrl: (geometryIds) ->
         ```
         let wfsBaseUrl = this.getCustomSchemaSettings().wfs_url?.value;
-        if (!wfsBaseUrl) return '';
+        let featureType = this.getCustomSchemaSettings().wfs_feature_type?.value;
+        if (!wfsBaseUrl || !featureType) return '';
         if (!wfsBaseUrl.endsWith('/')) wfsBaseUrl += '/' ;
         const wfsUrl = wfsBaseUrl
-            + '?service=WFS&version=1.1.0&request=GetFeature&typename=nfis_wfs&outputFormat=application/json&srsname=EPSG:25832&cql_filter=ouuid in ('
+            + '?service=WFS&version=1.1.0&request=GetFeature&typename='
+            + featureType
+            + '&outputFormat=application/json&srsname=EPSG:25832&cql_filter=ouuid in ('
             + geometryIds.map(id => '\'' + id + '\'').join(',')
             + ')';
         ```

@@ -29,6 +29,10 @@ custom_types:
           parameters:
             value:
               type: text
+        - name: wfs_feature_type
+          parameters:
+            value:
+              type: text
         - name: multi_select
           parameters:
             value:
@@ -61,6 +65,9 @@ base_config:
               - name: wfs_url
                 type: text
                 position: 1
+              - name: wfs_feature_type
+                type: text
+                position: 2
             position: 1
         position: 4
 

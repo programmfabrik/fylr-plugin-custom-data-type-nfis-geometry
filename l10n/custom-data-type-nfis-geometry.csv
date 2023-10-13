@@ -4,6 +4,8 @@ custom.data.type.nfis.geometry.wfsId,WFS-ID im Masterportal,WFS ID in Masterport
 custom.data.type.nfis.geometry.wfsId.none,Keine WFS-ID gesetzt,No WFS ID specified
 custom.data.type.nfis.geometry.wfsUrl,WFS-URL,WFS URL
 custom.data.type.nfis.geometry.wfsUrl.none,Keine WFS-URL angegeben,No WFS URL specified
+custom.data.type.nfis.geometry.wfsFeatureType,WFS-Feature-Type,WFS feature type
+custom.data.type.nfis.geometry.wfsFeatureType.none,Kein WFS-Feature-Type angegeben,No WFS feature type specified
 custom.data.type.nfis.geometry.multiSelect.yes,Mehrfachauswahl,Multi selection
 custom.data.type.nfis.geometry.multiSelect.no,Keine Mehrfachauswahl,No multi selection
 custom.data.type.nfis.geometry.edit.no_data,Keine Daten vorhanden,No data present
@@ -22,6 +24,7 @@ custom.data.type.nfis.geometry.set.modal.error.notFound,Die Geometrie konnte nic
 custom.data.type.nfis.geometry.edit.modal.title,Geometrie bearbeiten,Edit geometry
 custom.data.type.nfis.geometry.edit.modal.text,"Bearbeiten Sie die Geometrie im Masterportal und betätigen Sie anschließend den Ok-Button, um die Kartenanzeige zu aktualisieren.","Edit the geometry in Masterportal and then press the Ok button to update the map view."
 custom.data.type.nfis.geometry.config.parameter.schema.wfs_url.value.label,WFS-URL,WFS URL
+custom.data.type.nfis.geometry.config.parameter.schema.wfs_feature_type.value.label,WFS-Feature-Type,WFS feature type
 custom.data.type.nfis.geometry.config.parameter.schema.wfs_id.value.label,WFS-ID im Masterportal,WFS ID in Masterportal
 custom.data.type.nfis.geometry.config.parameter.schema.multi_select.value.label,Mehrfachauswahl,Multi selection
 custom.data.type.nfis.geometry.config.parameter.schema.multi_select.value.checkbox,Erlauben,Allow
@@ -34,3 +37,4 @@ server.config.parameter.system.nfisGeoservices.wfs_configuration.object_type.lab
 server.config.parameter.system.nfisGeoservices.wfs_configuration.fields.label,Felder,Fields
 server.config.parameter.system.nfisGeoservices.wfs_configuration.fields.field_path.label,Feldname (inkl. Pfad),Field name (including path)
 server.config.parameter.system.nfisGeoservices.wfs_configuration.fields.wfs_url.label,WFS-URL, WFS URL
+server.config.parameter.system.nfisGeoservices.wfs_configuration.fields.wfs_feature_type.label,WFS-Feature-Type, WFS feature type
