@@ -48,6 +48,8 @@ function getAuthorizationString(data) {
 
 async function updateObject(object, wfsConfiguration, authorizationString) {
 
+    if (!wfsConfiguration) return;
+
     for (let fieldConfiguration of wfsConfiguration.fields) {
         const geometryIds = getGeometryIds(object, fieldConfiguration.field_path.split('/'));
         if (geometryIds?.length) {
