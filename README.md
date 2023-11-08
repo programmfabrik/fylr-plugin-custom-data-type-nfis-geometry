@@ -5,8 +5,6 @@ This plugin adds the new data type "NFIS Geometry" to a Fylr instance. The data 
 
 ## Installation
 
-Download the ZIP file from the [latest release](https://github.com/programmfabrik/fylr-plugin-custom-data-type-nfis-geometry/releases/tag/v1.0.0) and install it via the Fylr plugin manager.
-
 The latest version of this plugin can be found [here](https://github.com/programmfabrik/fylr-plugin-custom-data-type-nfis-geometry/releases/latest/download/CustomDataTypeNFISGeometry.zip). The ZIP can be downloaded and installed using the plugin manager, or used directly (recommended).
 
 OR install manually:
