@@ -56,7 +56,7 @@ base_config:
           - name: object_type
             type: text
             position: 0
-          - name: fields
+          - name: geometry_fields
             type: table
             fields:
               - name: field_path
@@ -68,6 +68,16 @@ base_config:
               - name: wfs_feature_type
                 type: text
                 position: 2
+              - name: fields
+                type: table
+                fields:
+                  - name: fylr_field_name
+                    type: text
+                    position: 0
+                  - name: wfs_field_name
+                    type: text
+                    position: 0
+                position: 3
             position: 1
         position: 4
 

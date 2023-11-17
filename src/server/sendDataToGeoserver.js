@@ -50,11 +50,12 @@ async function updateObject(object, wfsConfiguration, authorizationString) {
 
     if (!wfsConfiguration) return;
 
-    for (let fieldConfiguration of wfsConfiguration.fields) {
+    for (let fieldConfiguration of wfsConfiguration.geometry_fields) {
         const geometryIds = getGeometryIds(object, fieldConfiguration.field_path.split('/'));
         if (geometryIds?.length) {
+            const changeMap = getChangeMap(object, fieldConfiguration.fields);
             await performTransaction(
-                geometryIds, object.name, fieldConfiguration.wfs_url, fieldConfiguration.wfs_feature_type,
+                geometryIds, changeMap, fieldConfiguration.wfs_url, fieldConfiguration.wfs_feature_type,
                 authorizationString
             );
         }
@@ -81,11 +82,17 @@ function getGeometryIds(object, pathSegments) {
 }
 
 
-async function performTransaction(geometryIds, name, wfsUrl, wfsFeatureType, authorizationString) {
+function getChangeMap(object, fields) {
 
-    const changeMap = {
-        layer: name
-    };
+    return fields.reduce((result, field) => {
+        const fieldValue = object[field.fylr_field_name];
+        if (fieldValue) result[field.wfs_field_name] = fieldValue;
+        return result;
+    }, {});
+}
+
+
+async function performTransaction(geometryIds, changeMap, wfsUrl, wfsFeatureType, authorizationString) {
 
     const requestXml = getRequestXml(geometryIds, changeMap, wfsFeatureType);
     const transactionUrl = wfsUrl + '?service=WFS&version=1.1.0&request=Transaction';

@@ -32,9 +32,12 @@ server.config.name.system.nfisGeoservices,NFIS-Geodienste,NFIS Geoservices
 server.config.parameter.system.nfisGeoservices.masterportal_url.label,Masterportal-URL,Masterportal URL
 server.config.parameter.system.nfisGeoservices.geoserver_username.label,Geoserver: Username,Geoserver: User name
 server.config.parameter.system.nfisGeoservices.geoserver_password.label,Geoserver: Passwort,Geoserver: Password
-server.config.parameter.system.nfisGeoservices.wfs_configuration.label,WFS,WFS
+server.config.parameter.system.nfisGeoservices.wfs_configuration.label,Datenübertragung an den Geoserver,Data transfer to geoserver
 server.config.parameter.system.nfisGeoservices.wfs_configuration.object_type.label,Objekttyp,Object type
-server.config.parameter.system.nfisGeoservices.wfs_configuration.fields.label,Felder,Fields
-server.config.parameter.system.nfisGeoservices.wfs_configuration.fields.field_path.label,Feldname (inkl. Pfad),Field name (including path)
-server.config.parameter.system.nfisGeoservices.wfs_configuration.fields.wfs_url.label,WFS-URL, WFS URL
-server.config.parameter.system.nfisGeoservices.wfs_configuration.fields.wfs_feature_type.label,WFS-Feature-Type, WFS feature type
+server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.label,Geometrie-Felder,Geometry fields
+server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.field_path.label,Feldname (inkl. Pfad),Field name (including path)
+server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.wfs_url.label,WFS-URL, WFS URL
+server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.wfs_feature_type.label,WFS-Feature-Type, WFS feature type
+server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.fields.label,Zu übertragende Felddaten,Field data to be transferred
+server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.fields.fylr_field_name.label,Name des Feldes im Fylr-Objekt,Name of field in Fylr object
+server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.fields.wfs_field_name.label,Name des WFS-Zielfeldes,Name of WFS target field
