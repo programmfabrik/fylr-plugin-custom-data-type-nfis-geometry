@@ -30,7 +30,7 @@ make
 * *Geoserver: Password*: The password of the Geoserver account that is used to access the WFS
 * *WFS*: For each geometry field defined, entered field data is added to the corresponding geometry via a WFS provided by the configured Geoserver instance.
     * *Object type*: The object type for which field data should be added
-        * *Field name (including path)*: The path to the geometry field for which data should be added (e. g. "event/place/geometry")
+        * *Field name (including path)*: The path to the geometry field for which data should be added (e. g. "event.place.geometry")
         * *WFS URL*: The base URL of the WFS to be used. It has to be a WFS provided by the configured Geoserver instance.
         * *WFS feature type*: The feature type to use when writing data to the WFS
 

@@ -51,7 +51,7 @@ async function updateObject(object, wfsConfiguration, authorizationString) {
     if (!wfsConfiguration) return;
 
     for (let fieldConfiguration of wfsConfiguration.geometry_fields) {
-        const geometryIds = getGeometryIds(object, fieldConfiguration.field_path.split('/'));
+        const geometryIds = getGeometryIds(object, fieldConfiguration.field_path.split('.'));
         if (geometryIds?.length) {
             const changeMap = getChangeMap(object, fieldConfiguration.fields);
             await performTransaction(
