@@ -28,11 +28,15 @@ make
 * *Masterportal URL*: The base URL of the Masterportal instance to be used by the plugin
 * *Geoserver: User name*: The name of the Geoserver account that is used to access the WFS
 * *Geoserver: Password*: The password of the Geoserver account that is used to access the WFS
-* *WFS*: For each geometry field defined, entered field data is added to the corresponding geometry via a WFS provided by the configured Geoserver instance.
+* *Data transfer to geoserver*: For each geometry field defined, entered field data is added to the corresponding geometry via a WFS provided by the configured Geoserver instance
     * *Object type*: The object type for which field data should be added
+    * *Geometry fields*: The geometries for which data should be added
         * *Field name (including path)*: The path to the geometry field for which data should be added (e. g. "event.place.geometry")
         * *WFS URL*: The base URL of the WFS to be used. It has to be a WFS provided by the configured Geoserver instance.
         * *WFS feature type*: The feature type to use when writing data to the WFS
+        * *Field data to be transferred*: Mappings of a source field (Fylr) to a target field (WFS) 
+           * *Name of field in Fylr object*: The source field that contains the data to be transferred
+           * *Name of WFS target field*: The target field of the WFS to which the data is transferred
 
 ### Data model configuration
 
