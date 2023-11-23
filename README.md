@@ -10,15 +10,11 @@ The latest version of this plugin can be found [here](https://github.com/program
 OR install manually:
 
 1. Clone repository
-2. Install CoffeeScript:
-```
-npm install --global coffeescript
-```
-3. Build plugin:
+2. Build plugin:
 ```
 make
 ```
-4. Upload ZIP file from directory "build" in Fylr plugin manager
+3. Upload ZIP file from directory "build" in Fylr plugin manager
 
 
 ## Configuration
