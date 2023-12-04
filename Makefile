@@ -5,7 +5,10 @@ SERVER_FILE = sendDataToGeoserver.js
 MAIN_CSS = src/webfrontend/css/main.css
 OPENLAYERS_CSS = src/webfrontend/node_modules/ol/ol.css
 
-all: build zip
+all: install build zip
+
+install:
+	cd src/webfrontend && npm install
 
 build: clean
 	mkdir -p build
@@ -14,7 +17,7 @@ build: clean
 	mkdir -p build/$(PLUGIN_NAME)/server
 	mkdir -p build/$(PLUGIN_NAME)/l10n
 
-	cd src/webfrontend && npm install && npm run bundle
+	cd src/webfrontend && npm run bundle
 	cp src/webfrontend/contentLoaderBundle.js build/$(PLUGIN_NAME)/webfrontend/$(PLUGIN_NAME).js
 	cat src/webfrontend/js/main.js >> build/$(PLUGIN_NAME)/webfrontend/${PLUGIN_NAME}.js
 	rm src/webfrontend/contentLoaderBundle.js
