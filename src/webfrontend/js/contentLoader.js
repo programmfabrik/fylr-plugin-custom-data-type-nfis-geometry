@@ -1,136 +1,20 @@
-var CustomDataTypeNFISGeometry;
-var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-var hasProp = {}.hasOwnProperty;
+import Map from 'ol/Map';
+import View from 'ol/View';
+import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer';
+import { TileWMS, Vector as VectorSource } from 'ol/source';
+import { defaults } from 'ol/interaction/defaults';
+import MouseWheelZoom from 'ol/interaction/MouseWheelZoom';
+import Select from 'ol/interaction/Select';
+import { Style, Stroke, Fill } from 'ol/style';
+import { GeoJSON } from 'ol/format';
+import { shiftKeyOnly, platformModifierKeyOnly, click } from 'ol/events/condition';
+import * as olProj from 'ol/proj';
+import * as olProj4 from 'ol/proj/proj4';
+import * as olLoadingstrategy from 'ol/loadingstrategy';
+import proj4 from 'proj4';
 
-CustomDataTypeNFISGeometry = (function(superClass) {
-	extend(CustomDataTypeNFISGeometry, superClass);
 
-	function CustomDataTypeNFISGeometry() {
-		return CustomDataTypeNFISGeometry.__super__.constructor.apply(this, arguments);
-	}
-
-    const Plugin = CustomDataTypeNFISGeometry.prototype;
-
-    Plugin.getCustomDataTypeName = function() {
-        return 'custom:base.custom-data-type-nfis-geometry.nfis-geometry';
-    }
-
-    Plugin.getCustomDataTypeNameLocalized = function() {
-        return $$('custom.data.type.nfis.geometry.name');
-    }
-
-    Plugin.isEmpty = function(data, top_level_data, opts={}) {
-        if (data[this.name()]?.geometry_ids?.length) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-
-    Plugin.getCustomDataOptionsInDatamodelInfo = function(custom_settings) {
-        const tags = [];
-
-        if (custom_settings.wfs_id?.value) {
-            tags.push($$('custom.data.type.nfis.geometry.wfsId') + ': ' + custom_settings.wfs_id.value);
-        } else {
-            tags.push($$('custom.data.type.nfis.geometry.wfsId.none'));
-        }
-
-        if (custom_settings.wfs_url?.value) {
-            tags.push($$('custom.data.type.nfis.geometry.wfsUrl') + ': ' + custom_settings.wfs_url.value);
-        } else {
-            tags.push($$('custom.data.type.nfis.geometry.wfsUrl.none'));
-        }
-            
-        if (custom_settings.wfs_feature_type?.value) {
-            tags.push($$('custom.data.type.nfis.geometry.wfsFeatureType') + ': ' + custom_settings.wfs_feature_type.value);
-        } else {
-            tags.push($$('custom.data.type.nfis.geometry.wfsFeatureType.none'));
-        }
-
-        if (custom_settings.multi_select?.value) {
-            tags.push($$('custom.data.type.nfis.geometry.multiSelect.yes'));
-        } else {
-            tags.push($$('custom.data.type.nfis.geometry.multiSelect.no'));
-        }
-
-        return tags;
-    }
-
-    Plugin.initData = function(data) {
-        let cdata;
-
-        if (!data[this.name()]) {
-            cdata = {};
-            data[this.name()] = cdata;
-        } else {
-            cdata = data[this.name()];
-        }
-
-        if (!cdata.geometry_ids) cdata.geometry_ids = [];
-
-        return cdata;
-    }
-
-    Plugin.renderFieldAsGroup = function(data, top_level_data, opts) {
-        return true;
-    }
-
-    Plugin.supportsFacet = function() {
-        return false;
-    }
-
-    Plugin.renderEditorInput = function(data, top_level_data, opts) {
-        const cdata = this.initData(data);
-
-        contentElement = CUI.dom.div();
-        loadContent(contentElement, cdata, this.__getSchemaSettings(), 'editor');
-
-        return contentElement;
-    }
-
-    Plugin.renderDetailOutput = function(data, top_level_data, opts) {
-        const cdata = this.initData(data);
-
-        if (!isValidData(cdata)) {
-            return new CUI.EmptyLabel({ text: $$('custom.data.type.nfis.geometry.edit.no_data') });
-        }
-
-        const contentElement = CUI.dom.div();
-        loadContent(contentElement, cdata, this.__getSchemaSettings(), 'detail');
-        
-        return contentElement;
-    }
-
-    Plugin.getSaveData = function(data, save_data, opts = {}) {
-        const cdata = data[this.name()];
-        if (isValidData(cdata)) {
-            save_data[this.name()] = {
-                geometry_ids: cdata.geometry_ids
-            };
-        } else {
-            save_data[this.name()] = null;
-        }
-    }
-
-    Plugin.__getSchemaSettings = function() {
-        const customSchemaSettings = this.getCustomSchemaSettings();
-        return {
-            wfsUrl: customSchemaSettings.wfs_url?.value,
-            featureType: customSchemaSettings.wfs_feature_type?.value,
-            masterportalWfsId: customSchemaSettings.wfs_id?.value,
-            multiSelect: customSchemaSettings.multi_select.value
-        };
-    }
-
-    return CustomDataTypeNFISGeometry;
-})(CustomDataType);
-
-function isValidData(cdata) {
-    return CUI.isPlainObject(cdata);
-}
-
-function loadContent(contentElement, cdata, schemaSettings, mode) {
+export function load(contentElement, cdata, schemaSettings, mode) {
     loadWFSData(schemaSettings, cdata.geometry_ids).then(
         wfsData => renderContent(
             contentElement, cdata, schemaSettings, mode, wfsData ? wfsData.totalFeatures : 0
@@ -163,7 +47,6 @@ function loadWFSData(schemaSettings, geometryIds) {
 }
 
 function renderContent(contentElement, cdata, schemaSettings, mode, totalFeatures, selectedGeometryId) {
-
     if (mode === 'detail') {
         renderDetailContent(contentElement, cdata, schemaSettings, totalFeatures);
     } else {
@@ -426,15 +309,15 @@ function renderMap(contentElement, cdata, schemaSettings, allowSelection, onLoad
 
 function initializeMap(contentElement, mapElement, cdata, schemaSettings, allowSelection, onLoad) {
     const projection = getMapProjection();
-    const map = new ol.Map({
+    const map = new Map({
         target: mapElement,
-        view: new ol.View({
+        view: new View({
             projection,
             center: [561397, 5709705],
             maxZoom: 19,
             zoom: 7,
         }),
-        interactions: ol.interaction.defaults.defaults({ mouseWheelZoom: false })
+        interactions: defaults({ mouseWheelZoom: false })
     });
 
     map.setLayers([
@@ -452,10 +335,10 @@ function initializeMap(contentElement, mapElement, cdata, schemaSettings, allowS
 function getMapProjection() {
     const epsg = 'EPSG:25832';
     proj4.defs(epsg, '+proj=utm +zone=32 +ellps=GRS80 +units=m +no_defs');
-    ol.proj.proj4.register(proj4);
+    olProj4.register(proj4);
 
-    return ol.proj.get(
-        new ol.proj.Projection({
+    return olProj.get(
+        new olProj.Projection({
             code: epsg,
             units: 'm',
             extent: [120000, 5661139.2, 1378291.2, 6500000]
@@ -464,14 +347,14 @@ function getMapProjection() {
 }
 
 function getRasterLayer(projection) {
-    return new ol.layer.Tile({
+    return new TileLayer({
         extent: projection.getExtent(),
         source: getRasterSource(projection)
     });
 }
 
 function getRasterSource(projection) {
-    return new ol.source.TileWMS({
+    return new TileWMS({
         url: 'https://sgx.geodatenzentrum.de/wms_basemapde',
         params: {
             LAYERS: 'de_basemapde_web_raster_farbe'
@@ -491,14 +374,14 @@ function getVectorLayer(map, geometryIds, schemaSettings, onLoad) {
         if (onLoad) onLoad(extent);
     });
 
-    return new ol.layer.Vector({
+    return new VectorLayer({
         source: vectorSource,
-        style: new ol.style.Style({
-            stroke: new ol.style.Stroke({
+        style: new Style({
+            stroke: new Stroke({
                 width: 1.5,
                 color: 'black'
             }),
-            fill: new ol.style.Fill({
+            fill: new Fill({
                 color: 'rgba(100,100,100,0.25)'
             })
         })
@@ -506,8 +389,8 @@ function getVectorLayer(map, geometryIds, schemaSettings, onLoad) {
 }
 
 function getVectorSource(wfsUrl, authorizationString) {
-    const vectorSource = new ol.source.Vector({
-        format: new ol.format.GeoJSON(),
+    const vectorSource = new VectorSource({
+        format: new GeoJSON(),
         loader: function(extent, resolution, projection, success, failure) {
             const xhr = new XMLHttpRequest();
             xhr.open('GET', wfsUrl);
@@ -530,31 +413,31 @@ function getVectorSource(wfsUrl, authorizationString) {
             }
             if (wfsUrl) xhr.send();
         },
-        strategy: ol.loadingstrategy.all,
+        strategy: olLoadingstrategy.all,
     });
 
     return vectorSource;
 }
 
 function configureMouseWheelZoom(map) {
-    const mouseWheelInteraction = new ol.interaction.MouseWheelZoom();
+    const mouseWheelInteraction = new MouseWheelZoom();
     map.addInteraction(mouseWheelInteraction);
     map.on('wheel', event => {
         mouseWheelInteraction.setActive(
-            ol.events.condition.shiftKeyOnly(event) || ol.events.condition.platformModifierKeyOnly(event)
+            shiftKeyOnly(event) || platformModifierKeyOnly(event)
         );
     });
 }
 
 function configureGeometrySelection(map, contentElement, cdata, schemaSettings) {
-    const select = new ol.interaction.Select({
-        condition: ol.events.condition.click,
-        style: new ol.style.Style({
-            stroke: new ol.style.Stroke({
+    const select = new Select({
+        condition: click,
+        style: new Style({
+            stroke: new Stroke({
                 width: 1.5,
                 color: 'white'
             }),
-            fill: new ol.style.Fill({
+            fill: new Fill({
                 color: 'rgba(255,255,255,0.25)'
             })
         })
@@ -638,5 +521,3 @@ function getGeometryId(cdata) {
         ? cdata.geometry_ids[0]
         : undefined;
 }
-
-CustomDataType.register(CustomDataTypeNFISGeometry);

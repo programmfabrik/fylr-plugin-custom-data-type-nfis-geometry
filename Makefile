@@ -1,12 +1,9 @@
 ZIP_NAME ?= "CustomDataTypeNFISGeometry.zip"
 PLUGIN_NAME = custom-data-type-nfis-geometry
 
-FRONTEND_FILE = CustomDataTypeNFISGeometry.js
 SERVER_FILE = sendDataToGeoserver.js
 MAIN_CSS = src/webfrontend/css/main.css
-OPENLAYERS = src/external/openLayers/ol.js
-OPENLAYERS_CSS = src/external/openLayers/ol.css
-PROJ4 = src/external/proj4js/proj4.js
+OPENLAYERS_CSS = src/webfrontend/node_modules/ol/ol.css
 
 all: build zip
 
@@ -17,11 +14,10 @@ build: clean
 	mkdir -p build/$(PLUGIN_NAME)/server
 	mkdir -p build/$(PLUGIN_NAME)/l10n
 
-	mkdir -p src/tmp
-	cp src/webfrontend/${FRONTEND_FILE} build/$(PLUGIN_NAME)/webfrontend/$(PLUGIN_NAME).js
-	cat $(OPENLAYERS) >> build/$(PLUGIN_NAME)/webfrontend/$(PLUGIN_NAME).js
-	cat $(PROJ4) >> build/$(PLUGIN_NAME)/webfrontend/$(PLUGIN_NAME).js
-	rm -rf src/tmp
+	cd src/webfrontend && npm install && npm run bundle
+	cp src/webfrontend/contentLoaderBundle.js build/$(PLUGIN_NAME)/webfrontend/$(PLUGIN_NAME).js
+	cat src/webfrontend/js/main.js >> build/$(PLUGIN_NAME)/webfrontend/${PLUGIN_NAME}.js
+	rm src/webfrontend/contentLoaderBundle.js
 
 	cp src/server/${SERVER_FILE} build/${PLUGIN_NAME}/server/${SERVER_FILE}
 
