@@ -339,7 +339,7 @@ function initializeMap(contentElement, mapElement, cdata, schemaSettings, allowS
 function getVectorStyle() {
     return new Promise((resolve, reject) => {
         const sldString = getBaseConfig().sld_data;
-        const sldParser = new SLDParser();
+        const sldParser = new SLDParser({ sldVersion: '1.1.0' });
 
         sldParser.readStyle(sldString)
             .then(({ output: parsedStyle }) => {
