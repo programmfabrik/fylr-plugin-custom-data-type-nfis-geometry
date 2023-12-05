@@ -118,6 +118,7 @@ CustomDataTypeNFISGeometry = (function(superClass) {
         return {
             wfsUrl: customSchemaSettings.wfs_url?.value,
             featureType: customSchemaSettings.wfs_feature_type?.value,
+            sldFileUrl: customSchemaSettings.sld_file_url?.value,
             masterportalWfsId: customSchemaSettings.wfs_id?.value,
             multiSelect: customSchemaSettings.multi_select.value
         };

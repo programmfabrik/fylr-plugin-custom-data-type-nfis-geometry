@@ -33,6 +33,10 @@ custom_types:
           parameters:
             value:
               type: text
+        - name: sld_file_url
+          parameters:
+            value:
+              type: text
         - name: multi_select
           parameters:
             value:
@@ -50,9 +54,6 @@ base_config:
       geoserver_password:
         type: text
         position: 3
-      sld_data:
-        type: text-multiline
-        position: 4
       wfs_configuration:
         type: table
         fields:
@@ -82,7 +83,7 @@ base_config:
                     position: 0
                 position: 3
             position: 1
-        position: 5
+        position: 4
 
 callbacks:
   db_pre_save:

@@ -322,7 +322,7 @@ function initializeMap(contentElement, mapElement, cdata, schemaSettings, allowS
         interactions: defaults({ mouseWheelZoom: false })
     });
 
-    getVectorStyle().then(vectorStyle => {
+    getVectorStyle(schemaSettings).then(vectorStyle => {
         map.setLayers([
             getRasterLayer(projection),
             getVectorLayer(map, cdata.geometry_ids, schemaSettings, vectorStyle, onLoad)
@@ -336,19 +336,38 @@ function initializeMap(contentElement, mapElement, cdata, schemaSettings, allowS
     }).catch(error => console.error('Failed to parse SLD data:', error));
 }
 
-function getVectorStyle() {
+function getVectorStyle(schemaSettings) {
     return new Promise((resolve, reject) => {
-        const sldString = getBaseConfig().sld_data;
-        const sldParser = new SLDParser({ sldVersion: '1.1.0' });
+        loadSLDData(schemaSettings.sldFileUrl).then(sldData => {
+            const sldParser = new SLDParser({ sldVersion: '1.1.0' });
+            return sldParser.readStyle(sldData);
+        }).then(({ output: parsedStyle }) => {
+            const openLayersParser = new OpenLayersParser();
+            openLayersParser.writeStyle(parsedStyle)
+                .then(({ output: openLayersStyle }) => resolve(openLayersStyle))
+                .catch(error => reject(error));
+        })
+        .catch(error => reject(error));
+    });
+}
 
-        sldParser.readStyle(sldString)
-            .then(({ output: parsedStyle }) => {
-                const openLayersParser = new OpenLayersParser();
-                openLayersParser.writeStyle(parsedStyle)
-                    .then(({ output: openLayersStyle }) => resolve(openLayersStyle))
-                    .catch(error => reject(error));
-            })
-            .catch(error => reject(error));
+function loadSLDData(url) {
+    return new Promise((resolve, reject) => {
+        if (!url) return reject('No SLD file URL provided in schema configuration');
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', url);
+        xhr.onload = function() {
+            if (xhr.status == 200) {
+                resolve(xhr.responseText);
+            } else {
+                reject('Failed to load SLD file');
+            }
+        };
+        xhr.onerror = error => {
+            reject(error);
+        };
+        xhr.send();
     });
 }
 
