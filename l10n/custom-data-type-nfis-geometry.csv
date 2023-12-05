@@ -32,6 +32,7 @@ server.config.name.system.nfisGeoservices,NFIS-Geodienste,NFIS Geoservices
 server.config.parameter.system.nfisGeoservices.masterportal_url.label,Masterportal-URL,Masterportal URL
 server.config.parameter.system.nfisGeoservices.geoserver_username.label,Geoserver: Username,Geoserver: User name
 server.config.parameter.system.nfisGeoservices.geoserver_password.label,Geoserver: Passwort,Geoserver: Password
+server.config.parameter.system.nfisGeoservices.sld_data.label,Styling (SLD),Styling (SLD)
 server.config.parameter.system.nfisGeoservices.wfs_configuration.label,Datenübertragung an den Geoserver,Data transfer to geoserver
 server.config.parameter.system.nfisGeoservices.wfs_configuration.object_type.label,Objekttyp,Object type
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.label,Geometrie-Felder,Geometry fields

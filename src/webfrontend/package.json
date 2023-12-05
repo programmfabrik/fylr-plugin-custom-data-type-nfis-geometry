@@ -6,6 +6,8 @@
     "bundle": "rollup --config rollup.config.mjs"
   },
   "dependencies": {
+    "geostyler-openlayers-parser": "^4.3.0",
+    "geostyler-sld-parser": "^5.1.0",
     "ol": "^8.2.0",
     "proj4": "^2.9.2"
   },

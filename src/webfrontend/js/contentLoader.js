@@ -12,9 +12,11 @@ import * as olProj from 'ol/proj';
 import * as olProj4 from 'ol/proj/proj4';
 import * as olLoadingstrategy from 'ol/loadingstrategy';
 import proj4 from 'proj4';
+import SLDParser from 'geostyler-sld-parser';
+import OpenLayersParser from 'geostyler-openlayers-parser';
 
 
-export function load(contentElement, cdata, schemaSettings, mode) {
+export function load(contentElement, cdata, schemaSettings, mode) {    
     loadWFSData(schemaSettings, cdata.geometry_ids).then(
         wfsData => renderContent(
             contentElement, cdata, schemaSettings, mode, wfsData ? wfsData.totalFeatures : 0
@@ -320,16 +322,34 @@ function initializeMap(contentElement, mapElement, cdata, schemaSettings, allowS
         interactions: defaults({ mouseWheelZoom: false })
     });
 
-    map.setLayers([
-        getRasterLayer(projection),
-        getVectorLayer(map, cdata.geometry_ids, schemaSettings, onLoad)
-    ]);
+    getVectorStyle().then(vectorStyle => {
+        map.setLayers([
+            getRasterLayer(projection),
+            getVectorLayer(map, cdata.geometry_ids, schemaSettings, vectorStyle, onLoad)
+        ]);
+    
+        configureMouseWheelZoom(map);
+        if (allowSelection) {
+            configureGeometrySelection(map, contentElement, cdata, schemaSettings);
+            configureCursor(map);
+        }
+    }).catch(error => console.error('Failed to parse SLD data:', error));
+}
 
-    configureMouseWheelZoom(map);
-    if (allowSelection) {
-        configureGeometrySelection(map, contentElement, cdata, schemaSettings);
-        configureCursor(map);
-    }
+function getVectorStyle() {
+    return new Promise((resolve, reject) => {
+        const sldString = getBaseConfig().sld_data;
+        const sldParser = new SLDParser();
+
+        sldParser.readStyle(sldString)
+            .then(({ output: parsedStyle }) => {
+                const openLayersParser = new OpenLayersParser();
+                openLayersParser.writeStyle(parsedStyle)
+                    .then(({ output: openLayersStyle }) => resolve(openLayersStyle))
+                    .catch(error => reject(error));
+            })
+            .catch(error => reject(error));
+    });
 }
 
 function getMapProjection() {
@@ -363,7 +383,7 @@ function getRasterSource(projection) {
     });
 }
 
-function getVectorLayer(map, geometryIds, schemaSettings, onLoad) {
+function getVectorLayer(map, geometryIds, schemaSettings, style, onLoad) {
     const wfsUrl = getWfsUrl(schemaSettings, geometryIds);
     const authorizationString = getAuthorizationString();
     const vectorSource = getVectorSource(wfsUrl, authorizationString, onLoad);
@@ -376,15 +396,7 @@ function getVectorLayer(map, geometryIds, schemaSettings, onLoad) {
 
     return new VectorLayer({
         source: vectorSource,
-        style: new Style({
-            stroke: new Stroke({
-                width: 1.5,
-                color: 'black'
-            }),
-            fill: new Fill({
-                color: 'rgba(100,100,100,0.25)'
-            })
-        })
+        style
     });
 }
 
