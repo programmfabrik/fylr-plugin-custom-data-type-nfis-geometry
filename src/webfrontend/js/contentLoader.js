@@ -281,7 +281,7 @@ function removeGeometryId(contentElement, cdata, schemaSettings, uuid) {
 
 function reloadEditorContent(contentElement, cdata, schemaSettings, uuid) {
     CUI.dom.removeChildren(contentElement);
-    loadContent(contentElement, cdata, schemaSettings, 'editor', uuid);
+    load(contentElement, cdata, schemaSettings, 'editor', uuid);
 }
 
 function applyChanges(contentElement, cdata, schemaSettings, totalFeatures, selectedGeometryId) {
