@@ -39,7 +39,5 @@ make
 * *WFS ID in Masterportal*: The ID of the layer used for displaying the WFS data in Masterportal. This ID can be found in the services configuration file of the Masterportal instance.
 * *WFS URL*: The base URL of the WFS to be used. It has to be a WFS provided by the Geoserver instance configured in the base configuration.
 * *WFS feature type*: The feature type to use when accessing the WFS
+* *SLD file URL*: The URL of the SLD file to be used for styling vector data provided by the WFS
 * *Multi selection*: If toggled, multiple geometries can be added to the geometry field. All geometries are shown on a single map. Geometries can be selected on the map to edit or remove them.
-
-
-
