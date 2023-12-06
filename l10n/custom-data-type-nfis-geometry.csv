@@ -6,6 +6,8 @@ custom.data.type.nfis.geometry.wfsUrl,WFS-URL,WFS URL
 custom.data.type.nfis.geometry.wfsUrl.none,Keine WFS-URL angegeben,No WFS URL specified
 custom.data.type.nfis.geometry.wfsFeatureType,WFS-Feature-Type,WFS feature type
 custom.data.type.nfis.geometry.wfsFeatureType.none,Kein WFS-Feature-Type angegeben,No WFS feature type specified
+custom.data.type.nfis.geometry.sldFileUrl,SLD-Datei,SLD file
+custom.data.type.nfis.geometry.sldFileUrl.none,Keine SLD-Datei-URL angegeben,No SLD file URL specified
 custom.data.type.nfis.geometry.multiSelect.yes,Mehrfachauswahl,Multi selection
 custom.data.type.nfis.geometry.multiSelect.no,Keine Mehrfachauswahl,No multi selection
 custom.data.type.nfis.geometry.edit.no_data,Keine Daten vorhanden,No data present

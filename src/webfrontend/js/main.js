@@ -48,6 +48,12 @@ CustomDataTypeNFISGeometry = (function(superClass) {
             tags.push($$('custom.data.type.nfis.geometry.wfsFeatureType.none'));
         }
 
+        if (custom_settings.sld_file_url?.value) {
+            tags.push($$('custom.data.type.nfis.geometry.sldFileUrl') + ': ' + custom_settings.sld_file_url.value);
+        } else {
+            tags.push($$('custom.data.type.nfis.geometry.sldFileUrl.none'));
+        }
+
         if (custom_settings.multi_select?.value) {
             tags.push($$('custom.data.type.nfis.geometry.multiSelect.yes'));
         } else {
