@@ -59,8 +59,11 @@ function renderContent(contentElement, cdata, schemaSettings, mode, totalFeature
 function renderDetailContent(contentElement, cdata, schemaSettings, totalFeatures) {
     if (totalFeatures === 0) return;
 
-    if (schemaSettings.multiSelect) {
-        renderMap(contentElement, cdata, schemaSettings, false, renderViewGeometriesButton(contentElement, schemaSettings));
+    if (schemaSettings.multiSelect || cdata.geometry_ids?.length > 1) {
+        renderMap(
+            contentElement, cdata, schemaSettings, false,
+            renderViewGeometriesButton(contentElement, schemaSettings)
+        );
     } else {
         renderMap(contentElement, cdata, schemaSettings, false);
         renderViewGeometryButton(contentElement, getGeometryId(cdata), schemaSettings);
@@ -68,12 +71,15 @@ function renderDetailContent(contentElement, cdata, schemaSettings, totalFeature
 }
 
 function renderEditorContent(contentElement, cdata, schemaSettings, totalFeatures, selectedGeometryId) {
-    if (!schemaSettings.multiSelect && cdata.geometry_ids?.length > 0) {
+    if (!schemaSettings.multiSelect && cdata.geometry_ids?.length === 1) {
         selectedGeometryId = cdata.geometry_ids[0];
     }
 
     if (totalFeatures > 0) {
-        renderMap(contentElement, cdata, schemaSettings, schemaSettings.multiSelect);
+        renderMap(
+            contentElement, cdata, schemaSettings,
+            schemaSettings.multiSelect || cdata.geometry_ids?.length > 1
+        );
     }
 
     renderEditorButtons(contentElement, cdata, schemaSettings, selectedGeometryId);
@@ -87,8 +93,10 @@ function renderEditorButtons(contentElement, cdata, schemaSettings, selectedGeom
     const buttons = [];
 
     if (!selectedGeometryId) {
-        buttons.push(createCreateGeometryButton(contentElement, cdata, schemaSettings));
-        buttons.push(createLinkExistingGeometryButton(contentElement, cdata, schemaSettings));
+        if (isAddingGeometriesAllowed(cdata, schemaSettings)) {
+            buttons.push(createCreateGeometryButton(contentElement, cdata, schemaSettings));
+            buttons.push(createLinkExistingGeometryButton(contentElement, cdata, schemaSettings));
+        }
     } else {
         buttons.push(createEditGeometryButton(contentElement, cdata, schemaSettings, selectedGeometryId));
         buttons.push(createRemoveGeometryButton(contentElement, cdata, schemaSettings, selectedGeometryId));
@@ -97,6 +105,10 @@ function renderEditorButtons(contentElement, cdata, schemaSettings, selectedGeom
     const buttonBarElement = new CUI.Buttonbar({ buttons: buttons });
 
     CUI.dom.append(contentElement, buttonBarElement);
+}
+
+function isAddingGeometriesAllowed(cdata, schemaSettings) {
+    return schemaSettings.multiSelect || !cdata.geometry_ids?.length
 }
 
 function renderViewGeometryButton(contentElement, geometryId, schemaSettings) {
