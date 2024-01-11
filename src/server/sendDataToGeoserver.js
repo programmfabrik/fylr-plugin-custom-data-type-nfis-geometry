@@ -12,12 +12,13 @@ process.stdin.on('data', d => {
 process.stdin.on('end', async () => {
 
     const data = JSON.parse(input);
-    const authorizationString = getAuthorizationString(data);
+    const configuration = await getPluginConfiguration();
+    const authorizationString = getAuthorizationString(configuration);
 
     for (let object of data.objects) {
         await updateObject(
             object[object._objecttype],
-            getWFSConfiguration(data, object._objecttype),
+            getWFSConfiguration(configuration, object._objecttype),
             authorizationString
         );
     }
@@ -29,18 +30,44 @@ process.stdin.on('end', async () => {
 });
 
 
-function getWFSConfiguration(data, objectType) {
+async function getPluginConfiguration() {
 
-    const wfsConfiguration = getPluginConfiguration(data).wfs_configuration;
-
-    return wfsConfiguration.find(configuration => configuration.object_type === objectType);
+    const baseConfiguration = await getBaseConfiguration();
+    return baseConfiguration.BaseConfigList.find(section => section.Name === 'nfisGeoservices').Values;
 }
 
 
-function getAuthorizationString(data) {
+async function getBaseConfiguration() {
 
-    const username = getPluginConfiguration(data).geoserver_username;
-    const password = getPluginConfiguration(data).geoserver_password;
+    const url = 'http://fylr.localhost:8082/inspect/config';
+    const headers = { 'Accept': 'application/json' };
+
+    let response;
+    try {
+        response = await fetch(url, { headers });
+    } catch {
+        throwErrorToFrontend('Failed to fetch base configuration');
+    }
+
+    if (response.ok) {
+        return response.json();
+    } else {
+        throwErrorToFrontend('Failed to fetch base configuration', response.statusText);
+    }
+}
+
+
+function getWFSConfiguration(configuration, objectType) {
+
+    const wfsConfiguration = configuration.wfs_configuration.ValueTable;
+    return wfsConfiguration.find(configuration => configuration.object_type.ValueText === objectType);
+}
+
+
+function getAuthorizationString(configuration) {
+
+    const username = configuration.geoserver_username.ValueText;
+    const password = configuration.geoserver_password.ValueText;
 
     return btoa(username + ':' + password);
 }
@@ -50,13 +77,13 @@ async function updateObject(object, wfsConfiguration, authorizationString) {
 
     if (!wfsConfiguration) return;
 
-    for (let fieldConfiguration of wfsConfiguration.geometry_fields) {
-        const geometryIds = getGeometryIds(object, fieldConfiguration.field_path.split('.'));
+    for (let fieldConfiguration of wfsConfiguration.geometry_fields.ValueTable) {
+        const geometryIds = getGeometryIds(object, fieldConfiguration.field_path.ValueText.split('.'));
         if (geometryIds?.length) {
-            const changeMap = getChangeMap(object, fieldConfiguration.fields);
+            const changeMap = getChangeMap(object, fieldConfiguration.fields.ValueTable);
             await performTransaction(
-                geometryIds, changeMap, fieldConfiguration.wfs_url, fieldConfiguration.wfs_feature_type,
-                authorizationString
+                geometryIds, changeMap, fieldConfiguration.wfs_url.ValueText,
+                fieldConfiguration.wfs_feature_type.ValueText, authorizationString
             );
         }
     }
@@ -85,8 +112,8 @@ function getGeometryIds(object, pathSegments) {
 function getChangeMap(object, fields) {
 
     return fields.reduce((result, field) => {
-        const fieldValue = object[field.fylr_field_name];
-        if (fieldValue) result[field.wfs_field_name] = fieldValue;
+        const fieldValue = object[field.fylr_field_name.ValueText];
+        if (fieldValue) result[field.wfs_field_name.ValueText] = fieldValue;
         return result;
     }, {});
 }
@@ -162,12 +189,6 @@ function getGeometryFilterXml(geometryId) {
         + '<ogc:PropertyName>ouuid</ogc:PropertyName>'
         + '<ogc:Literal>' + geometryId + '</ogc:Literal>'
         + '</ogc:PropertyIsEqualTo>';
-}
-
-
-function getPluginConfiguration(data) {
-
-    return data.info.config.plugin['custom-data-type-nfis-geometry'].config.nfisGeoservices;
 }
 
 
