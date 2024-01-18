@@ -49,9 +49,9 @@ CustomDataTypeNFISGeometry = (function(superClass) {
         }
 
         if (custom_settings.sld_file_url?.value) {
-            tags.push($$('custom.data.type.nfis.geometry.sldFileUrl') + ': ' + custom_settings.sld_file_url.value);
+            tags.push($$('custom.data.type.nfis.geometry.styleId') + ': ' + custom_settings.style_id.value);
         } else {
-            tags.push($$('custom.data.type.nfis.geometry.sldFileUrl.none'));
+            tags.push($$('custom.data.type.nfis.geometry.styleId.none'));
         }
 
         if (custom_settings.multi_select?.value) {
@@ -124,7 +124,7 @@ CustomDataTypeNFISGeometry = (function(superClass) {
         return {
             wfsUrl: customSchemaSettings.wfs_url?.value,
             featureType: customSchemaSettings.wfs_feature_type?.value,
-            sldFileUrl: customSchemaSettings.sld_file_url?.value,
+            styleId: customSchemaSettings.style_id?.value,
             masterportalWfsId: customSchemaSettings.wfs_id?.value,
             multiSelect: customSchemaSettings.multi_select.value
         };

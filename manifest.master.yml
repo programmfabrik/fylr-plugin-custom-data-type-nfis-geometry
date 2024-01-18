@@ -33,7 +33,7 @@ custom_types:
           parameters:
             value:
               type: text
-        - name: sld_file_url
+        - name: style_id
           parameters:
             value:
               type: text

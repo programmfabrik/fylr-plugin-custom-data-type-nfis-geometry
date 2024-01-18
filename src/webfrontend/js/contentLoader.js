@@ -350,7 +350,7 @@ function initializeMap(contentElement, mapElement, cdata, schemaSettings, allowS
 
 function getVectorStyle(schemaSettings) {
     return new Promise((resolve, reject) => {
-        loadSLDData(schemaSettings.sldFileUrl).then(sldData => {
+        loadSLDData(schemaSettings.styleId).then(sldData => {
             const sldParser = new SLDParser({ sldVersion: '1.1.0' });
             return sldParser.readStyle(sldData);
         }).then(({ output: parsedStyle }) => {
@@ -363,24 +363,39 @@ function getVectorStyle(schemaSettings) {
     });
 }
 
-function loadSLDData(url) {
+function loadSLDData(styleId) {
     return new Promise((resolve, reject) => {
-        if (!url) return reject('No SLD file URL provided in schema configuration');
-
-        const xhr = new XMLHttpRequest();
-        xhr.open('GET', url);
-        xhr.onload = function() {
-            if (xhr.status == 200) {
-                resolve(xhr.responseText);
-            } else {
-                reject('Failed to load SLD file');
-            }
-        };
-        xhr.onerror = error => {
-            reject(error);
-        };
-        xhr.send();
+        if (!styleId) return reject('No style object ID provided in schema configuration');
+        return getStyleObject(styleId)
+            .then(styleObject => loadSLDFile(styleObject))
+            .then(sldData => resolve(sldData))
+            .catch(error => reject(error));
     });
+}
+
+function getStyleObject(styleId) {
+    return new Promise((resolve, reject) => {
+        ez5.api.db({
+            type: 'GET',
+            api: '/geostyle/geostyle__all_fields/system_object_id/' + styleId,
+            data: {
+                format: 'long'
+            }
+        }).done(data => {
+            if (data.error) {
+                reject(data.error);
+            } else if (data.length === 0) {
+                reject('Style object not found');
+            } else {
+                resolve(data[0].geostyle);
+            }
+        });
+    });
+}
+
+function loadSLDFile(styleObject) {
+    const url = styleObject.sld_file[0].versions.original.url + '&access_token=' + ez5.session.token;
+    return fetch(url).then(result => result.text());
 }
 
 function getMapProjection() {
