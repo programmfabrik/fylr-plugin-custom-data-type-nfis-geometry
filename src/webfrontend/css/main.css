@@ -7,3 +7,50 @@
 .nfis-geometry-ids-options {
   display: none;
 }
+
+.nfis-geometry-legend-button,
+.nfis-geometry-legend {
+  position: absolute;
+  right: 7px;
+  background-color: white;
+  border: 1px solid #6666663b;
+  border-radius: 4px;
+  z-index: 1;
+}
+
+.nfis-geometry-legend-button {
+  top: 7px;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+}
+
+.nfis-geometry-legend {
+  top: 39px;
+  max-width: 300px;
+  height: 202px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.nfis-geometry-legend-image {
+  display: block;
+  pointer-events: none;
+  user-select: none;
+}
+
+.nfis-geometry-legend-button:hover {
+  border-color: black;
+}
+
+.nfis-geometry-legend-button .fa {
+  position: relative;
+  top: 3px;
+  left: 7px;
+  display: inline;
+  color: #555;
+}
+
+.nfis-geometry-legend-button:hover .fa {
+  color: black;
+}

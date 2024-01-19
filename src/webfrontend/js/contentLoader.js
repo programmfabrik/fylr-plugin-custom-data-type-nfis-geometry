@@ -49,35 +49,59 @@ function loadWFSData(schemaSettings, geometryIds) {
 }
 
 function renderContent(contentElement, cdata, schemaSettings, mode, totalFeatures, selectedGeometryId) {
-    if (mode === 'detail') {
-        renderDetailContent(contentElement, cdata, schemaSettings, totalFeatures);
-    } else {
-        renderEditorContent(contentElement, cdata, schemaSettings, totalFeatures, selectedGeometryId);
-    }
+    getStyleObject(schemaSettings.styleId).then(styleObject => {
+        if (mode === 'detail') {
+            renderDetailContent(contentElement, cdata, schemaSettings, styleObject, totalFeatures);
+        } else {
+            renderEditorContent(contentElement, cdata, schemaSettings, styleObject, totalFeatures, selectedGeometryId);
+        }
+    }, error => console.error(error));
 }
 
-function renderDetailContent(contentElement, cdata, schemaSettings, totalFeatures) {
+function getStyleObject(styleId) {
+    return new Promise((resolve, reject) => {
+        if (!styleId) return reject('No style object ID provided in schema configuration');
+
+        ez5.api.db({
+            type: 'GET',
+            api: '/geostyle/geostyle__all_fields/system_object_id/' + styleId,
+            data: {
+                format: 'long'
+            }
+        }).done(data => {
+            if (data.error) {
+                reject(data.error);
+            } else if (data.length === 0) {
+                reject('Style object not found');
+            } else {
+                resolve(data[0].geostyle);
+            }
+        });
+    });
+}
+
+function renderDetailContent(contentElement, cdata, schemaSettings, styleObject, totalFeatures) {
     if (totalFeatures === 0) return;
 
     if (schemaSettings.multiSelect || cdata.geometry_ids?.length > 1) {
         renderMap(
-            contentElement, cdata, schemaSettings, false,
+            contentElement, cdata, schemaSettings, styleObject, false,
             renderViewGeometriesButton(contentElement, schemaSettings)
         );
     } else {
-        renderMap(contentElement, cdata, schemaSettings, false);
+        renderMap(contentElement, cdata, schemaSettings, styleObject, false);
         renderViewGeometryButton(contentElement, getGeometryId(cdata), schemaSettings);
     }
 }
 
-function renderEditorContent(contentElement, cdata, schemaSettings, totalFeatures, selectedGeometryId) {
+function renderEditorContent(contentElement, cdata, schemaSettings, styleObject, totalFeatures, selectedGeometryId) {
     if (!schemaSettings.multiSelect && cdata.geometry_ids?.length === 1) {
         selectedGeometryId = cdata.geometry_ids[0];
     }
 
     if (totalFeatures > 0) {
         renderMap(
-            contentElement, cdata, schemaSettings,
+            contentElement, cdata, schemaSettings, styleObject,
             schemaSettings.multiSelect || cdata.geometry_ids?.length > 1
         );
     }
@@ -315,13 +339,51 @@ function triggerFormChanged(form) {
     });
 }
 
-function renderMap(contentElement, cdata, schemaSettings, allowSelection, onLoad) {
+function renderMap(contentElement, cdata, schemaSettings, styleObject, allowSelection, onLoad) {
     const mapElement = CUI.dom.div('nfis-geometry-map');
     CUI.dom.append(contentElement, mapElement);
-    initializeMap(contentElement, mapElement, cdata, schemaSettings, allowSelection, onLoad);
+    CUI.dom.append(mapElement, createLegendButton(mapElement, styleObject));
+
+    initializeMap(contentElement, mapElement, cdata, schemaSettings, styleObject, allowSelection, onLoad);
+    
 }
 
-function initializeMap(contentElement, mapElement, cdata, schemaSettings, allowSelection, onLoad) {
+function createLegendButton(mapElement, styleObject) {
+    const legendElement = createLegend(styleObject);
+    CUI.dom.append(mapElement, legendElement);
+    
+    const legendButtonElement = CUI.dom.div('nfis-geometry-legend-button');
+    legendButtonElement.onclick = () => toggleLegend(legendElement);
+    CUI.dom.hideElement(legendElement);
+    
+    const legendButtonIconElement = CUI.dom.div('fa fa-map');
+    CUI.dom.append(legendButtonElement, legendButtonIconElement);
+
+    return legendButtonElement;
+}
+
+function createLegend(styleObject) {
+    const legendElement = CUI.dom.div('nfis-geometry-legend');
+    const legendImageElement = CUI.dom.img(
+        'nfis-geometry-legend-image',
+        {
+            src: styleObject.legend_file[0].versions.original.url + '&access_token=' + ez5.session.token
+        }
+    );
+    CUI.dom.append(legendElement, legendImageElement);
+
+    return legendElement;
+}
+
+function toggleLegend(legendElement) {
+    if (CUI.dom.isVisible(legendElement)) {
+        CUI.dom.hideElement(legendElement);
+    } else {
+        CUI.dom.showElement(legendElement);
+    }
+}
+
+function initializeMap(contentElement, mapElement, cdata, schemaSettings, styleObject, allowSelection, onLoad) {
     const projection = getMapProjection();
     const map = new Map({
         target: mapElement,
@@ -334,7 +396,7 @@ function initializeMap(contentElement, mapElement, cdata, schemaSettings, allowS
         interactions: defaults({ mouseWheelZoom: false })
     });
 
-    getVectorStyle(schemaSettings).then(vectorStyle => {
+    getVectorStyle(styleObject).then(vectorStyle => {
         map.setLayers([
             getRasterLayer(projection),
             getVectorLayer(map, cdata.geometry_ids, schemaSettings, vectorStyle, onLoad)
@@ -348,9 +410,9 @@ function initializeMap(contentElement, mapElement, cdata, schemaSettings, allowS
     }).catch(error => console.error('Failed to parse SLD data:', error));
 }
 
-function getVectorStyle(schemaSettings) {
+function getVectorStyle(styleObject) {
     return new Promise((resolve, reject) => {
-        loadSLDData(schemaSettings.styleId).then(sldData => {
+        loadSLDFile(styleObject).then(sldData => {
             const sldParser = new SLDParser({ sldVersion: '1.1.0' });
             return sldParser.readStyle(sldData);
         }).then(({ output: parsedStyle }) => {
@@ -360,36 +422,6 @@ function getVectorStyle(schemaSettings) {
                 .catch(error => reject(error));
         })
         .catch(error => reject(error));
-    });
-}
-
-function loadSLDData(styleId) {
-    return new Promise((resolve, reject) => {
-        if (!styleId) return reject('No style object ID provided in schema configuration');
-        return getStyleObject(styleId)
-            .then(styleObject => loadSLDFile(styleObject))
-            .then(sldData => resolve(sldData))
-            .catch(error => reject(error));
-    });
-}
-
-function getStyleObject(styleId) {
-    return new Promise((resolve, reject) => {
-        ez5.api.db({
-            type: 'GET',
-            api: '/geostyle/geostyle__all_fields/system_object_id/' + styleId,
-            data: {
-                format: 'long'
-            }
-        }).done(data => {
-            if (data.error) {
-                reject(data.error);
-            } else if (data.length === 0) {
-                reject('Style object not found');
-            } else {
-                resolve(data[0].geostyle);
-            }
-        });
     });
 }
 
