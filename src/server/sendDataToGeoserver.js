@@ -108,16 +108,48 @@ function getGeometryIds(object, pathSegments) {
     }
 }
 
-
 function getChangeMap(object, fields) {
 
     return fields.reduce((result, field) => {
-        const fieldValue = object[field.fylr_field_name.ValueText];
-        if (fieldValue) result[field.wfs_field_name.ValueText] = fieldValue;
+        const wfsFieldName = field.wfs_field_name.ValueText;
+        const fylrFieldName = field.fylr_field_name.ValueText;
+        const fieldValue = object[fylrFieldName];
+
+        addToChangeMap(wfsFieldName, fylrFieldName, fieldValue, result);
+
         return result;
     }, {});
 }
 
+function addToChangeMap(wfsFieldName, fylrFieldName, fieldValue, changeMap) {
+
+    if (fieldValue) {
+        if (typeof fieldValue === 'string') {
+            changeMap[wfsFieldName] = fieldValue;
+        } else if (isDanteConcept(fieldValue)) {
+            changeMap[wfsFieldName + '_uuid'] = getDanteId(fieldValue);
+            changeMap[wfsFieldName + '_text'] = fieldValue.conceptName;
+        } else {
+            throwErrorToFrontend(
+                'Invalid field value in field "' + fylrFieldName + '"',
+                JSON.stringify(fieldValue)
+            );
+        }
+    }
+}
+
+function isDanteConcept(fieldValue) {
+
+    return typeof fieldValue === 'object'
+        && fieldValue.conceptName !== undefined
+        && fieldValue.conceptURI !== undefined;
+}
+
+function getDanteId(danteConcept) {
+
+    const segments = danteConcept.conceptURI.split('/');
+    return segments[segments.length - 1];
+}
 
 async function performTransaction(geometryIds, changeMap, wfsUrl, wfsFeatureType, authorizationString) {
 
