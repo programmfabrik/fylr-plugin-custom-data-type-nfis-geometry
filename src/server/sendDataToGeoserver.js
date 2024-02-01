@@ -127,7 +127,7 @@ function addToChangeMap(wfsFieldName, fylrFieldName, fieldValue, changeMap) {
         if (typeof fieldValue === 'string') {
             changeMap[wfsFieldName] = fieldValue;
         } else if (isDanteConcept(fieldValue)) {
-            changeMap[wfsFieldName + '_uuid'] = getDanteId(fieldValue);
+            changeMap[wfsFieldName + '_uri'] = fieldValue.conceptURI;
             changeMap[wfsFieldName + '_text'] = fieldValue.conceptName;
         } else {
             throwErrorToFrontend(
@@ -143,12 +143,6 @@ function isDanteConcept(fieldValue) {
     return typeof fieldValue === 'object'
         && fieldValue.conceptName !== undefined
         && fieldValue.conceptURI !== undefined;
-}
-
-function getDanteId(danteConcept) {
-
-    const segments = danteConcept.conceptURI.split('/');
-    return segments[segments.length - 1];
 }
 
 async function performTransaction(geometryIds, changeMap, wfsUrl, wfsFeatureType, authorizationString) {
