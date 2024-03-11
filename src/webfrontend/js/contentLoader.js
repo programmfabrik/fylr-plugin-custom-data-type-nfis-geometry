@@ -107,10 +107,6 @@ function renderEditorContent(contentElement, cdata, schemaSettings, styleObject,
     }
 
     renderEditorButtons(contentElement, cdata, schemaSettings, selectedGeometryId);
-
-    const optionsElement = createGeometryIdsOptions(cdata);
-    const formElement = createForm(cdata, [optionsElement]);
-    CUI.dom.append(contentElement, formElement);
 }
 
 function renderEditorButtons(contentElement, cdata, schemaSettings, selectedGeometryId) {
@@ -190,26 +186,6 @@ function createLinkExistingGeometryButton(contentElement, cdata, schemaSettings)
         icon_left: new CUI.Icon({ class: 'fa-link' }),
         onClick: () => openSetGeometryModal(contentElement, cdata, schemaSettings, label)
     });
-}
-
-function createGeometryIdsOptions(cdata) {
-    const options = cdata.geometry_ids.map(geometryId => {
-        return { value: geometryId, text: geometryId };
-    });
-
-    return new CUI.Options({
-        name: 'geometry_ids',
-        class: 'nfis-geometry-ids-options',
-        options: options
-    });
-}
-
-function createForm(cdata, fields) {
-    return new CUI.Form({
-        data: cdata,
-        maximize_horizontal: true,
-        fields: fields
-    }).start();
 }
 
 function editGeometry(contentElement, cdata, schemaSettings, uuid) {
@@ -323,7 +299,7 @@ function reloadEditorContent(contentElement, cdata, schemaSettings, uuid) {
 function applyChanges(contentElement, cdata, schemaSettings, totalFeatures, selectedGeometryId) {
     CUI.dom.removeChildren(contentElement);
     renderContent(contentElement, cdata, schemaSettings, 'editor', totalFeatures, selectedGeometryId);
-    triggerFormChanged(CUI.dom.findElement(contentElement, '.cui-form'));
+    notifyEditor(contentElement);
 }
 
 function rerenderEditorButtons(contentElement, cdata, schemaSettings, selectedGeometryId) {
@@ -332,10 +308,14 @@ function rerenderEditorButtons(contentElement, cdata, schemaSettings, selectedGe
     renderEditorButtons(contentElement, cdata, schemaSettings, selectedGeometryId);
 }
 
-function triggerFormChanged(form) {
+function notifyEditor(contentElement) {
     CUI.Events.trigger({
-        node: form,
+        node: contentElement,
         type: 'editor-changed'
+    });
+    CUI.Events.trigger({
+        node: contentElement,
+        type: 'data-changed'
     });
 }
 
