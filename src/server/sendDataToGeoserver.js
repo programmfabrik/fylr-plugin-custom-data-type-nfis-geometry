@@ -71,10 +71,12 @@ async function updateObject(object, wfsConfiguration, authorizationString) {
         const geometryIds = getGeometryIds(object, fieldConfiguration.field_path.ValueText.split('.'));
         if (geometryIds?.length) {
             const changeMap = getChangeMap(object, fieldConfiguration.fields.ValueTable);
-            await performTransaction(
-                geometryIds, changeMap, fieldConfiguration.wfs_url.ValueText,
-                fieldConfiguration.wfs_feature_type.ValueText, authorizationString
-            );
+            if (Object.keys(changeMap).length) {
+                await performTransaction(
+                    geometryIds, changeMap, fieldConfiguration.wfs_url.ValueText,
+                    fieldConfiguration.wfs_feature_type.ValueText, authorizationString
+                );
+            }
         }
     }
 }
