@@ -1,3 +1,5 @@
+const serverConfiguration = require('../serverConfiguration.json');
+
 let input = '';
 process.stdin.on('data', d => {
     try {
@@ -8,12 +10,10 @@ process.stdin.on('data', d => {
     }
 });
 
-
 process.stdin.on('end', async () => {
-
     const data = JSON.parse(input);
     const configuration = await getPluginConfiguration();
-    const authorizationString = getAuthorizationString(configuration);
+    const authorizationString = getAuthorizationString(serverConfiguration);
 
     for (let object of data.objects) {
         await updateObject(
@@ -29,16 +29,12 @@ process.stdin.on('end', async () => {
     return;
 });
 
-
 async function getPluginConfiguration() {
-
     const baseConfiguration = await getBaseConfiguration();
     return baseConfiguration.BaseConfigList.find(section => section.Name === 'nfisGeoservices').Values;
 }
 
-
 async function getBaseConfiguration() {
-
     const url = 'http://fylr.localhost:8082/inspect/config';
     const headers = { 'Accept': 'application/json' };
 
@@ -56,25 +52,19 @@ async function getBaseConfiguration() {
     }
 }
 
-
 function getWFSConfiguration(configuration, objectType) {
-
     const wfsConfiguration = configuration.wfs_configuration.ValueTable;
     return wfsConfiguration.find(configuration => configuration.object_type.ValueText === objectType);
 }
 
-
-function getAuthorizationString(configuration) {
-
-    const username = configuration.geoserver_username.ValueText;
-    const password = configuration.geoserver_password.ValueText;
+function getAuthorizationString(serverConfiguration) {
+    const username = serverConfiguration.geoserver.username;
+    const password = serverConfiguration.geoserver.password;
 
     return btoa(username + ':' + password);
 }
 
-
 async function updateObject(object, wfsConfiguration, authorizationString) {
-
     if (!wfsConfiguration) return;
 
     for (let fieldConfiguration of wfsConfiguration.geometry_fields.ValueTable) {
@@ -89,9 +79,7 @@ async function updateObject(object, wfsConfiguration, authorizationString) {
     }
 }
 
-
 function getGeometryIds(object, pathSegments) {
-
     const fieldName = pathSegments.shift();
     const field = object[fieldName] ?? object['_nested:object__' + fieldName];
 
@@ -109,7 +97,6 @@ function getGeometryIds(object, pathSegments) {
 }
 
 function getChangeMap(object, fields) {
-
     return fields.reduce((result, field) => {
         const wfsFieldName = field.wfs_field_name.ValueText;
         const fylrFieldName = field.fylr_field_name.ValueText;
@@ -122,7 +109,6 @@ function getChangeMap(object, fields) {
 }
 
 function addToChangeMap(wfsFieldName, fylrFieldName, fieldValue, changeMap) {
-
     if (fieldValue) {
         if (typeof fieldValue === 'string') {
             changeMap[wfsFieldName] = fieldValue;
@@ -139,14 +125,12 @@ function addToChangeMap(wfsFieldName, fylrFieldName, fieldValue, changeMap) {
 }
 
 function isDanteConcept(fieldValue) {
-
     return typeof fieldValue === 'object'
         && fieldValue.conceptName !== undefined
         && fieldValue.conceptURI !== undefined;
 }
 
 async function performTransaction(geometryIds, changeMap, wfsUrl, wfsFeatureType, authorizationString) {
-
     const requestXml = getRequestXml(geometryIds, changeMap, wfsFeatureType);
     const transactionUrl = wfsUrl + '?service=WFS&version=1.1.0&request=Transaction';
 
@@ -168,9 +152,7 @@ async function performTransaction(geometryIds, changeMap, wfsUrl, wfsFeatureType
     }    
 }
 
-
 function getRequestXml(geometryIds, changeMap, featureType) {
-
     return '<?xml version="1.0" ?>'
         + '<wfs:Transaction '
         + 'version="1.1.0" '
@@ -186,9 +168,7 @@ function getRequestXml(geometryIds, changeMap, featureType) {
         + '</wfs:Transaction>';
 }
 
-
 function getPropertiesXml(changeMap) {
-
     return Object.keys(changeMap).map(propertyName => {
         return '<wfs:Property>'
                 + '<wfs:Name>' + propertyName + '</wfs:Name>'
@@ -197,9 +177,7 @@ function getPropertiesXml(changeMap) {
     }).join('');
 }
 
-
 function getFilterXml(geometryIds) {
-
     return '<ogc:Filter>'
         + (geometryIds.length === 1
             ? getGeometryFilterXml(geometryIds[0])
@@ -208,9 +186,7 @@ function getFilterXml(geometryIds) {
         + '</ogc:Filter>';
 }
 
-
 function getGeometryFilterXml(geometryId) {
-
     return '<ogc:PropertyIsEqualTo>'
         + '<ogc:PropertyName>ouuid</ogc:PropertyName>'
         + '<ogc:Literal>' + geometryId + '</ogc:Literal>'
@@ -219,7 +195,6 @@ function getGeometryFilterXml(geometryId) {
 
 
 function throwErrorToFrontend(error, description) {
-
     console.log(JSON.stringify({
         error: {
             code: 'error.nfisGeometry',

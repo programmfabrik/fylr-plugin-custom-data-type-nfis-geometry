@@ -1,11 +1,10 @@
-ZIP_NAME ?= "CustomDataTypeNFISGeometry.zip"
 PLUGIN_NAME = custom-data-type-nfis-geometry
 
 SERVER_FILE = sendDataToGeoserver.js
 MAIN_CSS = src/webfrontend/css/main.css
 OPENLAYERS_CSS = src/webfrontend/node_modules/ol/ol.css
 
-all: install build zip
+all: install build
 
 install:
 	cd src/webfrontend && npm install
@@ -29,12 +28,9 @@ build: clean
 
 	cp l10n/$(PLUGIN_NAME).csv build/$(PLUGIN_NAME)/l10n/$(PLUGIN_NAME).csv
 
+	cp serverConfiguration.json build/$(PLUGIN_NAME)/serverConfiguration.json
+
 	cp manifest.master.yml build/$(PLUGIN_NAME)/manifest.yml
 
 clean:
 	rm -rf build
-
-zip:
-	cd build && zip $(ZIP_NAME) -r $(PLUGIN_NAME)/
-	cp -r build/$(PLUGIN_NAME)/* build/
-	rm -rf build/${PLUGIN_NAME}

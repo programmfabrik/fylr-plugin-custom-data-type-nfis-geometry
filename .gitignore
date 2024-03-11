@@ -4,4 +4,5 @@
 \#*\#
 build
 .DS_Store
+serverConfiguration.json
 src/webfrontend/node_modules
