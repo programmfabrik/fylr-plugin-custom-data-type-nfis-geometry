@@ -48,7 +48,7 @@ CustomDataTypeNFISGeometry = (function(superClass) {
             tags.push($$('custom.data.type.nfis.geometry.wfsFeatureType.none'));
         }
 
-        if (custom_settings.sld_file_url?.value) {
+        if (custom_settings.style_id?.value) {
             tags.push($$('custom.data.type.nfis.geometry.styleId') + ': ' + custom_settings.style_id.value);
         } else {
             tags.push($$('custom.data.type.nfis.geometry.styleId.none'));
