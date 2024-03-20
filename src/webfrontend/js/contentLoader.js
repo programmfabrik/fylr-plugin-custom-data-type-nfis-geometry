@@ -62,19 +62,23 @@ function getStyleObject(styleId) {
     return new Promise((resolve, reject) => {
         if (!styleId) return reject('No style object ID provided in schema configuration');
 
-        ez5.api.db({
-            type: 'GET',
-            api: '/geostyle/geostyle__all_fields/system_object_id/' + styleId,
-            data: {
-                format: 'long'
+        ez5.api.search({
+            json_data: {
+                format: 'long',
+                objecttypes: ['geostyle'],
+                search: [{
+                    type: 'in',
+                    fields: ['_uuid'],
+                    in: [styleId]
+                }]
             }
         }).done(data => {
             if (data.error) {
                 reject(data.error);
-            } else if (data.length === 0) {
+            } else if (data.objects.length !== 1) {
                 reject('Style object not found');
             } else {
-                resolve(data[0].geostyle);
+                resolve(data.objects[0].geostyle);
             }
         });
     });

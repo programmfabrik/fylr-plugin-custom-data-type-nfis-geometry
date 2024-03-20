@@ -28,7 +28,7 @@ custom.data.type.nfis.geometry.edit.modal.text,"Bearbeiten Sie die Geometrie im 
 custom.data.type.nfis.geometry.config.parameter.schema.wfs_url.value.label,WFS-URL,WFS URL
 custom.data.type.nfis.geometry.config.parameter.schema.wfs_feature_type.value.label,WFS-Feature-Type,WFS feature type
 custom.data.type.nfis.geometry.config.parameter.schema.wfs_id.value.label,WFS-ID im Masterportal,WFS ID in Masterportal
-custom.data.type.nfis.geometry.config.parameter.schema.style_id.value.label,Style-Objekt (System-ID),Style object (System ID)
+custom.data.type.nfis.geometry.config.parameter.schema.style_id.value.label,Style-Objekt (UUID),Style object (UUID)
 custom.data.type.nfis.geometry.config.parameter.schema.multi_select.value.label,Mehrfachauswahl,Multi selection
 custom.data.type.nfis.geometry.config.parameter.schema.multi_select.value.checkbox,Erlauben,Allow
 server.config.name.system.nfisGeoservices,NFIS-Geodienste,NFIS Geoservices
