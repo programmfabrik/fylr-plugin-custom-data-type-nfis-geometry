@@ -351,7 +351,7 @@ function createLegend(styleObject) {
     const legendImageElement = CUI.dom.img(
         'nfis-geometry-legend-image',
         {
-            src: styleObject.legend_file[0].versions.original.url + '&access_token=' + ez5.session.token
+            src: styleObject.legende[0].versions.original.url + '&access_token=' + ez5.session.token
         }
     );
     CUI.dom.append(legendElement, legendImageElement);
@@ -410,7 +410,7 @@ function getVectorStyle(styleObject) {
 }
 
 function loadSLDFile(styleObject) {
-    const url = styleObject.sld_file[0].versions.original.url + '&access_token=' + ez5.session.token;
+    const url = styleObject.sld_datei[0].versions.original.url + '&access_token=' + ez5.session.token;
     return fetch(url).then(result => result.text());
 }
 
