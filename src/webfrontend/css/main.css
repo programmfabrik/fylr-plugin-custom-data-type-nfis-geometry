@@ -34,6 +34,7 @@
   height: 202px;
   overflow-x: hidden;
   overflow-y: auto;
+  cursor: default;
 }
 
 .nfis-geometry-legend-image {
