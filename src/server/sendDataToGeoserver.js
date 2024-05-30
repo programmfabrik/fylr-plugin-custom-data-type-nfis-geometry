@@ -69,8 +69,9 @@ async function updateObject(object, wfsConfiguration, authorizationString) {
 
     for (let fieldConfiguration of wfsConfiguration.geometry_fields.ValueTable) {
         const geometryIds = getGeometryIds(object, fieldConfiguration.field_path.ValueText.split('.'));
-        if (geometryIds?.length) {
-            const changeMap = getChangeMap(object, fieldConfiguration.fields.ValueTable);
+        const poolName = getPoolName(object, fieldConfiguration);
+        if (geometryIds?.length && poolName) {
+            const changeMap = getChangeMap(object, fieldConfiguration, poolName);
             if (Object.keys(changeMap).length) {
                 await performTransaction(
                     geometryIds, changeMap, fieldConfiguration.wfs_url.ValueText,
@@ -98,7 +99,29 @@ function getGeometryIds(object, pathSegments) {
     }
 }
 
-function getChangeMap(object, fields) {
+function getPoolName(object, fieldConfiguration) {
+    const allowedPoolNames = getAllowedPoolNames(fieldConfiguration);
+    const foundPoolNames = [];
+    for (let entry of object._pool._path) {
+        const poolName = entry.pool.name?.['de-DE'];
+        foundPoolNames.push(poolName);
+        if (allowedPoolNames.includes(poolName)) return poolName;
+    }
+
+    return undefined;
+}
+
+function getAllowedPoolNames(fieldConfiguration) {
+    return fieldConfiguration.allowed_pool_names?.ValueTable?.map(entry => {
+        return entry.allowed_pool_name.ValueText;
+    });
+}
+
+function getChangeMap(object, fieldConfiguration, poolName) {
+    const changeMap = {};
+    addPoolFieldToChangeMap(fieldConfiguration, poolName, changeMap);
+
+    const fields = fieldConfiguration.fields.ValueTable;
     return fields.reduce((result, field) => {
         const wfsFieldName = field.wfs_field_name.ValueText;
         const fylrFieldName = field.fylr_field_name.ValueText;
@@ -107,7 +130,14 @@ function getChangeMap(object, fields) {
         addToChangeMap(wfsFieldName, fylrFieldName, fieldValue, result);
 
         return result;
-    }, {});
+    }, changeMap);
+}
+
+function addPoolFieldToChangeMap(fieldConfiguration, poolName, changeMap) {
+    const wfsPoolTargetFieldName = fieldConfiguration.wfs_pool_field.ValueText;
+    if (!wfsPoolTargetFieldName) return;
+
+    changeMap[wfsPoolTargetFieldName] = poolName;
 }
 
 function addToChangeMap(wfsFieldName, fylrFieldName, fieldValue, changeMap) {
