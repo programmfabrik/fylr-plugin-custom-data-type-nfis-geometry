@@ -18,6 +18,7 @@ process.stdin.on('end', async () => {
     for (let object of data.objects) {
         await updateObject(
             object[object._objecttype],
+            object._objecttype,
             getWFSConfiguration(configuration, object._objecttype),
             authorizationString
         );
@@ -64,14 +65,14 @@ function getAuthorizationString(serverConfiguration) {
     return btoa(username + ':' + password);
 }
 
-async function updateObject(object, wfsConfiguration, authorizationString) {
+async function updateObject(object, objectType, wfsConfiguration, authorizationString) {
     if (!wfsConfiguration) return;
 
     for (let fieldConfiguration of wfsConfiguration.geometry_fields.ValueTable) {
         const geometryIds = getGeometryIds(object, fieldConfiguration.field_path.ValueText.split('.'));
         const poolName = getPoolName(object, fieldConfiguration);
         if (geometryIds?.length && poolName) {
-            const changeMap = getChangeMap(object, fieldConfiguration, poolName);
+            const changeMap = getChangeMap(object, objectType, fieldConfiguration, poolName);
             if (Object.keys(changeMap).length) {
                 await performTransaction(
                     geometryIds, changeMap, fieldConfiguration.wfs_url.ValueText,
@@ -117,9 +118,10 @@ function getAllowedPoolNames(fieldConfiguration) {
     });
 }
 
-function getChangeMap(object, fieldConfiguration, poolName) {
+function getChangeMap(object, objectType, fieldConfiguration, poolName) {
     const changeMap = {};
     addPoolFieldToChangeMap(fieldConfiguration, poolName, changeMap);
+    addDesignationEventStatusFieldToChangeMap(object, objectType, fieldConfiguration, changeMap);
 
     const fields = fieldConfiguration.fields.ValueTable;
     return fields.reduce((result, field) => {
@@ -134,10 +136,36 @@ function getChangeMap(object, fieldConfiguration, poolName) {
 }
 
 function addPoolFieldToChangeMap(fieldConfiguration, poolName, changeMap) {
-    const wfsPoolTargetFieldName = fieldConfiguration.wfs_pool_field.ValueText;
-    if (!wfsPoolTargetFieldName) return;
+    const targetFieldName = fieldConfiguration.wfs_pool_field.ValueText;
+    if (!targetFieldName) return;
 
-    changeMap[wfsPoolTargetFieldName] = poolName;
+    changeMap[targetFieldName] = poolName;
+}
+
+function addDesignationEventStatusFieldToChangeMap(object, objectType, fieldConfiguration, changeMap) {
+    const targetFieldName = fieldConfiguration.wfs_event_status_field.ValueText;
+    if (!targetFieldName) return;
+
+    const latestEvent = getLatestDesignationEvent(object, objectType);
+    if (!latestEvent) return;
+
+    changeMap[targetFieldName] = latestEvent.lk_status.conceptName;
+}
+
+function getLatestDesignationEvent(object, objectType) {
+    const events = object['_nested:' + objectType + '__event']
+        .filter(event => {
+            return event.lk_eventtyp?.conceptName === 'Ausweisung'
+                && event.lk_status !== undefined
+                && event.datum_ausweisung_beginn?.value;
+        });
+    if (!events.length) return undefined;
+
+    events.sort((event1, event2) => {
+        return new Date(event2.datum_ausweisung_beginn.value) - new Date(event1.datum_ausweisung_beginn.value);
+    });
+
+    return events[0];
 }
 
 function addToChangeMap(wfsFieldName, fylrFieldName, fieldValue, changeMap) {
