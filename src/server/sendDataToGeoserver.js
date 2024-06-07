@@ -205,7 +205,7 @@ async function performTransaction(geometryIds, changeMap, wfsUrl, wfsFeatureType
         });
         const xmlResult = await response.text();
         if (!new RegExp('<wfs:totalUpdated>' + geometryIds.length + '<\/wfs:totalUpdated>').test(xmlResult)) {
-            throwErrorToFrontend('Failed to update PostGIS database');
+            throwErrorToFrontend('Failed to update PostGIS database: ' + xmlResult);
         }
     } catch (err) {
         throwErrorToFrontend(err);
