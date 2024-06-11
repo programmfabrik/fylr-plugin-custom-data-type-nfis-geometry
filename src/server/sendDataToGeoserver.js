@@ -69,7 +69,7 @@ async function updateObject(object, objectType, wfsConfiguration, authorizationS
     if (!wfsConfiguration) return;
 
     for (let fieldConfiguration of wfsConfiguration.geometry_fields.ValueTable) {
-        const geometryIds = getGeometryIds(object, fieldConfiguration.field_path.ValueText.split('.'));
+        const geometryIds = getGeometryIds(object, objectType, fieldConfiguration.field_path.ValueText.split('.'));
         const poolName = getPoolName(object, fieldConfiguration);
         if (geometryIds?.length && poolName) {
             const changeMap = getChangeMap(object, objectType, fieldConfiguration, poolName);
@@ -83,20 +83,26 @@ async function updateObject(object, objectType, wfsConfiguration, authorizationS
     }
 }
 
-function getGeometryIds(object, pathSegments) {
+function getGeometryIds(object, objectType, pathSegments) {
+    const fieldValues = getFieldValues(object, objectType, pathSegments);
+    return fieldValues.map(value => value?.geometry_ids)
+        .filter(value => value !== undefined);
+}
+
+function getFieldValues(object, objectType, pathSegments) {
     const fieldName = pathSegments.shift();
-    const field = object[fieldName] ?? object['_nested:object__' + fieldName];
+    const field = object[fieldName] ?? object['_nested:' + objectType + '__' + fieldName];
 
     if (field === undefined) {
-        return undefined;
+        return [];
     } else if (pathSegments.length === 0) {
-        return field?.geometry_ids;
+        return [field];
     } else if (Array.isArray(field)) {
-        return field.map(entry => getGeometryIds(entry, pathSegments.slice()))
+        return field.map(entry => getFieldValues(entry, objectType, pathSegments.slice()))
             .filter(data => data !== undefined)
-            .reduce((result, ids) => result.concat(ids), []);
+            .reduce((result, fieldValues) => result.concat(fieldValues), []);
     } else {
-        return getGeometryIds(field, pathSegments);
+        return getFieldValues(field, objectType, pathSegments);
     }
 }
 
@@ -127,9 +133,9 @@ function getChangeMap(object, objectType, fieldConfiguration, poolName) {
     return fields.reduce((result, field) => {
         const wfsFieldName = field.wfs_field_name.ValueText;
         const fylrFieldName = field.fylr_field_name.ValueText;
-        const fieldValue = object[fylrFieldName];
+        const fieldValues = getFieldValues(object, objectType, fylrFieldName.split('.'));
 
-        addToChangeMap(wfsFieldName, fylrFieldName, fieldValue, result);
+        addToChangeMap(wfsFieldName, fylrFieldName, fieldValues?.[0], result);
 
         return result;
     }, changeMap);
