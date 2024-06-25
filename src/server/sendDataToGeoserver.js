@@ -55,7 +55,7 @@ async function getBaseConfiguration() {
 
 function getWFSConfiguration(configuration, objectType) {
     const wfsConfiguration = configuration.wfs_configuration.ValueTable;
-    return wfsConfiguration.find(configuration => configuration.object_type.ValueText === objectType);
+    return wfsConfiguration?.find(configuration => configuration.object_type.ValueText === objectType);
 }
 
 function getAuthorizationString(serverConfiguration) {
