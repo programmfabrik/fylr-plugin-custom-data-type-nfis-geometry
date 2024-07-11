@@ -19,6 +19,7 @@ process.stdin.on('end', async () => {
         await updateObject(
             object[object._objecttype],
             object._objecttype,
+            object._uuid,
             getWFSConfiguration(configuration, object._objecttype),
             authorizationString
         );
@@ -65,14 +66,14 @@ function getAuthorizationString(serverConfiguration) {
     return btoa(username + ':' + password);
 }
 
-async function updateObject(object, objectType, wfsConfiguration, authorizationString) {
+async function updateObject(object, objectType, uuid, wfsConfiguration, authorizationString) {
     if (!wfsConfiguration) return;
 
     for (let fieldConfiguration of wfsConfiguration.geometry_fields.ValueTable) {
         const geometryIds = getGeometryIds(object, objectType, fieldConfiguration.field_path.ValueText.split('.'));
         const poolName = getPoolName(object, fieldConfiguration);
         if (geometryIds?.length && poolName) {
-            const changeMap = getChangeMap(object, objectType, fieldConfiguration, poolName);
+            const changeMap = getChangeMap(object, objectType, uuid, fieldConfiguration, poolName);
             if (Object.keys(changeMap).length) {
                 await performTransaction(
                     geometryIds, changeMap, fieldConfiguration.wfs_url.ValueText,
@@ -124,8 +125,8 @@ function getAllowedPoolNames(fieldConfiguration) {
     });
 }
 
-function getChangeMap(object, objectType, fieldConfiguration, poolName) {
-    const changeMap = {};
+function getChangeMap(object, objectType, uuid, fieldConfiguration, poolName) {
+    const changeMap = { fylr_uuid: uuid };
     addPoolFieldToChangeMap(fieldConfiguration, poolName, changeMap);
     addDesignationEventStatusFieldToChangeMap(object, objectType, fieldConfiguration, changeMap);
 
