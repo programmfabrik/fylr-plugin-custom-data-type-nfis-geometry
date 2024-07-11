@@ -155,7 +155,7 @@ function addDesignationEventStatusFieldToChangeMap(object, objectType, fieldConf
     const latestEvent = getLatestDesignationEvent(object, objectType);
     if (!latestEvent) return;
 
-    changeMap[targetFieldName] = latestEvent.lk_status.conceptName;
+    addToChangeMap(targetFieldName, 'lk_status', latestEvent.lk_status, changeMap);
 }
 
 function getLatestDesignationEvent(object, objectType) {
