@@ -126,7 +126,7 @@ function getAllowedPoolNames(fieldConfiguration) {
 }
 
 function getChangeMap(object, objectType, uuid, fieldConfiguration, poolName) {
-    const changeMap = { fylr_uuid: uuid };
+    const changeMap = { nfis_fylr_uuid: uuid };
     addPoolFieldToChangeMap(fieldConfiguration, poolName, changeMap);
     addDesignationEventStatusFieldToChangeMap(object, objectType, fieldConfiguration, changeMap);
 
