@@ -177,7 +177,7 @@ function getLatestDesignationEvent(object, objectType) {
 
 function addToChangeMap(wfsFieldName, fylrFieldName, fieldValue, changeMap) {
     if (fieldValue) {
-        if (typeof fieldValue === 'string') {
+        if (typeof fieldValue === 'string' || typeof fieldValue === 'number') {
             changeMap[wfsFieldName] = fieldValue;
         } else if (isDanteConcept(fieldValue)) {
             changeMap[wfsFieldName + '_uri'] = fieldValue.conceptURI;
