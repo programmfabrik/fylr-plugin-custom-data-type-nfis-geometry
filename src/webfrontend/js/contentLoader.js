@@ -284,7 +284,10 @@ function setGeometryId(contentElement, cdata, schemaSettings, newGeometryId) {
                 cdata.geometry_ids = getGeometryIds(cdata)
                     .concat([newGeometryId])
                     .join(';');
-                applyChanges(contentElement, cdata, schemaSettings, wfsData.totalFeatures, newGeometryId);
+                applyChanges(
+                    contentElement, cdata, schemaSettings, wfsData.totalFeatures,
+                    schemaSettings.multiSelect ? undefined : newGeometryId
+                );
                 resolve();
             } else {
                 reject();
