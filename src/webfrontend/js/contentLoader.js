@@ -17,7 +17,7 @@ import OpenLayersParser from 'geostyler-openlayers-parser';
 
 
 export function load(contentElement, cdata, schemaSettings, mode) {    
-    loadWFSData(schemaSettings, cdata.geometry_ids).then(
+    loadWFSData(schemaSettings, getGeometryIds(cdata)).then(
         wfsData => renderContent(
             contentElement, cdata, schemaSettings, mode, wfsData ? wfsData.totalFeatures : 0
         ),
@@ -87,7 +87,7 @@ function getStyleObject(styleId) {
 function renderDetailContent(contentElement, cdata, schemaSettings, styleObject, totalFeatures) {
     if (totalFeatures === 0) return;
 
-    if (schemaSettings.multiSelect || cdata.geometry_ids?.length > 1) {
+    if (schemaSettings.multiSelect || getGeometryIds(cdata).length > 1) {
         renderMap(
             contentElement, cdata, schemaSettings, styleObject, false,
             renderViewGeometriesButton(contentElement, schemaSettings)
@@ -99,14 +99,15 @@ function renderDetailContent(contentElement, cdata, schemaSettings, styleObject,
 }
 
 function renderEditorContent(contentElement, cdata, schemaSettings, styleObject, totalFeatures, selectedGeometryId) {
-    if (!schemaSettings.multiSelect && cdata.geometry_ids?.length === 1) {
-        selectedGeometryId = cdata.geometry_ids[0];
+    const geometryIds = getGeometryIds(cdata);
+    if (!schemaSettings.multiSelect && geometryIds?.length === 1) {
+        selectedGeometryId = geometryIds[0];
     }
 
     if (totalFeatures > 0) {
         renderMap(
             contentElement, cdata, schemaSettings, styleObject,
-            schemaSettings.multiSelect || cdata.geometry_ids?.length > 1
+            schemaSettings.multiSelect || geometryIds?.length > 1
         );
     }
 
@@ -280,7 +281,9 @@ function setGeometryId(contentElement, cdata, schemaSettings, newGeometryId) {
     return new Promise((resolve, reject) => {
         loadWFSData(schemaSettings, [newGeometryId]).then((wfsData) => {
             if (wfsData.totalFeatures > 0) {
-                cdata.geometry_ids = cdata.geometry_ids.concat([newGeometryId]);
+                cdata.geometry_ids = getGeometryIds(cdata)
+                    .concat([newGeometryId])
+                    .join(';');
                 applyChanges(contentElement, cdata, schemaSettings, wfsData.totalFeatures, newGeometryId);
                 resolve();
             } else {
@@ -291,8 +294,10 @@ function setGeometryId(contentElement, cdata, schemaSettings, newGeometryId) {
 }
 
 function removeGeometryId(contentElement, cdata, schemaSettings, uuid) {
-    cdata.geometry_ids = cdata.geometry_ids.filter(geometryId => geometryId !== uuid);
-    applyChanges(contentElement, cdata, schemaSettings, cdata.geometry_ids.length, undefined);
+    cdata.geometry_ids = getGeometryIds(cdata)
+        .filter(geometryId => geometryId !== uuid)
+        .join(';');
+    applyChanges(contentElement, cdata, schemaSettings, getGeometryIds(cdata).length, undefined);
 }
 
 function reloadEditorContent(contentElement, cdata, schemaSettings, uuid) {
@@ -383,7 +388,7 @@ function initializeMap(contentElement, mapElement, cdata, schemaSettings, styleO
     getVectorStyle(styleObject).then(vectorStyle => {
         map.setLayers([
             getRasterLayer(projection),
-            getVectorLayer(map, cdata.geometry_ids, schemaSettings, vectorStyle, onLoad)
+            getVectorLayer(map, getGeometryIds(cdata), schemaSettings, vectorStyle, onLoad)
         ]);
     
         configureMouseWheelZoom(map);
@@ -590,8 +595,14 @@ function getBaseConfig() {
     return ez5.session.getBaseConfig('plugin', 'custom-data-type-nfis-geometry')['nfisGeoservices'];
 }
 
+function getGeometryIds(cdata) {
+    return cdata.geometry_ids.split(';')
+        .filter(geometryId => geometryId.length);
+}
+
 function getGeometryId(cdata) {
-    return cdata.geometry_ids.length > 0
-        ? cdata.geometry_ids[0]
+    const geometryIds = getGeometryIds(cdata);
+    return geometryIds.length > 0
+        ? geometryIds[0]
         : undefined;
 }
