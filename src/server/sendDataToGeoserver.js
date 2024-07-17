@@ -85,9 +85,15 @@ async function updateObject(object, objectType, uuid, wfsConfiguration, authoriz
 }
 
 function getGeometryIds(object, objectType, pathSegments) {
-    const fieldValues = getFieldValues(object, objectType, pathSegments);
-    return fieldValues.map(value => value?.geometry_ids)
-        .filter(value => value !== undefined);
+    let geometryIds = [];
+
+    for (let fieldValue of getFieldValues(object, objectType, pathSegments)) {
+        geometryIds = geometryIds.concat(
+            fieldValue.geometry_ids.filter(value => value !== undefined)
+        );
+    }
+
+    return geometryIds;
 }
 
 function getFieldValues(object, objectType, pathSegments) {
