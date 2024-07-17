@@ -602,8 +602,10 @@ function getBaseConfig() {
 }
 
 function getGeometryIds(cdata) {
-    return cdata.geometry_ids.split(';')
-        .filter(geometryId => geometryId.length);
+    return cdata.geometry_ids
+        ? cdata.geometry_ids.split(';')
+            .filter(geometryId => geometryId.length)
+        : [];
 }
 
 function getGeometryId(cdata) {
