@@ -41,6 +41,9 @@ custom_types:
           parameters:
             value:
               type: bool
+    mapping:
+      geometry_ids:
+        type: text_oneline
 
 base_config:
   - name: nfisGeoservices
@@ -116,3 +119,5 @@ callbacks:
               args:
                 - type: "value"
                   value: "%_exec.pluginDir%/server/sendDataToGeoserver.js"
+                - type: "value"
+                  value: "%info.json%"
