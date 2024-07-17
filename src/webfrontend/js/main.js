@@ -73,7 +73,7 @@ CustomDataTypeNFISGeometry = (function(superClass) {
             cdata = data[this.name()];
         }
 
-        if (!cdata.geometry_ids) cdata.geometry_ids = '';
+        if (!cdata.geometry_ids) cdata.geometry_ids = [];
 
         return cdata;
     }

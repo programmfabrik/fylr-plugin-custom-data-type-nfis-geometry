@@ -86,17 +86,8 @@ async function updateObject(object, objectType, uuid, wfsConfiguration, authoriz
 
 function getGeometryIds(object, objectType, pathSegments) {
     const fieldValues = getFieldValues(object, objectType, pathSegments);
-    let geometryIds = [];
-
-    for (let fieldValue of fieldValues) {
-        if (fieldValue?.geometry_ids?.length) {
-            const fieldGeometryIds = fieldValue.geometry_ids.split(';')
-                .filter(geometryId => geometryId.length);
-            geometryIds = geometryIds.concat(fieldGeometryIds);
-        }
-    }
-
-    return geometryIds;
+    return fieldValues.map(value => value?.geometry_ids)
+        .filter(value => value !== undefined);
 }
 
 function getFieldValues(object, objectType, pathSegments) {
@@ -135,7 +126,7 @@ function getAllowedPoolNames(fieldConfiguration) {
 }
 
 function getChangeMap(object, objectType, uuid, fieldConfiguration, poolName) {
-    const changeMap = {};
+    const changeMap = { nfis_fylr_uuid: uuid };
     addPoolFieldToChangeMap(fieldConfiguration, poolName, changeMap);
     addDesignationEventStatusFieldToChangeMap(object, objectType, fieldConfiguration, changeMap);
 
