@@ -280,7 +280,9 @@ function setGeometryId(contentElement, cdata, schemaSettings, newGeometryId) {
     return new Promise((resolve, reject) => {
         loadWFSData(schemaSettings, [newGeometryId]).then((wfsData) => {
             if (wfsData.totalFeatures > 0) {
-                cdata.geometry_ids = cdata.geometry_ids.concat([newGeometryId]);
+                if (!cdata.geometry_ids.includes(newGeometryId)) {
+                    cdata.geometry_ids = cdata.geometry_ids.concat([newGeometryId]);
+                }
                 applyChanges(
                     contentElement, cdata, schemaSettings, wfsData.totalFeatures,
                     schemaSettings.multiSelect ? undefined : newGeometryId
