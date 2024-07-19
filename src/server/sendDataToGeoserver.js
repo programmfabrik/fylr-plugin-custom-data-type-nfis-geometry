@@ -88,6 +88,7 @@ function getGeometryIds(object, objectType, pathSegments) {
     let geometryIds = [];
 
     for (let fieldValue of getFieldValues(object, objectType, pathSegments)) {
+        if (!fieldValue?.geometry_ids?.length) continue;
         geometryIds = geometryIds.concat(
             fieldValue.geometry_ids.filter(value => value !== undefined)
         );
