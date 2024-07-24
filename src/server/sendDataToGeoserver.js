@@ -77,7 +77,7 @@ async function updateObject(object, objectType, uuid, configuration, authorizati
     for (let fieldConfiguration of wfsConfiguration.geometry_fields.ValueTable) {
         const geometryIds = getGeometryIds(object, objectType, fieldConfiguration.field_path.ValueText.split('.'));
         if (geometryIds.length && await hasUsedGeometryIds(configuration, geometryIds, uuid)) {
-            return throwErrorToFrontend('Eine oder mehrere Geometrien sind bereits mit anderen Objekten verknüpft.', 'multipleGeometryLinking');
+            return throwErrorToFrontend('Eine oder mehrere Geometrien sind bereits mit anderen Objekten verknüpft.', undefined, 'multipleGeometryLinking');
         }
 
         const poolName = getPoolName(object, fieldConfiguration);
@@ -320,14 +320,15 @@ function getGeometryFilterXml(geometryId) {
 }
 
 
-function throwErrorToFrontend(error, realm) {
+function throwErrorToFrontend(error, description, realm) {
     console.log(JSON.stringify({
         error: {
             code: 'error.nfisGeometry',
             statuscode: 400,
             realm: realm ?? 'api',
             error,
-            parameters: {}
+            parameters: {},
+            description
         }
     }));
 
