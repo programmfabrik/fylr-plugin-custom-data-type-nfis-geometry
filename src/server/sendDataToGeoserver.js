@@ -1,11 +1,15 @@
 const serverConfiguration = require('../serverConfiguration.json');
 
+const info = process.argv.length >= 3
+    ? JSON.parse(process.argv[2])
+    : {};
+
 let input = '';
 process.stdin.on('data', d => {
     try {
         input += d.toString();
-    } catch(e) {
-        console.error(`Could not read input into string: ${e.message}`, e.stack);
+    } catch (err) {
+        console.error(`Could not read input into string: ${err.message}`, err.stack);
         process.exit(1);
     }
 });
@@ -20,7 +24,7 @@ process.stdin.on('end', async () => {
             object[object._objecttype],
             object._objecttype,
             object._uuid,
-            getWFSConfiguration(configuration, object._objecttype),
+            configuration,
             authorizationString
         );
     }
@@ -66,14 +70,19 @@ function getAuthorizationString(serverConfiguration) {
     return btoa(username + ':' + password);
 }
 
-async function updateObject(object, objectType, uuid, wfsConfiguration, authorizationString) {
+async function updateObject(object, objectType, uuid, configuration, authorizationString) {
+    const wfsConfiguration = getWFSConfiguration(configuration, objectType);
     if (!wfsConfiguration) return;
 
     for (let fieldConfiguration of wfsConfiguration.geometry_fields.ValueTable) {
         const geometryIds = getGeometryIds(object, objectType, fieldConfiguration.field_path.ValueText.split('.'));
+        if (geometryIds.length && await hasUsedGeometryIds(configuration, geometryIds, uuid)) {
+            return throwErrorToFrontend('Eine oder mehrere Geometrien sind bereits mit anderen Objekten verknüpft.', 'multipleGeometryLinking');
+        }
+
         const poolName = getPoolName(object, fieldConfiguration);
         if (geometryIds?.length && poolName) {
-            const changeMap = getChangeMap(object, objectType, uuid, fieldConfiguration, poolName);
+            const changeMap = getChangeMap(object, objectType, fieldConfiguration, poolName);
             if (Object.keys(changeMap).length) {
                 await performTransaction(
                     geometryIds, changeMap, fieldConfiguration.wfs_url.ValueText,
@@ -95,6 +104,49 @@ function getGeometryIds(object, objectType, pathSegments) {
     }
 
     return geometryIds;
+}
+
+async function hasUsedGeometryIds(configuration, geometryIds, uuid) {
+    const geometryFieldPaths = getGeometryFieldPaths(configuration);
+    const url = info.api_url + '/api/v1/search?access_token=' + info.api_user_access_token;
+    const searchRequest = {
+        search: geometryIds.map(geometryId => {
+            return {
+                type: 'match',
+                bool: 'should',
+                fields: geometryFieldPaths,
+                string: geometryId
+            };
+        })
+    };
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(searchRequest)
+        });
+        const result = await response.json();
+        return result.objects.length > 1
+            || (result.objects.length === 1 && (!uuid || result.objects[0]._uuid !== uuid));
+    } catch (err) {
+        throwErrorToFrontend('Search request failed', JSON.stringify(err));
+    }    
+}
+
+function getGeometryFieldPaths(configuration) {
+    const fieldPaths = [];
+
+    for (let wfsConfiguration of configuration.wfs_configuration.ValueTable) {
+        const objectType = wfsConfiguration.object_type.ValueText;
+        for (let geometryFieldPath of wfsConfiguration.geometry_fields.ValueTable) {
+            fieldPaths.push(objectType + '.' + geometryFieldPath.field_path.ValueText + '.geometry_ids');
+        }
+    }
+
+    return fieldPaths;
 }
 
 function getFieldValues(object, objectType, pathSegments) {
@@ -132,7 +184,7 @@ function getAllowedPoolNames(fieldConfiguration) {
     });
 }
 
-function getChangeMap(object, objectType, uuid, fieldConfiguration, poolName) {
+function getChangeMap(object, objectType, fieldConfiguration, poolName) {
     const changeMap = {};
     addPoolFieldToChangeMap(fieldConfiguration, poolName, changeMap);
     addDesignationEventStatusFieldToChangeMap(object, objectType, fieldConfiguration, changeMap);
@@ -268,15 +320,14 @@ function getGeometryFilterXml(geometryId) {
 }
 
 
-function throwErrorToFrontend(error, description) {
+function throwErrorToFrontend(error, realm) {
     console.log(JSON.stringify({
         error: {
             code: 'error.nfisGeometry',
             statuscode: 400,
-            realm: 'api',
+            realm: realm ?? 'api',
             error,
-            parameters: {},
-            description
+            parameters: {}
         }
     }));
 

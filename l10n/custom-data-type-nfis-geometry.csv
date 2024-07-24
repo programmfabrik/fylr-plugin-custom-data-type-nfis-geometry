@@ -47,3 +47,4 @@ server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.wfs_event_status_field.label,WFS-Zielfeld für den Status des neuesten Ausweisungsereignisses,WFS target field for the status of the newest designation event 
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.wfs_pool_field.label,WFS-Zielfeld für die Poolbezeichnung,WFS target field for pool name
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.allowed_pool_names.label,Erlaubte Poolbezeichnungen,Allowed pool names
+base.error.realm.multipleGeometryLinking,Mehrfachverknüpfung von Geometrien nicht erlaubt,Multiple linking of geometries not permitted
