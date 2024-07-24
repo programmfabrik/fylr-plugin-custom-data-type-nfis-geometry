@@ -189,7 +189,7 @@ function getChangeMap(object, objectType, fieldConfiguration, poolName) {
     addPoolFieldToChangeMap(fieldConfiguration, poolName, changeMap);
     addDesignationEventStatusFieldToChangeMap(object, objectType, fieldConfiguration, changeMap);
 
-    const fields = fieldConfiguration.fields.ValueTable;
+    const fields = fieldConfiguration.fields?.ValueTable ?? [];
     return fields.reduce((result, field) => {
         const wfsFieldName = field.wfs_field_name.ValueText;
         const fylrFieldName = field.fylr_field_name.ValueText;
