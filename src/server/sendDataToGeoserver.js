@@ -151,7 +151,7 @@ function getGeometryFieldPaths(configuration) {
 
 function getFieldValues(object, objectType, pathSegments) {
     const fieldName = pathSegments.shift();
-    const field = object[fieldName] ?? object['_nested:' + objectType + '__' + fieldName];
+    const field = object[fieldName];
 
     if (field === undefined) {
         return [];
