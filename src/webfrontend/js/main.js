@@ -19,7 +19,7 @@ CustomDataTypeNFISGeometry = (function(superClass) {
         return $$('custom.data.type.nfis.geometry.name');
     }
 
-    Plugin.isEmpty = function(data, top_level_data, opts={}) {
+    Plugin.isEmpty = function(data, topLevelData, opts={}) {
         if (data[this.name()]?.geometry_ids?.length) {
             return false;
         } else {
@@ -48,12 +48,6 @@ CustomDataTypeNFISGeometry = (function(superClass) {
             tags.push($$('custom.data.type.nfis.geometry.wfsFeatureType.none'));
         }
 
-        if (custom_settings.style_id?.value) {
-            tags.push($$('custom.data.type.nfis.geometry.styleId') + ': ' + custom_settings.style_id.value);
-        } else {
-            tags.push($$('custom.data.type.nfis.geometry.styleId.none'));
-        }
-
         if (custom_settings.multi_select?.value) {
             tags.push($$('custom.data.type.nfis.geometry.multiSelect.yes'));
         } else {
@@ -78,7 +72,7 @@ CustomDataTypeNFISGeometry = (function(superClass) {
         return cdata;
     }
 
-    Plugin.renderFieldAsGroup = function(data, top_level_data, opts) {
+    Plugin.renderFieldAsGroup = function(data, topLevelData, opts) {
         return true;
     }
 
@@ -86,16 +80,19 @@ CustomDataTypeNFISGeometry = (function(superClass) {
         return false;
     }
 
-    Plugin.renderEditorInput = function(data, top_level_data, opts) {
+    Plugin.renderEditorInput = function(data, topLevelData, opts) {
         const cdata = this.initData(data);
 
         contentElement = CUI.dom.div();
-        ContentLoader.load(contentElement, cdata, this.__getSchemaSettings(), 'editor');
+        ContentLoader.load(
+            contentElement, cdata, this.__getObjectType(), this.__getFieldPath(),
+            this.__getSchemaSettings(), 'editor'
+        );
 
         return contentElement;
     }
 
-    Plugin.renderDetailOutput = function(data, top_level_data, opts) {
+    Plugin.renderDetailOutput = function(data, topLevelData, opts) {
         const cdata = this.initData(data);
 
         if (!this.__isValidData(cdata)) {
@@ -103,7 +100,10 @@ CustomDataTypeNFISGeometry = (function(superClass) {
         }
 
         const contentElement = CUI.dom.div();
-        ContentLoader.load(contentElement, cdata, this.__getSchemaSettings(), 'detail');
+        ContentLoader.load(
+            contentElement, cdata, this.__getObjectType(), this.__getFieldPath(),
+            this.__getSchemaSettings(), 'detail'
+        );
         
         return contentElement;
     }
@@ -124,10 +124,23 @@ CustomDataTypeNFISGeometry = (function(superClass) {
         return {
             wfsUrl: customSchemaSettings.wfs_url?.value,
             featureType: customSchemaSettings.wfs_feature_type?.value,
-            styleId: customSchemaSettings.style_id?.value,
             masterportalWfsId: customSchemaSettings.wfs_id?.value,
             multiSelect: customSchemaSettings.multi_select.value
         };
+    }
+
+    Plugin.__getObjectType = function() {
+        const path = this.path();
+        return path.includes('.')
+            ? path.slice(0, path.indexOf('.'))
+            : path;
+    }
+
+    Plugin.__getFieldPath = function() {
+        const path = this.path();
+        return path.includes('.')
+            ? path.slice(path.indexOf('.') + 1) + '.' + this.name()
+            : this.name();
     }
 
     Plugin.__isValidData = function(cdata) {

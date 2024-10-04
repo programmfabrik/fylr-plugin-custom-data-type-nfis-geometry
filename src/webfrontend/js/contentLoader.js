@@ -16,51 +16,29 @@ import SLDParser from 'geostyler-sld-parser';
 import OpenLayersParser from 'geostyler-openlayers-parser';
 
 
-export function load(contentElement, cdata, schemaSettings, mode) {    
-    loadWFSData(schemaSettings, cdata.geometry_ids).then(
-        wfsData => renderContent(
-            contentElement, cdata, schemaSettings, mode, wfsData ? wfsData.totalFeatures : 0
-        ),
-        error => console.error(error)
+export function load(contentElement, cdata, objectType, fieldPath, schemaSettings, mode) {
+
+    getStyleObject(objectType, fieldPath).then(
+        styleObject => {
+            const settings = {
+                schema: schemaSettings,
+                styleObject
+            };
+            loadWFSData(settings, cdata.geometry_ids).then(
+                wfsData => renderContent(
+                    contentElement, cdata, settings, mode, wfsData ? wfsData.totalFeatures : 0
+                ),
+                error => console.error(error)
+            );
+        }, error => console.error(error)
     );
 }
 
-function loadWFSData(schemaSettings, geometryIds) {
+function getStyleObject(objectType, fieldPath) {
+    const styleId = getStyleId(objectType, fieldPath);
+
     return new Promise((resolve, reject) => {
-        const wfsUrl = geometryIds?.length ? getWfsUrl(schemaSettings, geometryIds) : undefined;
-        if (!wfsUrl) return resolve(undefined);
-
-        const xhr = new XMLHttpRequest();
-        xhr.open('GET', wfsUrl);
-        xhr.setRequestHeader('Authorization', getAuthorizationString());
-        xhr.onload = function() {
-            if (xhr.status == 200) {
-                const data = JSON.parse(xhr.responseText);
-                resolve(data)
-            } else {
-                reject('Failed to load data from WFS service');
-            }
-        };
-        xhr.onerror = error => {
-            reject(error);
-        };
-        xhr.send();
-    });
-}
-
-function renderContent(contentElement, cdata, schemaSettings, mode, totalFeatures, selectedGeometryId) {
-    getStyleObject(schemaSettings.styleId).then(styleObject => {
-        if (mode === 'detail') {
-            renderDetailContent(contentElement, cdata, schemaSettings, styleObject, totalFeatures);
-        } else {
-            renderEditorContent(contentElement, cdata, schemaSettings, styleObject, totalFeatures, selectedGeometryId);
-        }
-    }, error => console.error(error));
-}
-
-function getStyleObject(styleId) {
-    return new Promise((resolve, reject) => {
-        if (!styleId) return reject('No style object ID provided in schema configuration');
+        if (!styleId) return reject('No style object ID provided in base configuration');
 
         ez5.api.search({
             json_data: {
@@ -84,46 +62,83 @@ function getStyleObject(styleId) {
     });
 }
 
-function renderDetailContent(contentElement, cdata, schemaSettings, styleObject, totalFeatures) {
-    if (totalFeatures === 0) return;
+function getStyleId(objectType, fieldPath) {
+    return getBaseConfig().wfs_configuration.find(objectConfiguration => objectConfiguration.object_type === objectType)
+        ?.geometry_fields.find(fieldConfiguraton => fieldConfiguraton.field_path === fieldPath)
+        ?.style_uuid;
+}
 
-    if (schemaSettings.multiSelect || cdata.geometry_ids?.length > 1) {
-        renderMap(
-            contentElement, cdata, schemaSettings, styleObject, false,
-            renderViewGeometriesButton(contentElement, schemaSettings)
-        );
+function loadWFSData(settings, geometryIds) {
+    return new Promise((resolve, reject) => {
+        const wfsUrl = geometryIds?.length ? getWfsUrl(settings, geometryIds) : undefined;
+        if (!wfsUrl) return resolve(undefined);
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', wfsUrl);
+        xhr.setRequestHeader('Authorization', getAuthorizationString());
+        xhr.onload = function() {
+            if (xhr.status == 200) {
+                const data = JSON.parse(xhr.responseText);
+                resolve(data)
+            } else {
+                reject('Failed to load data from WFS service');
+            }
+        };
+        xhr.onerror = error => {
+            reject(error);
+        };
+        xhr.send();
+    });
+}
+
+function renderContent(contentElement, cdata, settings, mode, totalFeatures, selectedGeometryId) {
+    if (mode === 'detail') {
+        renderDetailContent(contentElement, cdata, settings, totalFeatures);
     } else {
-        renderMap(contentElement, cdata, schemaSettings, styleObject, false);
-        renderViewGeometryButton(contentElement, getGeometryId(cdata), schemaSettings);
+        renderEditorContent(contentElement, cdata, settings, totalFeatures, selectedGeometryId);
     }
 }
 
-function renderEditorContent(contentElement, cdata, schemaSettings, styleObject, totalFeatures, selectedGeometryId) {
-    if (!schemaSettings.multiSelect && cdata.geometry_ids?.length === 1) {
+function renderDetailContent(contentElement, cdata, settings, totalFeatures) {
+    if (totalFeatures === 0) return;
+
+    if (settings.schema.multiSelect || cdata.geometry_ids?.length > 1) {
+        renderMap(
+            contentElement, cdata, settings, false,
+            renderViewGeometriesButton(contentElement, settings)
+        );
+    } else {
+        renderMap(contentElement, cdata, settings, false);
+        renderViewGeometryButton(contentElement, getGeometryId(cdata), settings);
+    }
+}
+
+function renderEditorContent(contentElement, cdata, settings, totalFeatures, selectedGeometryId) {
+    if (!settings.schema.multiSelect && cdata.geometry_ids?.length === 1) {
         selectedGeometryId = cdata.geometry_ids[0];
     }
 
     if (totalFeatures > 0) {
         renderMap(
-            contentElement, cdata, schemaSettings, styleObject,
-            schemaSettings.multiSelect || cdata.geometry_ids?.length > 1
+            contentElement, cdata, settings,
+            settings.schema.multiSelect || cdata.geometry_ids?.length > 1
         );
     }
 
-    renderEditorButtons(contentElement, cdata, schemaSettings, selectedGeometryId);
+    renderEditorButtons(contentElement, cdata, settings, selectedGeometryId);
 }
 
-function renderEditorButtons(contentElement, cdata, schemaSettings, selectedGeometryId) {
+function renderEditorButtons(contentElement, cdata, settings, selectedGeometryId) {
     const buttons = [];
 
     if (!selectedGeometryId) {
-        if (isAddingGeometriesAllowed(cdata, schemaSettings)) {
-            buttons.push(createCreateGeometryButton(contentElement, cdata, schemaSettings));
-            buttons.push(createLinkExistingGeometryButton(contentElement, cdata, schemaSettings));
+        if (isAddingGeometriesAllowed(cdata, settings)) {
+            buttons.push(createCreateGeometryButton(contentElement, cdata, settings));
+            buttons.push(createLinkExistingGeometryButton(contentElement, cdata, settings));
         }
     } else {
-        buttons.push(createEditGeometryButton(contentElement, cdata, schemaSettings, selectedGeometryId));
-        buttons.push(createRemoveGeometryButton(contentElement, cdata, schemaSettings, selectedGeometryId));
+        buttons.push(createEditGeometryButton(contentElement, cdata, settings, selectedGeometryId));
+        buttons.push(createRemoveGeometryButton(contentElement, cdata, settings, selectedGeometryId));
     }
 
     const buttonBarElement = new CUI.Buttonbar({ buttons: buttons });
@@ -131,13 +146,13 @@ function renderEditorButtons(contentElement, cdata, schemaSettings, selectedGeom
     CUI.dom.append(contentElement, buttonBarElement);
 }
 
-function isAddingGeometriesAllowed(cdata, schemaSettings) {
-    return schemaSettings.multiSelect || !cdata.geometry_ids?.length
+function isAddingGeometriesAllowed(cdata, settings) {
+    return settings.schema.multiSelect || !cdata.geometry_ids?.length
 }
 
-function renderViewGeometryButton(contentElement, geometryId, schemaSettings) {
+function renderViewGeometryButton(contentElement, geometryId, settings) {
     const showGeometryButton = new CUI.ButtonHref({
-        href: getViewGeometryUrl(geometryId, schemaSettings),
+        href: getViewGeometryUrl(geometryId, settings),
         target: '_blank',
         icon_left: new CUI.Icon({ class: 'fa-external-link' }),
         text: $$('custom.data.type.nfis.geometry.viewGeometry')
@@ -146,10 +161,10 @@ function renderViewGeometryButton(contentElement, geometryId, schemaSettings) {
     CUI.dom.append(contentElement, showGeometryButton);
 }
 
-function renderViewGeometriesButton(contentElement, schemaSettings) {
+function renderViewGeometriesButton(contentElement, settings) {
     return (extent) => {
         const showGeometryButton = new CUI.ButtonHref({
-            href: getViewGeometriesUrl(extent, schemaSettings),
+            href: getViewGeometriesUrl(extent, settings),
             target: '_blank',
             icon_left: new CUI.Icon({ class: 'fa-external-link' }),
             text: $$('custom.data.type.nfis.geometry.viewGeometry')
@@ -159,52 +174,52 @@ function renderViewGeometriesButton(contentElement, schemaSettings) {
     };
 }
 
-function createEditGeometryButton(contentElement, cdata, schemaSettings, uuid) {
+function createEditGeometryButton(contentElement, cdata, settings, uuid) {
     return new CUI.Button({
         text: $$('custom.data.type.nfis.geometry.editGeometry'),
         icon_left: new CUI.Icon({ class: 'fa-pencil' }),
-        onClick: () => editGeometry(contentElement, cdata, schemaSettings, uuid)
+        onClick: () => editGeometry(contentElement, cdata, settings, uuid)
     });
 }
 
-function createRemoveGeometryButton(contentElement, cdata, schemaSettings, uuid) {
+function createRemoveGeometryButton(contentElement, cdata, settings, uuid) {
     return new CUI.Button({
         text: $$('custom.data.type.nfis.geometry.removeGeometry'),
         icon_left: new CUI.Icon({ class: 'fa-trash' }),
-        onClick: () => removeGeometryId(contentElement, cdata, schemaSettings, uuid)
+        onClick: () => removeGeometryId(contentElement, cdata, settings, uuid)
     });
 }
 
-function createCreateGeometryButton(contentElement, cdata, schemaSettings) {
+function createCreateGeometryButton(contentElement, cdata, settings) {
     return new CUI.Button({
         text: $$('custom.data.type.nfis.geometry.createNewGeometry'),
         icon_left: new CUI.Icon({ class: 'fa-plus' }),
-        onClick: () => createGeometry(contentElement, cdata, schemaSettings)
+        onClick: () => createGeometry(contentElement, cdata, settings)
     });
 }
 
-function createLinkExistingGeometryButton(contentElement, cdata, schemaSettings) {
+function createLinkExistingGeometryButton(contentElement, cdata, settings) {
     const label = $$('custom.data.type.nfis.geometry.linkExistingGeometry');
     return new CUI.Button({
         text: label,
         icon_left: new CUI.Icon({ class: 'fa-link' }),
-        onClick: () => openSetGeometryModal(contentElement, cdata, schemaSettings, label)
+        onClick: () => openSetGeometryModal(contentElement, cdata, settings, label)
     });
 }
 
-function editGeometry(contentElement, cdata, schemaSettings, uuid) {
-    window.open(getEditGeometryUrl(uuid, schemaSettings), '_blank');
-    openEditGeometryModal(contentElement, cdata, schemaSettings);
+function editGeometry(contentElement, cdata, settings, uuid) {
+    window.open(getEditGeometryUrl(uuid, settings), '_blank');
+    openEditGeometryModal(contentElement, cdata, settings);
 }
 
-function createGeometry(contentElement, cdata, schemaSettings) {
+function createGeometry(contentElement, cdata, settings) {
     const newGeometryId = window.crypto.randomUUID();
     navigator.clipboard.writeText(newGeometryId);
     window.open(getCreateGeometryUrl(), '_blank');
-    openCreateGeometryModal(contentElement, cdata, schemaSettings, newGeometryId);
+    openCreateGeometryModal(contentElement, cdata, settings, newGeometryId);
 };
 
-function openEditGeometryModal(contentElement, cdata, schemaSettings) {
+function openEditGeometryModal(contentElement, cdata, settings) {
     const modalDialog = new CUI.ConfirmationDialog({
         title: $$('custom.data.type.nfis.geometry.edit.modal.title'),
         text: $$('custom.data.type.nfis.geometry.edit.modal.text'),
@@ -213,7 +228,7 @@ function openEditGeometryModal(contentElement, cdata, schemaSettings) {
             text: $$('custom.data.type.nfis.geometry.modal.ok'),
             primary: true,
             onClick: () => {
-                reloadEditorContent(contentElement, cdata, schemaSettings);
+                reloadEditorContent(contentElement, cdata, settings);
                 modalDialog.destroy();
             }
         }]
@@ -222,7 +237,7 @@ function openEditGeometryModal(contentElement, cdata, schemaSettings) {
     return modalDialog.show();
 }
 
-function openCreateGeometryModal(contentElement, cdata, schemaSettings, newGeometryId, error) {
+function openCreateGeometryModal(contentElement, cdata, settings, newGeometryId, error) {
     let text = '';
     if (error) text += $$('custom.data.type.nfis.geometry.create.modal.error.notFound') + '\n\n';
     text += $$('custom.data.type.nfis.geometry.create.modal.text.1') + '\n\n'
@@ -240,12 +255,12 @@ function openCreateGeometryModal(contentElement, cdata, schemaSettings, newGeome
             text: $$('custom.data.type.nfis.geometry.modal.ok'),
             primary: true,
             onClick: () => {
-                setGeometryId(contentElement, cdata, schemaSettings, newGeometryId).then(
+                setGeometryId(contentElement, cdata, settings, newGeometryId).then(
                     () => {},
                     error => {
                         if (error) console.error(error);
                         openCreateGeometryModal(
-                            contentElement, cdata, schemaSettings, newGeometryId, true
+                            contentElement, cdata, settings, newGeometryId, true
                         );
                     }
                 );
@@ -257,7 +272,7 @@ function openCreateGeometryModal(contentElement, cdata, schemaSettings, newGeome
     return modalDialog.show();
 }
 
-function openSetGeometryModal(contentElement, cdata, schemaSettings, title, error) {
+function openSetGeometryModal(contentElement, cdata, settings, title, error) {
     let text = $$('custom.data.type.nfis.geometry.set.modal.text');
     if (error) text = $$('custom.data.type.nfis.geometry.set.modal.error.notFound') + '\n\n' + text;
 
@@ -266,26 +281,26 @@ function openSetGeometryModal(contentElement, cdata, schemaSettings, title, erro
         text,
         min_length: 36
     }).done(geometryId => {
-        setGeometryId(contentElement, cdata, schemaSettings, geometryId).then(
+        setGeometryId(contentElement, cdata, settings, geometryId).then(
             () => {},
             error => {
                 if (error) console.error(error);
-                openSetGeometryModal(contentElement, cdata, schemaSettings, title, true);
+                openSetGeometryModal(contentElement, cdata, settings, title, true);
             }
         );
     });
 }
 
-function setGeometryId(contentElement, cdata, schemaSettings, newGeometryId) {
+function setGeometryId(contentElement, cdata, settings, newGeometryId) {
     return new Promise((resolve, reject) => {
-        loadWFSData(schemaSettings, [newGeometryId]).then((wfsData) => {
+        loadWFSData(settings, [newGeometryId]).then((wfsData) => {
             if (wfsData.totalFeatures > 0) {
                 if (!cdata.geometry_ids.includes(newGeometryId)) {
                     cdata.geometry_ids = cdata.geometry_ids.concat([newGeometryId]);
                 }
                 applyChanges(
-                    contentElement, cdata, schemaSettings, wfsData.totalFeatures,
-                    schemaSettings.multiSelect ? undefined : newGeometryId
+                    contentElement, cdata, settings, wfsData.totalFeatures,
+                    settings.schema.multiSelect ? undefined : newGeometryId
                 );
                 resolve();
             } else {
@@ -295,26 +310,26 @@ function setGeometryId(contentElement, cdata, schemaSettings, newGeometryId) {
     });
 }
 
-function removeGeometryId(contentElement, cdata, schemaSettings, uuid) {
+function removeGeometryId(contentElement, cdata, settings, uuid) {
     cdata.geometry_ids = cdata.geometry_ids.filter(geometryId => geometryId !== uuid);
-    applyChanges(contentElement, cdata, schemaSettings, cdata.geometry_ids.length, undefined);
+    applyChanges(contentElement, cdata, settings, cdata.geometry_ids.length, undefined);
 }
 
-function reloadEditorContent(contentElement, cdata, schemaSettings, uuid) {
+function reloadEditorContent(contentElement, cdata, settings, uuid) {
     CUI.dom.removeChildren(contentElement);
-    load(contentElement, cdata, schemaSettings, 'editor', uuid);
+    load(contentElement, cdata, settings, 'editor', uuid);
 }
 
-function applyChanges(contentElement, cdata, schemaSettings, totalFeatures, selectedGeometryId) {
+function applyChanges(contentElement, cdata, settings, totalFeatures, selectedGeometryId) {
     CUI.dom.removeChildren(contentElement);
-    renderContent(contentElement, cdata, schemaSettings, 'editor', totalFeatures, selectedGeometryId);
+    renderContent(contentElement, cdata, settings, 'editor', totalFeatures, selectedGeometryId);
     notifyEditor(contentElement);
 }
 
-function rerenderEditorButtons(contentElement, cdata, schemaSettings, selectedGeometryId) {
+function rerenderEditorButtons(contentElement, cdata, settings, selectedGeometryId) {
     const buttonsBarElement = CUI.dom.findElement(contentElement, '.cui-buttonbar');
     CUI.dom.remove(buttonsBarElement);
-    renderEditorButtons(contentElement, cdata, schemaSettings, selectedGeometryId);
+    renderEditorButtons(contentElement, cdata, settings, selectedGeometryId);
 }
 
 function notifyEditor(contentElement) {
@@ -328,12 +343,12 @@ function notifyEditor(contentElement) {
     });
 }
 
-function renderMap(contentElement, cdata, schemaSettings, styleObject, allowSelection, onLoad) {
+function renderMap(contentElement, cdata, settings, allowSelection, onLoad) {
     const mapElement = CUI.dom.div('nfis-geometry-map');
     CUI.dom.append(contentElement, mapElement);
-    CUI.dom.append(mapElement, createLegendButton(mapElement, styleObject));
+    CUI.dom.append(mapElement, createLegendButton(mapElement, settings.styleObject));
 
-    initializeMap(contentElement, mapElement, cdata, schemaSettings, styleObject, allowSelection, onLoad);
+    initializeMap(contentElement, mapElement, cdata, settings, allowSelection, onLoad);
     
 }
 
@@ -372,7 +387,7 @@ function toggleLegend(legendElement) {
     }
 }
 
-function initializeMap(contentElement, mapElement, cdata, schemaSettings, styleObject, allowSelection, onLoad) {
+function initializeMap(contentElement, mapElement, cdata, settings, allowSelection, onLoad) {
     const projection = getMapProjection();
     const map = new Map({
         target: mapElement,
@@ -385,15 +400,15 @@ function initializeMap(contentElement, mapElement, cdata, schemaSettings, styleO
         interactions: defaults({ mouseWheelZoom: false })
     });
 
-    getVectorStyle(styleObject).then(vectorStyle => {
+    getVectorStyle(settings.styleObject).then(vectorStyle => {
         map.setLayers([
             getRasterLayer(projection),
-            getVectorLayer(map, cdata.geometry_ids, schemaSettings, vectorStyle, onLoad)
+            getVectorLayer(map, cdata.geometry_ids, settings, vectorStyle, onLoad)
         ]);
     
         configureMouseWheelZoom(map);
         if (allowSelection) {
-            configureGeometrySelection(map, contentElement, cdata, schemaSettings);
+            configureGeometrySelection(map, contentElement, cdata, settings);
             configureCursor(map);
         }
     }).catch(error => console.error('Failed to parse SLD data:', error));
@@ -450,8 +465,8 @@ function getRasterSource(projection) {
     });
 }
 
-function getVectorLayer(map, geometryIds, schemaSettings, style, onLoad) {
-    const wfsUrl = getWfsUrl(schemaSettings, geometryIds);
+function getVectorLayer(map, geometryIds, settings, style, onLoad) {
+    const wfsUrl = getWfsUrl(settings, geometryIds);
     const authorizationString = getAuthorizationString();
     const vectorSource = getVectorSource(wfsUrl, authorizationString, onLoad);
 
@@ -508,7 +523,7 @@ function configureMouseWheelZoom(map) {
     });
 }
 
-function configureGeometrySelection(map, contentElement, cdata, schemaSettings) {
+function configureGeometrySelection(map, contentElement, cdata, settings) {
     const select = new Select({
         condition: click,
         style: new Style({
@@ -527,7 +542,7 @@ function configureGeometrySelection(map, contentElement, cdata, schemaSettings) 
         const selectedGeometryId = event.selected.length > 0
             ? event.selected[0].get('ouuid')
             : undefined;
-        rerenderEditorButtons(contentElement, cdata, schemaSettings, selectedGeometryId);
+        rerenderEditorButtons(contentElement, cdata, settings, selectedGeometryId);
     });
 }
 
@@ -539,25 +554,25 @@ function configureCursor(map) {
     });
 }
 
-function getViewGeometryUrl(geometryId, schemaSettings) {
+function getViewGeometryUrl(geometryId, settings) {
     const masterportalUrl = getBaseConfig().masterportal_url;
-    const wfsId = schemaSettings.masterportalWfsId;
+    const wfsId = settings.schema.masterportalWfsId;
     if (!masterportalUrl || !wfsId) return '';
     
     return masterportalUrl + '?zoomToGeometry=' + geometryId;
 }
 
-function getViewGeometriesUrl(extent, schemaSettings) {
+function getViewGeometriesUrl(extent, settings) {
     const masterportalUrl = getBaseConfig().masterportal_url;
-    const wfsId = schemaSettings.masterportalWfsId;
+    const wfsId = settings.schema.masterportalWfsId;
     if (!masterportalUrl || !wfsId) return '';
     
     return masterportalUrl + '?zoomToExtent=' + extent.join(',');
 }
 
-function getEditGeometryUrl(geometryId, schemaSettings) {
+function getEditGeometryUrl(geometryId, settings) {
     const masterportalUrl = getBaseConfig().masterportal_url;
-    const wfsId = schemaSettings.masterportalWfsId;
+    const wfsId = settings.schema.masterportalWfsId;
     if (!masterportalUrl || !wfsId) return '';
     
     return masterportalUrl + '?zoomToGeometry=' + geometryId + '&isinitopen=wfst';
@@ -570,15 +585,15 @@ function getCreateGeometryUrl() {
     return masterportalUrl + '?isinitopen=wfst';
 }
 
-function getWfsUrl(schemaSettings, geometryIds) {
-    let baseUrl = schemaSettings.wfsUrl;
+function getWfsUrl(settings, geometryIds) {
+    let baseUrl = settings.schema.wfsUrl;
 
-    if (!baseUrl || !schemaSettings.featureType) return '';
+    if (!baseUrl || !settings.schema.featureType) return '';
     if (!baseUrl.endsWith('/')) baseUrl += '/';
 
     return baseUrl
         + '?service=WFS&version=1.1.0&request=GetFeature&typename='
-        + schemaSettings.featureType
+        + settings.schema.featureType
         + '&outputFormat=application/json&srsname=EPSG:25832&cql_filter=ouuid in ('
         + geometryIds.map(id => '\'' + id + '\'').join(',')
         + ')';

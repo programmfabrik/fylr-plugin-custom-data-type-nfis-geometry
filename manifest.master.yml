@@ -33,10 +33,6 @@ custom_types:
           parameters:
             value:
               type: text
-        - name: style_id
-          parameters:
-            value:
-              type: text
         - name: multi_select
           parameters:
             value:
@@ -69,12 +65,15 @@ base_config:
               - name: field_path
                 type: text
                 position: 0
-              - name: wfs_url
+              - name: style_uuid
                 type: text
                 position: 1
-              - name: wfs_feature_type
+              - name: wfs_url
                 type: text
                 position: 2
+              - name: wfs_feature_type
+                type: text
+                position: 3
               - name: fields
                 type: table
                 fields:
@@ -84,20 +83,20 @@ base_config:
                   - name: wfs_field_name
                     type: text
                     position: 0
-                position: 3
+                position: 4
               - name: wfs_event_status_field
                 type: text
-                position: 4
+                position: 5
               - name: wfs_pool_field
                 type: text
-                position: 5
+                position: 6
               - name: allowed_pool_names
                 type: table
                 fields:
                   - name: allowed_pool_name
                     type: text
                     position: 0
-                position: 6
+                position: 7
             position: 1
         position: 4
 

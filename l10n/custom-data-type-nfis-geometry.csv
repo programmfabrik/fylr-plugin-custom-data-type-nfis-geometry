@@ -6,8 +6,6 @@ custom.data.type.nfis.geometry.wfsUrl,WFS-URL,WFS URL
 custom.data.type.nfis.geometry.wfsUrl.none,Keine WFS-URL angegeben,No WFS URL specified
 custom.data.type.nfis.geometry.wfsFeatureType,WFS-Feature-Type,WFS feature type
 custom.data.type.nfis.geometry.wfsFeatureType.none,Kein WFS-Feature-Type angegeben,No WFS feature type specified
-custom.data.type.nfis.geometry.styleId,Style-Objekt,Style object
-custom.data.type.nfis.geometry.styleId.none,Kein Style-Objekt angegeben,No style object specified
 custom.data.type.nfis.geometry.multiSelect.yes,Mehrfachauswahl,Multi selection
 custom.data.type.nfis.geometry.multiSelect.no,Keine Mehrfachauswahl,No multi selection
 custom.data.type.nfis.geometry.edit.no_data,Keine Daten vorhanden,No data present
@@ -28,7 +26,6 @@ custom.data.type.nfis.geometry.edit.modal.text,"Bearbeiten Sie die Geometrie im 
 custom.data.type.nfis.geometry.config.parameter.schema.wfs_url.value.label,WFS-URL,WFS URL
 custom.data.type.nfis.geometry.config.parameter.schema.wfs_feature_type.value.label,WFS-Feature-Type,WFS feature type
 custom.data.type.nfis.geometry.config.parameter.schema.wfs_id.value.label,WFS-ID im Masterportal,WFS ID in Masterportal
-custom.data.type.nfis.geometry.config.parameter.schema.style_id.value.label,Style-Objekt (UUID),Style object (UUID)
 custom.data.type.nfis.geometry.config.parameter.schema.multi_select.value.label,Mehrfachauswahl,Multi selection
 custom.data.type.nfis.geometry.config.parameter.schema.multi_select.value.checkbox,Erlauben,Allow
 server.config.name.system.nfisGeoservices,NFIS-Geodienste,NFIS Geoservices
@@ -40,6 +37,7 @@ server.config.parameter.system.nfisGeoservices.wfs_configuration.object_type.lab
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.label,Geometrie-Felder,Geometry fields
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.field_path.label,Feldname (inkl. Pfad),Field name (including path)
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.wfs_url.label,WFS-URL, WFS URL
+server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.style_uuid.label,UUID des Style-Objekts,Style object UUID
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.wfs_feature_type.label,WFS-Feature-Type, WFS feature type
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.fields.label,Zu übertragende Felddaten,Field data to be transferred
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.fields.fylr_field_name.label,Name des Feldes im Fylr-Objekt (inkl. Pfad),Name of field in Fylr object (including path)
