@@ -244,10 +244,7 @@ function addToChangeMap(wfsFieldName, fylrFieldName, fieldValue, changeMap) {
             changeMap[wfsFieldName + '_uri'] = fieldValue.conceptURI;
             changeMap[wfsFieldName + '_text'] = fieldValue.conceptName;
         } else {
-            throwErrorToFrontend(
-                'Invalid field value in field "' + fylrFieldName + '"',
-                JSON.stringify(fieldValue)
-            );
+            throwErrorToFrontend('Invalid field value in field "' + fylrFieldName + '": ' + JSON.stringify(fieldValue));
         }
     }
 }
