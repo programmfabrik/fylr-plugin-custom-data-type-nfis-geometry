@@ -81,7 +81,7 @@ async function updateObject(object, objectType, uuid, configuration, authorizati
         }
 
         const poolName = getPoolName(object, fieldConfiguration);
-        if (geometryIds?.length && poolName) {
+        if (geometryIds?.length && poolName && fieldConfiguration.wfs_url?.ValueText) {
             const changeMap = getChangeMap(object, objectType, fieldConfiguration, poolName);
             if (Object.keys(changeMap).length) {
                 await performTransaction(
@@ -167,6 +167,8 @@ function getFieldValues(object, objectType, pathSegments) {
 }
 
 function getPoolName(object, fieldConfiguration) {
+    if (!object._pool) return undefined;
+
     const allowedPoolNames = getAllowedPoolNames(fieldConfiguration);
     const foundPoolNames = [];
     for (let entry of object._pool._path) {
@@ -181,7 +183,7 @@ function getPoolName(object, fieldConfiguration) {
 function getAllowedPoolNames(fieldConfiguration) {
     return fieldConfiguration.allowed_pool_names?.ValueTable?.map(entry => {
         return entry.allowed_pool_name.ValueText;
-    });
+    }) ?? [];
 }
 
 function getChangeMap(object, objectType, fieldConfiguration, poolName) {
