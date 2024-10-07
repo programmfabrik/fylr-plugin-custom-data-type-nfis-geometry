@@ -9,6 +9,8 @@ custom.data.type.nfis.geometry.wfsFeatureType.none,Kein WFS-Feature-Type angegeb
 custom.data.type.nfis.geometry.multiSelect.yes,Mehrfachauswahl,Multi selection
 custom.data.type.nfis.geometry.multiSelect.no,Keine Mehrfachauswahl,No multi selection
 custom.data.type.nfis.geometry.edit.no_data,Keine Daten vorhanden,No data present
+custom.data.type.nfis.geometry.search.placeholder,Geometrie-ID,Geometry ID
+custom.data.type.nfis.geometry.search.badge.without,Ohne,Without
 custom.data.type.nfis.geometry.createNewGeometry,Neue Geometrie anlegen,Create new geometry
 custom.data.type.nfis.geometry.linkExistingGeometry,Existierende Geometrie verknüpfen,Link existing geometry
 custom.data.type.nfis.geometry.editGeometry,Bearbeiten,Edit

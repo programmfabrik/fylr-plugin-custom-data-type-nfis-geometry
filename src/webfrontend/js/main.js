@@ -119,6 +119,56 @@ CustomDataTypeNFISGeometry = (function(superClass) {
         }
     }
 
+    Plugin.renderSearchInput = function(data, opts) {
+        const inputElement = new CUI.Input({
+            data: data,
+            name: this.name(),
+            placeholder: $$('custom.data.type.nfis.geometry.search.placeholder')
+        });
+
+        CUI.Events.listen({
+            node: inputElement,
+            type: 'data-changed',
+            call: () => {
+                CUI.Events.trigger({
+                    node: inputElement,
+                    type: 'search-input-change'
+                });
+            }
+        });
+
+        return inputElement.start();
+    }
+
+    Plugin.getSearchFilter = function(data, key = this.name()) {
+        if (data[key + ':unset']) {
+            return {
+                type: 'in',
+                bool: 'should',
+                fields: [this.path() + '.' + this.name() + '.geometry_ids'],
+                in: [null],
+                _unnest: true,
+                _unset_filter: true
+            };
+        } else if (data[key]?.length) {
+            return {
+                type: 'match',
+                bool: 'should',
+                fields: [this.path() + '.' + this.name() + '.geometry_ids'],
+                string: data[key]
+            };
+        }
+    }
+
+    Plugin.getQueryFieldBadge = function(data) {
+        return {
+            name: this.nameLocalized(),
+            value: data[this.name()]?.length
+                ? data[this.name()]
+                : $$('custom.data.type.nfis.geometry.search.badge.without')
+        };
+    }
+
     Plugin.__getSchemaSettings = function() {
         const customSchemaSettings = this.getCustomSchemaSettings();
         return {
