@@ -73,7 +73,7 @@ CustomDataTypeNFISGeometry = (function(superClass) {
     }
 
     Plugin.renderFieldAsGroup = function(data, topLevelData, opts) {
-        return true;
+        return false;
     }
 
     Plugin.supportsFacet = function() {
