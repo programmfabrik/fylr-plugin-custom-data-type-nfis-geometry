@@ -33,6 +33,10 @@ custom_types:
           parameters:
             value:
               type: text
+        - name: style_id
+          parameters:
+            value:
+              type: text
         - name: multi_select
           parameters:
             value:

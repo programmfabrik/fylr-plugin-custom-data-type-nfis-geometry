@@ -6,6 +6,8 @@ custom.data.type.nfis.geometry.wfsUrl,WFS-URL,WFS URL
 custom.data.type.nfis.geometry.wfsUrl.none,Keine WFS-URL angegeben,No WFS URL specified
 custom.data.type.nfis.geometry.wfsFeatureType,WFS-Feature-Type,WFS feature type
 custom.data.type.nfis.geometry.wfsFeatureType.none,Kein WFS-Feature-Type angegeben,No WFS feature type specified
+custom.data.type.nfis.geometry.styleId,Style-Objekt,Style object
+custom.data.type.nfis.geometry.styleId.none,Kein Style-Objekt angegeben,No style object specified
 custom.data.type.nfis.geometry.multiSelect.yes,Mehrfachauswahl,Multi selection
 custom.data.type.nfis.geometry.multiSelect.no,Keine Mehrfachauswahl,No multi selection
 custom.data.type.nfis.geometry.edit.no_data,Keine Daten vorhanden,No data present
@@ -28,6 +30,7 @@ custom.data.type.nfis.geometry.edit.modal.text,"Bearbeiten Sie die Geometrie im 
 custom.data.type.nfis.geometry.config.parameter.schema.wfs_url.value.label,WFS-URL,WFS URL
 custom.data.type.nfis.geometry.config.parameter.schema.wfs_feature_type.value.label,WFS-Feature-Type,WFS feature type
 custom.data.type.nfis.geometry.config.parameter.schema.wfs_id.value.label,WFS-ID im Masterportal,WFS ID in Masterportal
+custom.data.type.nfis.geometry.config.parameter.schema.style_id.value.label,Style-Objekt (UUID) - Nicht mehr in Benutzung!,Style object (UUID)
 custom.data.type.nfis.geometry.config.parameter.schema.multi_select.value.label,Mehrfachauswahl,Multi selection
 custom.data.type.nfis.geometry.config.parameter.schema.multi_select.value.checkbox,Erlauben,Allow
 server.config.name.system.nfisGeoservices,NFIS-Geodienste,NFIS Geoservices
