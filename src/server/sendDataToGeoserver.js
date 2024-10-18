@@ -237,7 +237,7 @@ function getLatestDesignationEvent(object, objectType) {
 }
 
 function addToChangeMap(wfsFieldName, fylrFieldName, fieldValue, changeMap) {
-    if (fieldValue) {
+    if (fieldValue && !isEmptyObject(fieldValue)) {
         if (typeof fieldValue === 'string' || typeof fieldValue === 'number') {
             changeMap[wfsFieldName] = fieldValue;
         } else if (isDanteConcept(fieldValue)) {
@@ -247,6 +247,10 @@ function addToChangeMap(wfsFieldName, fylrFieldName, fieldValue, changeMap) {
             throwErrorToFrontend('Invalid field value in field "' + fylrFieldName + '": ' + JSON.stringify(fieldValue));
         }
     }
+}
+
+function isEmptyObject(fieldValue) {
+    return typeof fieldValue === 'object' && Object.keys(fieldValue) === 0;
 }
 
 function isDanteConcept(fieldValue) {
