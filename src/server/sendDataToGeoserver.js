@@ -197,7 +197,7 @@ function getChangeMap(object, objectType, fieldConfiguration, poolName) {
         const fylrFieldName = field.fylr_field_name.ValueText;
         const fieldValues = getFieldValues(object, objectType, fylrFieldName.split('.'));
 
-        addToChangeMap(wfsFieldName, fylrFieldName, fieldValues?.[0], result);
+        addToChangeMap(wfsFieldName, fieldValues?.[0], result);
 
         return result;
     }, changeMap);
@@ -217,7 +217,7 @@ function addDesignationEventStatusFieldToChangeMap(object, objectType, fieldConf
     const latestEvent = getLatestDesignationEvent(object, objectType);
     if (!latestEvent) return;
 
-    addToChangeMap(targetFieldName, 'lk_status', latestEvent.lk_status, changeMap);
+    addToChangeMap(targetFieldName, latestEvent.lk_status, changeMap);
 }
 
 function getLatestDesignationEvent(object, objectType) {
@@ -236,21 +236,15 @@ function getLatestDesignationEvent(object, objectType) {
     return events[0];
 }
 
-function addToChangeMap(wfsFieldName, fylrFieldName, fieldValue, changeMap) {
-    if (fieldValue && !isEmptyObject(fieldValue)) {
-        if (typeof fieldValue === 'string' || typeof fieldValue === 'number') {
-            changeMap[wfsFieldName] = fieldValue;
-        } else if (isDanteConcept(fieldValue)) {
-            changeMap[wfsFieldName + '_uri'] = fieldValue.conceptURI;
-            changeMap[wfsFieldName + '_text'] = fieldValue.conceptName;
-        } else {
-            throwErrorToFrontend('Invalid field value in field "' + fylrFieldName + '": ' + JSON.stringify(fieldValue));
-        }
-    }
-}
+function addToChangeMap(wfsFieldName, fieldValue, changeMap) {
+    if (!fieldValue) return;
 
-function isEmptyObject(fieldValue) {
-    return typeof fieldValue === 'object' && Object.keys(fieldValue) === 0;
+    if (typeof fieldValue === 'string' || typeof fieldValue === 'number') {
+        changeMap[wfsFieldName] = fieldValue;
+    } else if (isDanteConcept(fieldValue)) {
+        changeMap[wfsFieldName + '_uri'] = fieldValue.conceptURI;
+        changeMap[wfsFieldName + '_text'] = fieldValue.conceptName;
+    }
 }
 
 function isDanteConcept(fieldValue) {
