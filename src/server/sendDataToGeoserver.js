@@ -75,7 +75,7 @@ async function updateObject(object, objectType, uuid, configuration, authorizati
     if (!wfsConfiguration) return;
 
     for (let fieldConfiguration of wfsConfiguration.geometry_fields.ValueTable) {
-        const geometryIds = getGeometryIds(object, objectType, fieldConfiguration.field_path.ValueText.split('.'));
+        const geometryIds = getGeometryIds(object, fieldConfiguration.field_path.ValueText.split('.'));
         if (geometryIds.length && await hasUsedGeometryIds(configuration, geometryIds, uuid)) {
             return throwErrorToFrontend('Eine oder mehrere Geometrien sind bereits mit anderen Objekten verknüpft.', undefined, 'multipleGeometryLinking');
         }
@@ -93,10 +93,10 @@ async function updateObject(object, objectType, uuid, configuration, authorizati
     }
 }
 
-function getGeometryIds(object, objectType, pathSegments) {
+function getGeometryIds(object, pathSegments) {
     let geometryIds = [];
 
-    for (let fieldValue of getFieldValues(object, objectType, pathSegments)) {
+    for (let fieldValue of getFieldValues(object, pathSegments)) {
         if (!fieldValue?.geometry_ids?.length) continue;
         geometryIds = geometryIds.concat(
             fieldValue.geometry_ids.filter(value => value !== undefined)
@@ -149,7 +149,7 @@ function getGeometryFieldPaths(configuration) {
     return fieldPaths;
 }
 
-function getFieldValues(object, objectType, pathSegments) {
+function getFieldValues(object, pathSegments) {
     const fieldName = pathSegments.shift();
     const field = object[fieldName];
 
@@ -158,11 +158,11 @@ function getFieldValues(object, objectType, pathSegments) {
     } else if (pathSegments.length === 0) {
         return [field];
     } else if (Array.isArray(field)) {
-        return field.map(entry => getFieldValues(entry, objectType, pathSegments.slice()))
+        return field.map(entry => getFieldValues(entry, pathSegments.slice()))
             .filter(data => data !== undefined)
             .reduce((result, fieldValues) => result.concat(fieldValues), []);
     } else {
-        return getFieldValues(field, objectType, pathSegments);
+        return getFieldValues(field, pathSegments);
     }
 }
 
@@ -195,7 +195,7 @@ function getChangeMap(object, objectType, fieldConfiguration, poolName) {
     return fields.reduce((result, field) => {
         const wfsFieldName = field.wfs_field_name.ValueText;
         const fylrFieldName = field.fylr_field_name.ValueText;
-        const fieldValues = getFieldValues(object, objectType, fylrFieldName.split('.'));
+        const fieldValues = getFieldValues(object, fylrFieldName.split('.'));
 
         addToChangeMap(wfsFieldName, fieldValues?.[0], result);
 
