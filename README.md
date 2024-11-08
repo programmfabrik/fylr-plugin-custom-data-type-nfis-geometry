@@ -1,3 +1,9 @@
+> This Plugin / Repo is being maintained by a community of developers.
+There is no warranty given or bug fixing guarantee; especially not by
+Programmfabrik GmbH. Please use the GitHub issue tracking to report bugs
+and self organize bug fixing. Feel free to directly contact the committing
+developers.
+
 # NFIS Geometry Fylr plugin
 
 This plugin adds the new data type "NFIS Geometry" to a Fylr instance. The data type makes it possible to work with geometries via a Geoserver WFS and a Masterportal instance.
