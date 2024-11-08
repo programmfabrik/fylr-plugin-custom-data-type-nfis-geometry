@@ -30,6 +30,7 @@ custom.data.type.nfis.geometry.config.parameter.schema.wfs_feature_type.value.la
 custom.data.type.nfis.geometry.config.parameter.schema.wfs_id.value.label,WFS-ID im Masterportal,WFS ID in Masterportal
 custom.data.type.nfis.geometry.config.parameter.schema.multi_select.value.label,Mehrfachauswahl,Multi selection
 custom.data.type.nfis.geometry.config.parameter.schema.multi_select.value.checkbox,Erlauben,Allow
+custom.data.type.nfis.geometry.config.parameter.mask.value.value.label,Nicht ausfüllen,Do not fill in
 server.config.name.system.nfisGeoservices,NFIS-Geodienste,NFIS Geoservices
 server.config.parameter.system.nfisGeoservices.masterportal_url.label,Masterportal-URL,Masterportal URL
 server.config.parameter.system.nfisGeoservices.geoserver_username.label,Geoserver: Username,Geoserver: User name

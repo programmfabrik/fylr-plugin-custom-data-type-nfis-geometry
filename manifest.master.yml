@@ -37,10 +37,14 @@ custom_types:
           parameters:
             value:
               type: bool
+      mask:
+        - name: value
+          parameters:
+            value:
+              type: text
     mapping:
       geometry_ids:
         type: text_oneline
-
 base_config:
   - name: nfisGeoservices
     parameters:
