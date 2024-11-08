@@ -20,10 +20,10 @@ CustomDataTypeNFISGeometry = (function(superClass) {
     }
 
     Plugin.isEmpty = function(data, topLevelData, opts={}) {
-        if (data[this.name()]?.geometry_ids?.length) {
-            return false;
+        if (opts.mode == 'expert') {
+            return CUI.util.isEmpty(data[this.name()]?.trim());
         } else {
-            return true;
+            return !data[this.name()]?.geometry_ids?.length;
         }
     }
 
