@@ -18,6 +18,7 @@ process.stdin.on('end', async () => {
     const data = JSON.parse(input);
     const configuration = await getPluginConfiguration();
     const authorizationString = getAuthorizationString(serverConfiguration);
+    const yesId = await getYesId();
 
     for (let object of data.objects) {
         await updateObject(
@@ -25,7 +26,8 @@ process.stdin.on('end', async () => {
             object._objecttype,
             object._uuid,
             configuration,
-            authorizationString
+            authorizationString,
+            yesId
         );
     }
 
@@ -70,7 +72,35 @@ function getAuthorizationString(serverConfiguration) {
     return btoa(username + ':' + password);
 }
 
-async function updateObject(object, objectType, uuid, configuration, authorizationString) {
+async function getYesId() {
+    const url = info.api_url + '/api/v1/search?access_token=' + info.api_user_access_token;
+    const searchRequest = {
+        search: [{
+            type: 'match',
+            bool: 'should',
+            fields: ['ja_nein_objekttyp.name'],
+            string: 'ja'
+        }]
+    };
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(searchRequest)
+        });
+        const result = await response.json();
+        const yesId = result.objects?.[0]?.ja_nein_objekttyp._id;
+        if (!yesId) throwErrorToFrontend('Missing value: ja', 'ja_nein_objekttyp is not set up correctly in Fylr database');
+        return yesId;
+    } catch (err) {
+        throwErrorToFrontend('Search request failed', JSON.stringify(err));
+    }
+}
+
+async function updateObject(object, objectType, uuid, configuration, authorizationString, yesId) {
     const wfsConfiguration = getWFSConfiguration(configuration, objectType);
     if (!wfsConfiguration) return;
 
@@ -82,7 +112,7 @@ async function updateObject(object, objectType, uuid, configuration, authorizati
 
         const poolName = getPoolName(object, fieldConfiguration);
         if (geometryIds?.length && poolName && fieldConfiguration.wfs_url?.ValueText) {
-            const changeMap = getChangeMap(object, objectType, fieldConfiguration, poolName);
+            const changeMap = getChangeMap(object, objectType, fieldConfiguration, poolName, yesId);
             if (Object.keys(changeMap).length) {
                 await performTransaction(
                     geometryIds, changeMap, fieldConfiguration.wfs_url.ValueText,
@@ -186,10 +216,10 @@ function getAllowedPoolNames(fieldConfiguration) {
     }) ?? [];
 }
 
-function getChangeMap(object, objectType, fieldConfiguration, poolName) {
+function getChangeMap(object, objectType, fieldConfiguration, poolName, yesId) {
     const changeMap = {};
     addPoolFieldToChangeMap(fieldConfiguration, poolName, changeMap);
-    addDesignationEventStatusFieldToChangeMap(object, objectType, fieldConfiguration, changeMap);
+    addDesignationEventStatusFieldToChangeMap(object, objectType, fieldConfiguration, changeMap, yesId);
 
     const fields = fieldConfiguration.fields?.ValueTable ?? [];
     return fields.reduce((result, field) => {
@@ -210,23 +240,36 @@ function addPoolFieldToChangeMap(fieldConfiguration, poolName, changeMap) {
     changeMap[targetFieldName] = poolName;
 }
 
-function addDesignationEventStatusFieldToChangeMap(object, objectType, fieldConfiguration, changeMap) {
+function addDesignationEventStatusFieldToChangeMap(object, objectType, fieldConfiguration, changeMap, yesId) {
     const targetFieldName = fieldConfiguration.wfs_event_status_field.ValueText;
     if (!targetFieldName) return;
 
-    const latestEvent = getLatestDesignationEvent(object, objectType);
+    const latestEvent = getLatestDesignationEvent(object, objectType, yesId);
     if (!latestEvent) return;
 
     addToChangeMap(targetFieldName, latestEvent.lk_status, changeMap);
 }
 
-function getLatestDesignationEvent(object, objectType) {
-    const events = object['_nested:' + objectType + '__event']
+function getLatestDesignationEvent(object, objectType, yesId) {
+    const events = getDesignationEvents(object, objectType);
+    const latestEvent = getLatestEvent(events);
+
+    return latestEvent?.lk_veroeffentlichen?.ja_nein_objekttyp?._id === yesId
+        ? latestEvent
+        : undefined;
+}
+
+function getDesignationEvents(object, objectType) {
+    return object['_nested:' + objectType + '__event']
         .filter(event => {
             return event.lk_eventtyp?.conceptName === 'Ausweisung'
                 && event.lk_status !== undefined
-                && event.datum_ausweisung_beginn?.value;
-        });
+                && event.datum_ausweisung_beginn?.value !== undefined;
+            }
+        );
+}
+
+function getLatestEvent(events) {
     if (!events.length) return undefined;
 
     events.sort((event1, event2) => {
