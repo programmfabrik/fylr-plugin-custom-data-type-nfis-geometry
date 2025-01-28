@@ -1,11 +1,5 @@
 key,de-DE,en-US
 custom.data.type.nfis.geometry.name,NFIS-Geometrie,NFIS Geometry
-custom.data.type.nfis.geometry.wfsId,WFS-ID im Masterportal,WFS ID in Masterportal
-custom.data.type.nfis.geometry.wfsId.none,Keine WFS-ID gesetzt,No WFS ID specified
-custom.data.type.nfis.geometry.wfsUrl,WFS-URL,WFS URL
-custom.data.type.nfis.geometry.wfsUrl.none,Keine WFS-URL angegeben,No WFS URL specified
-custom.data.type.nfis.geometry.wfsFeatureType,WFS-Feature-Type,WFS feature type
-custom.data.type.nfis.geometry.wfsFeatureType.none,Kein WFS-Feature-Type angegeben,No WFS feature type specified
 custom.data.type.nfis.geometry.multiSelect.yes,Mehrfachauswahl,Multi selection
 custom.data.type.nfis.geometry.multiSelect.no,Keine Mehrfachauswahl,No multi selection
 custom.data.type.nfis.geometry.edit.no_data,Keine Daten vorhanden,No data present
@@ -25,9 +19,6 @@ custom.data.type.nfis.geometry.set.modal.text,"Bitte geben Sie die ID der Geomet
 custom.data.type.nfis.geometry.set.modal.error.notFound,Die Geometrie konnte nicht gefunden werden.,The geometry could not be found.
 custom.data.type.nfis.geometry.edit.modal.title,Geometrie bearbeiten,Edit geometry
 custom.data.type.nfis.geometry.edit.modal.text,"Bearbeiten Sie die Geometrie im Masterportal und betätigen Sie anschließend den Ok-Button, um die Kartenanzeige zu aktualisieren.","Edit the geometry in Masterportal and then press the Ok button to update the map view."
-custom.data.type.nfis.geometry.config.parameter.schema.wfs_url.value.label,WFS-URL,WFS URL
-custom.data.type.nfis.geometry.config.parameter.schema.wfs_feature_type.value.label,WFS-Feature-Type,WFS feature type
-custom.data.type.nfis.geometry.config.parameter.schema.wfs_id.value.label,WFS-ID im Masterportal,WFS ID in Masterportal
 custom.data.type.nfis.geometry.config.parameter.schema.multi_select.value.label,Mehrfachauswahl,Multi selection
 custom.data.type.nfis.geometry.config.parameter.schema.multi_select.value.checkbox,Erlauben,Allow
 custom.data.type.nfis.geometry.config.parameter.mask.value.value.label,Nicht ausfüllen,Do not fill in
@@ -39,13 +30,18 @@ server.config.parameter.system.nfisGeoservices.wfs_configuration.label,Objekttyp
 server.config.parameter.system.nfisGeoservices.wfs_configuration.object_type.label,Name des Objekttyps,Object type name
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.label,Geometrie-Felder,Geometry fields
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.field_path.label,Feldname (inkl. Pfad),Field name (including path)
-server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.wfs_url.label,WFS-URL (für Datenübertragung), WFS URL (for data transfer)
+server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.display_wfs_url.label,WFS-URL für Kartendarstellung,WFS URL for map display
+server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.display_wfs_feature_type.label,WFS-Feature-Type für Kartendarstellung,WFS feature type for map display
+server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.masterportal_wfs_id.label,WFS-ID im Masterportal,WFS ID in Masterportal
+server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.send_data_to_geoserver.label,Datenübertragung an Geoserver,Data transfer to geoserver
+server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.send_data_to_geoserver.checkbox,Aktivieren,Activate
+server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.edit_wfs_url.label,WFS-URL für Datenübertragung,WFS URL for data transfer
+server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.edit_wfs_feature_type.label,WFS-Feature-Type für Datenübertragung,WFS feature type for data transfer
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.style_uuid.label,UUID des Style-Objekts,Style object UUID
-server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.wfs_feature_type.label,WFS-Feature-Type (für Datenübertragung), WFS feature type (for data transfer)
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.fields.label,Zu übertragende Felddaten,Field data to be transferred
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.fields.fylr_field_name.label,Name des Feldes im Fylr-Objekt (inkl. Pfad),Name of field in Fylr object (including path)
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.fields.wfs_field_name.label,Name des WFS-Zielfeldes,Name of WFS target field
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.wfs_event_status_field.label,WFS-Zielfeld für den Status des neuesten Ausweisungsereignisses,WFS target field for the status of the newest designation event 
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.wfs_pool_field.label,WFS-Zielfeld für die Poolbezeichnung,WFS target field for pool name
-server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.allowed_pool_names.label,Erlaubte Poolbezeichnungen (für Datenübertragung),Allowed pool names (for data transfer)
+server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.allowed_pool_names.label,Erlaubte Poolbezeichnungen für Datenübertragung,Allowed pool names for data transfer
 base.error.realm.multipleGeometryLinking,Mehrfachverknüpfung von Geometrien nicht erlaubt,Multiple linking of geometries not permitted

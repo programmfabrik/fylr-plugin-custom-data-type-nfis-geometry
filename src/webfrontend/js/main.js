@@ -20,7 +20,7 @@ CustomDataTypeNFISGeometry = (function(superClass) {
     }
 
     Plugin.isEmpty = function(data, topLevelData, opts={}) {
-        if (opts.mode == 'expert') {
+        if (opts.mode === 'expert') {
             return CUI.util.isEmpty(data[this.name()]?.trim());
         } else {
             return !data[this.name()]?.geometry_ids?.length;
@@ -29,24 +29,6 @@ CustomDataTypeNFISGeometry = (function(superClass) {
 
     Plugin.getCustomDataOptionsInDatamodelInfo = function(custom_settings) {
         const tags = [];
-
-        if (custom_settings.wfs_id?.value) {
-            tags.push($$('custom.data.type.nfis.geometry.wfsId') + ': ' + custom_settings.wfs_id.value);
-        } else {
-            tags.push($$('custom.data.type.nfis.geometry.wfsId.none'));
-        }
-
-        if (custom_settings.wfs_url?.value) {
-            tags.push($$('custom.data.type.nfis.geometry.wfsUrl') + ': ' + custom_settings.wfs_url.value);
-        } else {
-            tags.push($$('custom.data.type.nfis.geometry.wfsUrl.none'));
-        }
-            
-        if (custom_settings.wfs_feature_type?.value) {
-            tags.push($$('custom.data.type.nfis.geometry.wfsFeatureType') + ': ' + custom_settings.wfs_feature_type.value);
-        } else {
-            tags.push($$('custom.data.type.nfis.geometry.wfsFeatureType.none'));
-        }
 
         if (custom_settings.multi_select?.value) {
             tags.push($$('custom.data.type.nfis.geometry.multiSelect.yes'));
@@ -86,7 +68,7 @@ CustomDataTypeNFISGeometry = (function(superClass) {
         contentElement = CUI.dom.div();
         ContentLoader.load(
             contentElement, cdata, this.__getObjectType(), this.__getFieldPath(),
-            this.__getSchemaSettings(), 'editor'
+            this.__isMultiSelect(), 'editor'
         );
 
         return contentElement;
@@ -102,7 +84,7 @@ CustomDataTypeNFISGeometry = (function(superClass) {
         const contentElement = CUI.dom.div();
         ContentLoader.load(
             contentElement, cdata, this.__getObjectType(), this.__getFieldPath(),
-            this.__getSchemaSettings(), 'detail'
+            this.__isMultiSelect(), 'detail'
         );
         
         return contentElement;
@@ -169,14 +151,9 @@ CustomDataTypeNFISGeometry = (function(superClass) {
         };
     }
 
-    Plugin.__getSchemaSettings = function() {
+    Plugin.__isMultiSelect = function() {
         const customSchemaSettings = this.getCustomSchemaSettings();
-        return {
-            wfsUrl: customSchemaSettings.wfs_url?.value,
-            featureType: customSchemaSettings.wfs_feature_type?.value,
-            masterportalWfsId: customSchemaSettings.wfs_id?.value,
-            multiSelect: customSchemaSettings.multi_select.value
-        };
+        return customSchemaSettings.multi_select.value;
     }
 
     Plugin.__getObjectType = function() {

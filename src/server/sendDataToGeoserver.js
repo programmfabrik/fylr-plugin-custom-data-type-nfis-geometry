@@ -111,16 +111,23 @@ async function updateObject(object, objectType, uuid, configuration, authorizati
         }
 
         const poolName = getPoolName(object, fieldConfiguration);
-        if (geometryIds?.length && poolName && fieldConfiguration.wfs_url?.ValueText) {
+        if (isSendingDataToGeoserverActivated(fieldConfiguration, geometryIds, poolName)) {
             const changeMap = getChangeMap(object, objectType, fieldConfiguration, poolName, yesId);
             if (Object.keys(changeMap).length) {
                 await performTransaction(
-                    geometryIds, changeMap, fieldConfiguration.wfs_url.ValueText,
-                    fieldConfiguration.wfs_feature_type.ValueText, authorizationString
+                    geometryIds, changeMap, fieldConfiguration.edit_wfs_url.ValueText,
+                    fieldConfiguration.edit_wfs_feature_type.ValueText, authorizationString
                 );
             }
         }
     }
+}
+
+function isSendingDataToGeoserverActivated(fieldConfiguration, geometryIds, poolName) {
+    return fieldConfiguration.send_data_to_geoserver?.ValueBool
+        && fieldConfiguration.edit_wfs_url?.ValueText
+        && geometryIds?.length
+        && poolName !== undefined;
 }
 
 function getGeometryIds(object, pathSegments) {
