@@ -200,10 +200,8 @@ function getPoolName(object, fieldConfiguration) {
     if (!object._pool) return undefined;
 
     const allowedPoolNames = getAllowedPoolNames(fieldConfiguration);
-    const foundPoolNames = [];
     for (let entry of object._pool._path) {
         const poolName = entry.pool.name?.['de-DE'];
-        foundPoolNames.push(poolName);
         if (allowedPoolNames.includes(poolName)) return poolName;
     }
 
