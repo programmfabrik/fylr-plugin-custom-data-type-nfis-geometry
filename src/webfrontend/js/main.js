@@ -153,7 +153,7 @@ CustomDataTypeNFISGeometry = (function(superClass) {
 
     Plugin.__isMultiSelect = function() {
         const customSchemaSettings = this.getCustomSchemaSettings();
-        return customSchemaSettings.multi_select.value;
+        return customSchemaSettings.multi_select?.value === true;
     }
 
     Plugin.__getObjectType = function() {
