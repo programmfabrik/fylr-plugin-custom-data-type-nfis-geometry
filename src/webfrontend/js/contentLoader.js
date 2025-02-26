@@ -16,6 +16,9 @@ import SLDParser from 'geostyler-sld-parser';
 import OpenLayersParser from 'geostyler-openlayers-parser';
 
 
+const MISSING_STYLE_OBJECT_ID = 'missingStyleObjectId';
+
+
 export function load(contentElement, cdata, objectType, fieldPath, isMultiSelect, mode) {
     const fieldConfiguration = getFieldConfiguration(objectType, fieldPath);
 
@@ -32,7 +35,13 @@ export function load(contentElement, cdata, objectType, fieldPath, isMultiSelect
                 ),
                 error => console.error(error)
             );
-        }, error => console.error(error)
+        }, error => {
+            if (error === MISSING_STYLE_OBJECT_ID) {
+                console.warn('No style object ID provided in base configuration.');
+            } else {
+                console.error(error);
+            }
+        }
     );
 }
 
@@ -40,7 +49,7 @@ function getStyleObject(fieldConfiguration) {
     const styleId = fieldConfiguration?.style_uuid;
 
     return new Promise((resolve, reject) => {
-        if (!styleId) return reject('No style object ID provided in base configuration');
+        if (!styleId) return reject(MISSING_STYLE_OBJECT_ID);
 
         ez5.api.search({
             json_data: {
