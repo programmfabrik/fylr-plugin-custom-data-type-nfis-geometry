@@ -38,6 +38,7 @@ export function load(contentElement, cdata, objectType, fieldPath, isMultiSelect
         }, error => {
             if (error === MISSING_STYLE_OBJECT_ID) {
                 console.warn('No style object ID provided in base configuration.');
+                renderPlaceholder(contentElement);
             } else {
                 console.error(error);
             }
@@ -94,6 +95,12 @@ function loadWFSData(settings, geometryIds) {
         };
         xhr.send();
     });
+}
+
+function renderPlaceholder(contentElement) {
+
+    const placeholderElement = new CUI.EmptyLabel({ text: $$('custom.data.type.nfis.geometry.unconfigured') });
+    CUI.dom.append(contentElement, placeholderElement);
 }
 
 function renderContent(contentElement, cdata, settings, mode, totalFeatures, selectedGeometryId) {

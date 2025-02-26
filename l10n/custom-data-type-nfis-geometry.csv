@@ -19,6 +19,7 @@ custom.data.type.nfis.geometry.set.modal.text,"Bitte geben Sie die ID der Geomet
 custom.data.type.nfis.geometry.set.modal.error.notFound,Die Geometrie konnte nicht gefunden werden.,The geometry could not be found.
 custom.data.type.nfis.geometry.edit.modal.title,Geometrie bearbeiten,Edit geometry
 custom.data.type.nfis.geometry.edit.modal.text,"Bearbeiten Sie die Geometrie im Masterportal und betätigen Sie anschließend den Ok-Button, um die Kartenanzeige zu aktualisieren.","Edit the geometry in Masterportal and then press the Ok button to update the map view."
+custom.data.type.nfis.geometry.unconfigured,Nicht konfiguriert,Unconfigured
 custom.data.type.nfis.geometry.config.parameter.schema.multi_select.value.label,Mehrfachauswahl,Multi selection
 custom.data.type.nfis.geometry.config.parameter.schema.multi_select.value.checkbox,Erlauben,Allow
 custom.data.type.nfis.geometry.config.parameter.mask.value.value.label,Nicht ausfüllen,Do not fill in
