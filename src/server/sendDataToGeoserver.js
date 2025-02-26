@@ -31,7 +31,7 @@ process.stdin.on('end', async () => {
         );
     }
 
-    console.log(JSON.stringify({'objects': []}));
+    console.log(JSON.stringify({ objects: [] }));
     console.error('No changes');
     process.exit(0);
     return;
@@ -92,9 +92,7 @@ async function getYesId() {
             body: JSON.stringify(searchRequest)
         });
         const result = await response.json();
-        const yesId = result.objects?.[0]?.ja_nein_objekttyp._id;
-        if (!yesId) throwErrorToFrontend('Missing value: ja', 'ja_nein_objekttyp is not set up correctly in Fylr database');
-        return yesId;
+        return result.objects?.[0]?.ja_nein_objekttyp._id;
     } catch (err) {
         throwErrorToFrontend('Search request failed', JSON.stringify(err));
     }
@@ -248,6 +246,8 @@ function addPoolFieldToChangeMap(fieldConfiguration, poolName, changeMap) {
 function addDesignationEventStatusFieldToChangeMap(object, objectType, fieldConfiguration, changeMap, yesId) {
     const targetFieldName = fieldConfiguration.wfs_event_status_field.ValueText;
     if (!targetFieldName) return;
+
+    if (!yesId) throwErrorToFrontend('Missing value: ja', 'ja_nein_objekttyp is not set up correctly in Fylr database');
 
     const latestEvent = getLatestDesignationEvent(object, objectType, yesId);
     if (!latestEvent) return;
