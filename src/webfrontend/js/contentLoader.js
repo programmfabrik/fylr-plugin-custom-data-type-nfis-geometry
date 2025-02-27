@@ -38,7 +38,7 @@ export function load(contentElement, cdata, objectType, fieldPath, isMultiSelect
         }, error => {
             if (error === MISSING_STYLE_OBJECT_ID) {
                 console.warn('No style object ID provided in base configuration.');
-                renderPlaceholder(contentElement);
+                renderPlaceholder(contentElement, 'unconfigured');
             } else {
                 console.error(error);
             }
@@ -97,9 +97,8 @@ function loadWFSData(settings, geometryIds) {
     });
 }
 
-function renderPlaceholder(contentElement) {
-
-    const placeholderElement = new CUI.EmptyLabel({ text: $$('custom.data.type.nfis.geometry.unconfigured') });
+function renderPlaceholder(contentElement, type) {
+    const placeholderElement = new CUI.EmptyLabel({ text: $$('custom.data.type.nfis.geometry.placeholder.' + type) });
     CUI.dom.append(contentElement, placeholderElement);
 }
 
@@ -112,9 +111,9 @@ function renderContent(contentElement, cdata, settings, mode, totalFeatures, sel
 }
 
 function renderDetailContent(contentElement, cdata, settings, totalFeatures) {
-    if (totalFeatures === 0) return;
-
-    if (settings.isMultiSelect || cdata.geometry_ids?.length > 1) {
+    if (totalFeatures === 0) {
+        renderPlaceholder(contentElement, 'empty');
+    } else if (settings.isMultiSelect || cdata.geometry_ids?.length > 1) {
         renderMap(
             contentElement, cdata, settings, false,
             renderViewGeometriesButton(contentElement, settings)
