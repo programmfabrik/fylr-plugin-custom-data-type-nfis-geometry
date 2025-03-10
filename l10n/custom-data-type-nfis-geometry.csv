@@ -34,7 +34,11 @@ server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.field_path.label,Feldname (inkl. Pfad),Field name (including path)
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.display_wfs_url.label,WFS-URL für Kartendarstellung,WFS URL for map display
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.display_wfs_feature_type.label,WFS-Feature-Type für Kartendarstellung,WFS feature type for map display
-server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.masterportal_wfs_id.label,WFS-ID im Masterportal,WFS ID in Masterportal
+server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.masterportal_default_layer_id.label,Masterportal-Layer-ID (Standard),Masterportal layer ID (default)
+server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.masterportal_layer_field_name.label,Name des WFS-Feldes für Zuordnung der Masterportal-Layer-ID,Name of WFS field for assigning Masterportal layer ID
+server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.masterportal_layer_ids.label,Masterportal-Layer-IDs (basierend auf WFS-Feldwert),Masterportal layer IDs (based on WFS field value)
+server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.masterportal_layer_ids.field_value.label,Feldwert,Field value
+server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.masterportal_layer_ids.layer_id.label,Layer-ID,Layer ID
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.send_data_to_geoserver.label,Datenübertragung an Geoserver,Data transfer to geoserver
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.send_data_to_geoserver.checkbox,Aktivieren,Activate
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.edit_wfs_url.label,WFS-URL für Datenübertragung,WFS URL for data transfer

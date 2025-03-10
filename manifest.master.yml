@@ -66,17 +66,31 @@ base_config:
               - name: display_wfs_feature_type
                 type: text
                 position: 3
-              - name: masterportal_wfs_id
+              - name: masterportal_default_layer_id
                 type: text
-              - name: send_data_to_geoserver
-                type: bool
                 position: 4
-              - name: edit_wfs_url
+              - name: masterportal_layer_field_name
                 type: text
                 position: 5
+              - name: masterportal_layer_ids
+                type: table
+                fields:
+                  - name: field_value
+                    type: text
+                    position: 0
+                  - name: layer_id
+                    type: text
+                    position: 1
+                position: 6
+              - name: send_data_to_geoserver
+                type: bool
+                position: 7
+              - name: edit_wfs_url
+                type: text
+                position: 8
               - name: edit_wfs_feature_type
                 type: text
-                position: 6
+                position: 9
               - name: fields
                 type: table
                 fields:
@@ -86,20 +100,20 @@ base_config:
                   - name: wfs_field_name
                     type: text
                     position: 1
-                position: 7
+                position: 10
               - name: wfs_event_status_field
                 type: text
-                position: 8
+                position: 11
               - name: wfs_pool_field
                 type: text
-                position: 9
+                position: 12
               - name: allowed_pool_names
                 type: table
                 fields:
                   - name: allowed_pool_name
                     type: text
                     position: 0
-                position: 10
+                position: 13
             position: 1
         position: 4
 

@@ -30,9 +30,10 @@ export function load(contentElement, cdata, objectType, fieldPath, isMultiSelect
                 fieldConfiguration
             };
             loadWFSData(settings, cdata.geometry_ids).then(
-                wfsData => renderContent(
-                    contentElement, cdata, settings, mode, wfsData ? wfsData.totalFeatures : 0
-                ),
+                wfsData => {
+                    settings.masterportalLayerIds = getMasterportalLayerIds(settings.fieldConfiguration, wfsData);
+                    renderContent(contentElement, cdata, settings, mode, wfsData);
+                },
                 error => console.error(error)
             );
         }, error => {
@@ -102,16 +103,16 @@ function renderPlaceholder(contentElement, type) {
     CUI.dom.append(contentElement, placeholderElement);
 }
 
-function renderContent(contentElement, cdata, settings, mode, totalFeatures, selectedGeometryId) {
+function renderContent(contentElement, cdata, settings, mode, wfsData, selectedGeometryId) {
     if (mode === 'detail') {
-        renderDetailContent(contentElement, cdata, settings, totalFeatures);
+        renderDetailContent(contentElement, cdata, settings, wfsData);
     } else {
-        renderEditorContent(contentElement, cdata, settings, totalFeatures, selectedGeometryId);
+        renderEditorContent(contentElement, cdata, settings, wfsData, selectedGeometryId);
     }
 }
 
-function renderDetailContent(contentElement, cdata, settings, totalFeatures) {
-    if (totalFeatures === 0) {
+function renderDetailContent(contentElement, cdata, settings, wfsData) {
+    if (!wfsData?.totalFeatures) {
         renderPlaceholder(contentElement, 'empty');
     } else if (settings.isMultiSelect || cdata.geometry_ids?.length > 1) {
         renderMap(
@@ -124,12 +125,12 @@ function renderDetailContent(contentElement, cdata, settings, totalFeatures) {
     }
 }
 
-function renderEditorContent(contentElement, cdata, settings, totalFeatures, selectedGeometryId) {
+function renderEditorContent(contentElement, cdata, settings, wfsData, selectedGeometryId) {
     if (!settings.isMultiSelect && cdata.geometry_ids?.length === 1) {
         selectedGeometryId = cdata.geometry_ids[0];
     }
 
-    if (totalFeatures > 0) {
+    if (wfsData?.totalFeatures) {
         renderMap(
             contentElement, cdata, settings,
             settings.isMultiSelect || cdata.geometry_ids?.length > 1
@@ -226,7 +227,7 @@ function editGeometry(contentElement, cdata, settings, uuid) {
 function createGeometry(contentElement, cdata, settings) {
     const newGeometryId = window.crypto.randomUUID();
     navigator.clipboard.writeText(newGeometryId);
-    window.open(getCreateGeometryUrl(), '_blank');
+    window.open(getCreateGeometryUrl(settings), '_blank');
     openCreateGeometryModal(contentElement, cdata, settings, newGeometryId);
 };
 
@@ -330,16 +331,17 @@ function reloadEditorContent(contentElement, cdata, settings) {
     CUI.dom.removeChildren(contentElement);
 
     loadWFSData(settings, cdata.geometry_ids).then(
-        wfsData => renderContent(
-            contentElement, cdata, settings, 'editor', wfsData ? wfsData.totalFeatures : 0
-        ),
+        wfsData => {
+            settings.masterportalLayerIds = getMasterportalLayerIds(settings.fieldConfiguration, wfsData);
+            renderContent(contentElement, cdata, settings, 'editor', wfsData);
+        },
         error => console.error(error)
     );
 }
 
-function applyChanges(contentElement, cdata, settings, totalFeatures, selectedGeometryId) {
+function applyChanges(contentElement, cdata, settings, wfsData, selectedGeometryId) {
     CUI.dom.removeChildren(contentElement);
-    renderContent(contentElement, cdata, settings, 'editor', totalFeatures, selectedGeometryId);
+    renderContent(contentElement, cdata, settings, 'editor', wfsData, selectedGeometryId);
     notifyEditor(contentElement);
 }
 
@@ -571,35 +573,62 @@ function configureCursor(map) {
     });
 }
 
+function getMasterportalLayerIds(fieldConfiguration, wfsData) {
+    const fieldName = fieldConfiguration.masterportal_layer_field_name;
+    const mapping = fieldConfiguration.masterportal_layer_ids;
+
+    let result;
+    if (fieldName && mapping) {
+        result = wfsData.features.map(feature => feature.properties[fieldName])
+            .reduce((result, value) => {
+                const layerId = mapping.find(entry => entry.field_value === value)?.layer_id;
+                if (layerId && !result.includes(layerId)) result.push(layerId);
+                return result;
+            }, []);
+    }
+
+    if (result?.length) {
+        return result;
+    } else {
+        const defaultLayerId = fieldConfiguration.masterportal_default_layer_id;
+        return defaultLayerId ? [defaultLayerId] : [];
+    }
+}
+
 function getViewGeometryUrl(settings, geometryId) {
     const masterportalUrl = getBaseConfiguration().masterportal_url;
-    const wfsId = settings.fieldConfiguration.masterportal_wfs_id;
-    if (!masterportalUrl || !wfsId) return '';
+    if (!masterportalUrl || !settings.masterportalLayerIds?.length) return '';
     
-    return masterportalUrl + '?zoomToGeometry=' + geometryId;
+    return masterportalUrl + '?zoomToGeometry=' + geometryId + getLayersUrlParameter(settings);
 }
 
 function getViewGeometriesUrl(settings, extent) {
     const masterportalUrl = getBaseConfiguration().masterportal_url;
-    const wfsId = settings.fieldConfiguration.masterportal_wfs_id;
-    if (!masterportalUrl || !wfsId) return '';
+    if (!masterportalUrl || !settings.masterportalLayerIds?.length) return '';
     
-    return masterportalUrl + '?zoomToExtent=' + extent.join(',');
+    return masterportalUrl + '?zoomToExtent=' + extent.join(',') + getLayersUrlParameter(settings);
 }
 
 function getEditGeometryUrl(settings, geometryId) {
     const masterportalUrl = getBaseConfiguration().masterportal_url;
-    const wfsId = settings.fieldConfiguration.masterportal_wfs_id;
-    if (!masterportalUrl || !wfsId) return '';
+    if (!masterportalUrl || !settings.masterportalLayerIds?.length) return '';
     
-    return masterportalUrl + '?zoomToGeometry=' + geometryId + '&isinitopen=wfst';
+    return masterportalUrl + '?zoomToGeometry=' + geometryId + '&isinitopen=wfst' + getLayersUrlParameter(settings);
 }
 
-function getCreateGeometryUrl() {
+function getCreateGeometryUrl(settings) {
     const masterportalUrl = getBaseConfiguration().masterportal_url;
-    if (!masterportalUrl) return '';
+    if (!masterportalUrl || !settings.masterportalLayerIds?.length) return '';
     
-    return masterportalUrl + '?isinitopen=wfst';
+    return masterportalUrl + '?isinitopen=wfst' + getLayersUrlParameter(settings);
+}
+
+function getLayersUrlParameter(settings) {
+   return '&layers=' + JSON.stringify(
+        settings.masterportalLayerIds.map(layerId => {
+            return { id: layerId, visibility: true }
+        })
+    );
 }
 
 function getWfsUrl(settings, geometryIds) {
