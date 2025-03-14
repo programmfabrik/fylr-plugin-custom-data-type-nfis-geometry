@@ -574,17 +574,17 @@ function configureCursor(map) {
 }
 
 function getMasterportalLayerIds(fieldConfiguration, wfsData) {
-    const mainLayerIds = getMainMasterportalLayerIds(fieldConfiguration, wfsData);
-    const additionalLayerId = fieldConfiguration.masterportal_additional_layer_id;
-
-    return additionalLayerId
-        ? mainLayerIds.concat([additionalLayerId])
-        : mainLayerIds;
+    const rasterLayerId = fieldConfiguration.masterportal_raster_layer_id;
+    const vectorLayerIds = getMasterportalVectorLayerIds(fieldConfiguration, wfsData);
+    
+    return rasterLayerId
+        ? [rasterLayerId].concat(vectorLayerIds)
+        : vectorLayerIds;
 }
 
-function getMainMasterportalLayerIds(fieldConfiguration, wfsData) {
-    const fieldName = fieldConfiguration.masterportal_layer_field_name;
-    const mapping = fieldConfiguration.masterportal_layer_ids;
+function getMasterportalVectorLayerIds(fieldConfiguration, wfsData) {
+    const fieldName = fieldConfiguration.masterportal_vector_layer_field_name;
+    const mapping = fieldConfiguration.masterportal_vector_layer_ids;
 
     let result;
     if (fieldName && mapping && wfsData) {
@@ -599,7 +599,7 @@ function getMainMasterportalLayerIds(fieldConfiguration, wfsData) {
     if (result?.length) {
         return result;
     } else {
-        const defaultLayerId = fieldConfiguration.masterportal_default_layer_id;
+        const defaultLayerId = fieldConfiguration.masterportal_default_vector_layer_id;
         return defaultLayerId ? [defaultLayerId] : [];
     }
 }

@@ -66,16 +66,16 @@ base_config:
               - name: display_wfs_feature_type
                 type: text
                 position: 3
-              - name: masterportal_default_layer_id
+              - name: masterportal_raster_layer_id
                 type: text
                 position: 4
-              - name: masterportal_additional_layer_id
+              - name: masterportal_default_vector_layer_id
                 type: text
                 position: 5
-              - name: masterportal_layer_field_name
+              - name: masterportal_vector_layer_field_name
                 type: text
                 position: 6
-              - name: masterportal_layer_ids
+              - name: masterportal_vector_layer_ids
                 type: table
                 fields:
                   - name: field_value
