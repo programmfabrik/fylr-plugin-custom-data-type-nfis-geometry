@@ -624,11 +624,7 @@ function getCreateGeometryUrl(settings) {
 }
 
 function getLayersUrlParameter(settings) {
-   return '&layers=' + JSON.stringify(
-        settings.masterportalLayerIds.map(layerId => {
-            return { id: layerId, visibility: true }
-        })
-    );
+   return '&layerids=' + settings.masterportalLayerIds.join(',');
 }
 
 function getWfsUrl(settings, geometryIds) {
