@@ -578,7 +578,7 @@ function getMasterportalLayerIds(fieldConfiguration, wfsData) {
     const mapping = fieldConfiguration.masterportal_layer_ids;
 
     let result;
-    if (fieldName && mapping) {
+    if (fieldName && mapping && wfsData) {
         result = wfsData.features.map(feature => feature.properties[fieldName])
             .reduce((result, value) => {
                 const layerId = mapping.find(entry => entry.field_value === value)?.layer_id;
