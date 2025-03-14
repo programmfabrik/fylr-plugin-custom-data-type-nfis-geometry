@@ -35,6 +35,7 @@ server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.display_wfs_url.label,WFS-URL für Kartendarstellung,WFS URL for map display
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.display_wfs_feature_type.label,WFS-Feature-Type für Kartendarstellung,WFS feature type for map display
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.masterportal_default_layer_id.label,Masterportal-Layer-ID (Standard),Masterportal layer ID (default)
+server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.masterportal_additional_layer_id.label,Masterportal-Layer-ID (Zusatz),Masterportal layer ID (additional)
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.masterportal_layer_field_name.label,Name des WFS-Feldes für Zuordnung der Masterportal-Layer-ID,Name of WFS field for assigning Masterportal layer ID
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.masterportal_layer_ids.label,Masterportal-Layer-IDs (basierend auf WFS-Feldwert),Masterportal layer IDs (based on WFS field value)
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.masterportal_layer_ids.field_value.label,Feldwert,Field value

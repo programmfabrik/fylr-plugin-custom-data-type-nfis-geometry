@@ -574,6 +574,15 @@ function configureCursor(map) {
 }
 
 function getMasterportalLayerIds(fieldConfiguration, wfsData) {
+    const mainLayerIds = getMainMasterportalLayerIds(fieldConfiguration, wfsData);
+    const additionalLayerId = fieldConfiguration.masterportal_additional_layer_id;
+
+    return additionalLayerId
+        ? mainLayerIds.concat([additionalLayerId])
+        : mainLayerIds;
+}
+
+function getMainMasterportalLayerIds(fieldConfiguration, wfsData) {
     const fieldName = fieldConfiguration.masterportal_layer_field_name;
     const mapping = fieldConfiguration.masterportal_layer_ids;
 
