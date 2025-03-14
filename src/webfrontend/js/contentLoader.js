@@ -111,14 +111,11 @@ function renderContent(contentElement, cdata, settings, mode, wfsData, selectedG
 function renderDetailContent(contentElement, cdata, settings, wfsData) {
     if (!wfsData?.totalFeatures) {
         renderPlaceholder(contentElement, 'empty');
-    } else if (settings.isMultiSelect || cdata.geometry_ids?.length > 1) {
+    } else {
         renderMap(
             contentElement, cdata, settings, wfsData, false,
             renderViewGeometriesButton(contentElement, settings, wfsData)
         );
-    } else {
-        renderMap(contentElement, cdata, settings, wfsData, false);
-        renderViewGeometryButton(contentElement, settings, wfsData, getGeometryId(cdata));
     }
 }
 
@@ -157,17 +154,6 @@ function renderEditorButtons(contentElement, cdata, settings, wfsData, selectedG
 
 function isAddingGeometriesAllowed(cdata, settings) {
     return settings.isMultiSelect || !cdata.geometry_ids?.length
-}
-
-function renderViewGeometryButton(contentElement, settings, wfsData, geometryId) {
-    const showGeometryButton = new CUI.ButtonHref({
-        href: getViewGeometryUrl(settings, wfsData, geometryId),
-        target: '_blank',
-        icon_left: new CUI.Icon({ class: 'fa-external-link' }),
-        text: $$('custom.data.type.nfis.geometry.viewGeometry')
-    });
-
-    CUI.dom.append(contentElement, showGeometryButton);
 }
 
 function renderViewGeometriesButton(contentElement, settings, wfsData) {
@@ -217,7 +203,10 @@ function createLinkExistingGeometryButton(contentElement, cdata, settings) {
 }
 
 function editGeometry(contentElement, cdata, settings, wfsData, uuid) {
-    window.open(getEditGeometryUrl(settings, wfsData, uuid), '_blank');
+    const extent = wfsData?.features.find(feature => feature.properties.ouuid === uuid)?.bbox;
+    if (!extent) return;
+
+    window.open(getEditGeometryUrl(settings, wfsData, extent), '_blank');
     openEditGeometryModal(contentElement, cdata, settings, wfsData);
 }
 
@@ -567,28 +556,20 @@ function configureCursor(map) {
     });
 }
 
-function getViewGeometryUrl(settings, wfsData, geometryId) {
-    const masterportalUrl = getBaseConfiguration().masterportal_url;
-    const layerIds = getMasterportalLayerIds(settings.fieldConfiguration, wfsData);
-    if (!masterportalUrl || !layerIds.length) return '';
-    
-    return masterportalUrl + '?zoomToGeometry=' + geometryId + '&layerids=' + layerIds.join(',')
-}
-
 function getViewGeometriesUrl(settings, wfsData, extent) {
     const masterportalUrl = getBaseConfiguration().masterportal_url;
     const layerIds = getMasterportalLayerIds(settings.fieldConfiguration, wfsData);
     if (!masterportalUrl || !layerIds.length) return '';
     
-    return masterportalUrl + '?zoomToExtent=' + extent.join(',') + '&layerids=' + layerIds.join(',')
+    return masterportalUrl + '?zoomToExtent=' + extent.join(',') + '&layerids=' + layerIds.join(',');
 }
 
-function getEditGeometryUrl(settings, wfsData, geometryId) {
+function getEditGeometryUrl(settings, wfsData, extent) {
     const masterportalUrl = getBaseConfiguration().masterportal_url;
     const layerIds = getMasterportalLayerIds(settings.fieldConfiguration, wfsData);
     if (!masterportalUrl || !layerIds.length) return '';
     
-    return masterportalUrl + '?zoomToGeometry=' + geometryId + '&isinitopen=wfst' + '&layerids=' + layerIds.join(',')
+    return masterportalUrl + '?zoomToExtent=' + extent.join(',') + '&isinitopen=wfst' + '&layerids=' + layerIds.join(',');
 }
 
 function getCreateGeometryUrl(settings, wfsData) {
