@@ -37,7 +37,12 @@ make
         * *Style object UUID*: The UUID of the style object to be used for this geometry field
         * *WFS URL for map display*: The base URL of the WFS to be used for displaying data on the map provided by the plugin. It has to be a WFS provided by the configured Geoserver instance. No data is changed via this WFS.
         * *WFS feature type for map display*: The feature type to use when displaying data on the map
-        * *WFS ID in Masterportal*: The ID of the layer used for displaying the WFS data in Masterportal. This ID can be found in the services configuration file of the Masterportal instance.
+        * *Masterportal: Raster layer ID*: The ID of a raster layer that should be displayed in addition to the vector data in Masterportal.
+        * *Masterportal: Vector layer ID (Default)*: The ID of the default layer used for displaying WFS data in Masterportal. This layer is used if no other layers are configured or if no geometries have been added yet to a geometry field.
+        * *Masterportal: Name of WFS field for assigning Masterportal vector layer ID*: The value of this field is used for selecting Masterportal layers based on WFS data (see next setting)
+        * *Masterportal: Vector layer IDs (based on WFS field value)*:
+           * *Field value*: If this value is found in the configured WFS field, the corresponding layer is shown in Masterportal
+           * *Layer ID*: The ID of the layer to show in Masterportal
         * *Data transfer to geoserver*: If activated, field data is transferred from the Fylr object to the Geoserver (via the configured WFS).
         * *WFS URL for data transfer*: The base URL of the WFS to be used for transferring data to the Geoserver. It has to be a WFS-T provided by the configured Geoserver instance.
         * *WFS feature type for data transfer*: The feature type to use when writing data to the WFS
