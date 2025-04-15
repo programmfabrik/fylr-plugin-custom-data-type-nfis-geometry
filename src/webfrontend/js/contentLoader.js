@@ -127,29 +127,32 @@ function renderEditorContent(contentElement, cdata, settings, wfsData, selectedG
     if (wfsData?.totalFeatures) {
         renderMap(
             contentElement, cdata, settings, wfsData,
-            settings.isMultiSelect || cdata.geometry_ids?.length > 1
+            settings.isMultiSelect || cdata.geometry_ids?.length > 1,
+            renderEditorButtons(contentElement, cdata, settings, wfsData, selectedGeometryId)
         );
+    } else {
+        renderEditorButtons(contentElement, cdata, settings, wfsData, selectedGeometryId)(undefined);
     }
-
-    renderEditorButtons(contentElement, cdata, settings, wfsData, selectedGeometryId);
 }
 
 function renderEditorButtons(contentElement, cdata, settings, wfsData, selectedGeometryId) {
-    const buttons = [];
+    return extent => {
+        const buttons = [];
 
-    if (!selectedGeometryId) {
-        if (isAddingGeometriesAllowed(cdata, settings)) {
-            buttons.push(createCreateGeometryButton(contentElement, cdata, settings, wfsData));
-            buttons.push(createLinkExistingGeometryButton(contentElement, cdata, settings));
+        if (!selectedGeometryId) {
+            if (isAddingGeometriesAllowed(cdata, settings)) {
+                buttons.push(createCreateGeometryButton(contentElement, cdata, settings, wfsData, extent));
+                buttons.push(createLinkExistingGeometryButton(contentElement, cdata, settings));
+            }
+        } else {
+            buttons.push(createEditGeometryButton(contentElement, cdata, settings, wfsData, selectedGeometryId));
+            buttons.push(createRemoveGeometryButton(contentElement, cdata, settings, selectedGeometryId));
         }
-    } else {
-        buttons.push(createEditGeometryButton(contentElement, cdata, settings, wfsData, selectedGeometryId));
-        buttons.push(createRemoveGeometryButton(contentElement, cdata, settings, selectedGeometryId));
+
+        const buttonBarElement = new CUI.Buttonbar({ buttons: buttons });
+
+        CUI.dom.append(contentElement, buttonBarElement);
     }
-
-    const buttonBarElement = new CUI.Buttonbar({ buttons: buttons });
-
-    CUI.dom.append(contentElement, buttonBarElement);
 }
 
 function isAddingGeometriesAllowed(cdata, settings) {
@@ -157,7 +160,7 @@ function isAddingGeometriesAllowed(cdata, settings) {
 }
 
 function renderViewGeometriesButton(contentElement, settings, wfsData) {
-    return (extent) => {
+    return extent => {
         const showGeometryButton = new CUI.ButtonHref({
             href: getViewGeometriesUrl(settings, wfsData, extent),
             target: '_blank',
@@ -185,11 +188,11 @@ function createRemoveGeometryButton(contentElement, cdata, settings, uuid) {
     });
 }
 
-function createCreateGeometryButton(contentElement, cdata, settings, wfsData) {
+function createCreateGeometryButton(contentElement, cdata, settings, wfsData, extent) {
     return new CUI.Button({
         text: $$('custom.data.type.nfis.geometry.createNewGeometry'),
         icon_left: new CUI.Icon({ class: 'fa-plus' }),
-        onClick: () => createGeometry(contentElement, cdata, settings, wfsData)
+        onClick: () => createGeometry(contentElement, cdata, settings, wfsData, extent)
     });
 }
 
@@ -210,10 +213,10 @@ function editGeometry(contentElement, cdata, settings, wfsData, uuid) {
     openEditGeometryModal(contentElement, cdata, settings, wfsData);
 }
 
-function createGeometry(contentElement, cdata, settings, wfsData) {
+function createGeometry(contentElement, cdata, settings, wfsData, extent) {
     const newGeometryId = window.crypto.randomUUID();
     navigator.clipboard.writeText(newGeometryId);
-    window.open(getCreateGeometryUrl(settings, wfsData), '_blank');
+    window.open(getEditGeometryUrl(settings, wfsData, extent), '_blank');
     openCreateGeometryModal(contentElement, cdata, settings, newGeometryId);
 };
 
@@ -328,10 +331,10 @@ function applyChanges(contentElement, cdata, settings, wfsData, selectedGeometry
     notifyEditor(contentElement);
 }
 
-function rerenderEditorButtons(contentElement, cdata, settings, wfsData, selectedGeometryId) {
+function rerenderEditorButtons(contentElement, cdata, settings, wfsData, extent, selectedGeometryId) {
     const buttonsBarElement = CUI.dom.findElement(contentElement, '.cui-buttonbar');
     CUI.dom.remove(buttonsBarElement);
-    renderEditorButtons(contentElement, cdata, settings, wfsData, selectedGeometryId);
+    renderEditorButtons(contentElement, cdata, settings, wfsData, selectedGeometryId)(extent);
 }
 
 function notifyEditor(contentElement) {
@@ -403,16 +406,21 @@ function initializeMap(contentElement, mapElement, cdata, settings, wfsData, all
     });
 
     getVectorStyle(settings.styleObject).then(vectorStyle => {
-        map.setLayers([
-            getRasterLayer(projection),
-            getVectorLayer(map, cdata.geometry_ids, settings, vectorStyle, onLoad)
-        ]);
+        const rasterLayer = getRasterLayer(projection);
+        const vectorLayer = getVectorLayer(cdata.geometry_ids, settings, vectorStyle);
+        map.setLayers([rasterLayer, vectorLayer]);
+
+        vectorLayer.getSource().on('featuresloadend', () => {
+            const extent = vectorLayer.getSource().getExtent();
+            map.getView().fit(extent, { padding: [20, 20, 20, 20] });
+            if (onLoad) onLoad(extent);
     
-        configureMouseWheelZoom(map);
-        if (allowSelection) {
-            configureGeometrySelection(map, contentElement, cdata, settings, wfsData);
-            configureCursor(map);
-        }
+            configureMouseWheelZoom(map);
+            if (allowSelection) {
+                configureGeometrySelection(map, contentElement, cdata, settings, wfsData, extent);
+                configureCursor(map);
+            }
+        }); 
     }).catch(error => console.error('Failed to parse SLD data:', error));
 }
 
@@ -467,16 +475,10 @@ function getRasterSource(projection) {
     });
 }
 
-function getVectorLayer(map, geometryIds, settings, style, onLoad) {
+function getVectorLayer(geometryIds, settings, style) {
     const wfsUrl = getWfsUrl(settings, geometryIds);
     const authorizationString = getAuthorizationString();
-    const vectorSource = getVectorSource(wfsUrl, authorizationString, onLoad);
-
-    vectorSource.on('featuresloadend', () => {
-        const extent = vectorSource.getExtent();
-        map.getView().fit(extent, { padding: [20, 20, 20, 20] });
-        if (onLoad) onLoad(extent);
-    });
+    const vectorSource = getVectorSource(wfsUrl, authorizationString);
 
     return new VectorLayer({
         source: vectorSource,
@@ -525,7 +527,7 @@ function configureMouseWheelZoom(map) {
     });
 }
 
-function configureGeometrySelection(map, contentElement, cdata, settings, wfsData) {
+function configureGeometrySelection(map, contentElement, cdata, settings, wfsData, extent) {
     const select = new Select({
         condition: click,
         style: new Style({
@@ -544,7 +546,7 @@ function configureGeometrySelection(map, contentElement, cdata, settings, wfsDat
         const selectedGeometryId = event.selected.length > 0
             ? event.selected[0].get('ouuid')
             : undefined;
-        rerenderEditorButtons(contentElement, cdata, settings, wfsData, selectedGeometryId);
+        rerenderEditorButtons(contentElement, cdata, settings, wfsData, extent, selectedGeometryId);
     });
 }
 
@@ -569,15 +571,9 @@ function getEditGeometryUrl(settings, wfsData, extent) {
     const layerIds = getMasterportalLayerIds(settings.fieldConfiguration, wfsData);
     if (!masterportalUrl || !layerIds.length) return '';
     
-    return masterportalUrl + '?zoomToExtent=' + extent.join(',') + '&isinitopen=wfst' + '&layerids=' + layerIds.join(',');
-}
-
-function getCreateGeometryUrl(settings, wfsData) {
-    const masterportalUrl = getBaseConfiguration().masterportal_url;
-    const layerIds = getMasterportalLayerIds(settings.fieldConfiguration, wfsData, true);
-    if (!masterportalUrl || !layerIds.length) return '';
-    
-    return masterportalUrl + '?isinitopen=wfst&layerids=' + layerIds.join(',')
+    let url = masterportalUrl + '?';
+    if (extent) url += 'zoomToExtent=' + extent.join(',') + '&';
+    return url + 'isinitopen=wfst&layerids=' + layerIds.join(',');
 }
 
 function getMasterportalLayerIds(fieldConfiguration, wfsData, includeAll = false) {
