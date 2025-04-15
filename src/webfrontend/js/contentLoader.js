@@ -146,7 +146,7 @@ function renderEditorButtons(contentElement, cdata, settings, wfsData, selectedG
             }
         } else {
             buttons.push(createEditGeometryButton(contentElement, cdata, settings, wfsData, selectedGeometryId));
-            buttons.push(createRemoveGeometryButton(contentElement, cdata, settings, selectedGeometryId));
+            buttons.push(createRemoveGeometryButton(contentElement, cdata, settings, wfsData, selectedGeometryId));
         }
 
         const buttonBarElement = new CUI.Buttonbar({ buttons: buttons });
@@ -180,11 +180,11 @@ function createEditGeometryButton(contentElement, cdata, settings, wfsData, uuid
     });
 }
 
-function createRemoveGeometryButton(contentElement, cdata, settings, uuid) {
+function createRemoveGeometryButton(contentElement, cdata, settings, wfsData, uuid) {
     return new CUI.Button({
         text: $$('custom.data.type.nfis.geometry.removeGeometry'),
         icon_left: new CUI.Icon({ class: 'fa-trash' }),
-        onClick: () => removeGeometryId(contentElement, cdata, settings, uuid)
+        onClick: () => removeGeometryId(contentElement, cdata, settings, wfsData, uuid)
     });
 }
 
@@ -311,9 +311,9 @@ function setGeometryId(contentElement, cdata, settings, newGeometryId) {
     });
 }
 
-function removeGeometryId(contentElement, cdata, settings, uuid) {
+function removeGeometryId(contentElement, cdata, settings, wfsData, uuid) {
     cdata.geometry_ids = cdata.geometry_ids.filter(geometryId => geometryId !== uuid);
-    applyChanges(contentElement, cdata, settings, cdata.geometry_ids.length, undefined);
+    applyChanges(contentElement, cdata, settings, wfsData, undefined);
 }
 
 function reloadEditorContent(contentElement, cdata, settings) {
