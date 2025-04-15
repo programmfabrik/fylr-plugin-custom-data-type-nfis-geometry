@@ -297,7 +297,7 @@ function setGeometryId(contentElement, cdata, settings, newGeometryId) {
                     cdata.geometry_ids = cdata.geometry_ids.concat([newGeometryId]);
                 }
                 applyChanges(
-                    contentElement, cdata, settings, wfsData.totalFeatures,
+                    contentElement, cdata, settings, wfsData,
                     settings.isMultiSelect ? undefined : newGeometryId
                 );
                 resolve();
