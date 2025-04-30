@@ -18,7 +18,6 @@ process.stdin.on('end', async () => {
     const data = JSON.parse(input);
     const configuration = await getPluginConfiguration();
     const authorizationString = getAuthorizationString(serverConfiguration);
-    const yesId = await getYesId();
 
     for (let object of data.objects) {
         await updateObject(
@@ -26,8 +25,7 @@ process.stdin.on('end', async () => {
             object._objecttype,
             object._uuid,
             configuration,
-            authorizationString,
-            yesId
+            authorizationString
         );
     }
 
@@ -72,33 +70,7 @@ function getAuthorizationString(serverConfiguration) {
     return btoa(username + ':' + password);
 }
 
-async function getYesId() {
-    const url = info.api_url + '/api/v1/search?access_token=' + info.api_user_access_token;
-    const searchRequest = {
-        search: [{
-            type: 'match',
-            bool: 'should',
-            fields: ['ja_nein_objekttyp.name'],
-            string: 'ja'
-        }]
-    };
-
-    try {
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(searchRequest)
-        });
-        const result = await response.json();
-        return result.objects?.[0]?.ja_nein_objekttyp._id;
-    } catch (err) {
-        throwErrorToFrontend('Search request failed', JSON.stringify(err));
-    }
-}
-
-async function updateObject(object, objectType, uuid, configuration, authorizationString, yesId) {
+async function updateObject(object, objectType, uuid, configuration, authorizationString) {
     const wfsConfiguration = getWFSConfiguration(configuration, objectType);
     if (!wfsConfiguration) return;
 
@@ -110,7 +82,7 @@ async function updateObject(object, objectType, uuid, configuration, authorizati
 
         const poolName = getPoolName(object, fieldConfiguration);
         if (isSendingDataToGeoserverActivated(fieldConfiguration, geometryIds, poolName)) {
-            const changeMap = getChangeMap(object, objectType, fieldConfiguration, poolName, yesId);
+            const changeMap = getChangeMap(object, fieldConfiguration, poolName);
             if (Object.keys(changeMap).length) {
                 await performTransaction(
                     geometryIds, changeMap, fieldConfiguration.edit_wfs_url.ValueText,
@@ -219,21 +191,28 @@ function getAllowedPoolNames(fieldConfiguration) {
     }) ?? [];
 }
 
-function getChangeMap(object, objectType, fieldConfiguration, poolName, yesId) {
+function getChangeMap(object, fieldConfiguration, poolName) {
     const changeMap = {};
     addPoolFieldToChangeMap(fieldConfiguration, poolName, changeMap);
-    addDesignationEventStatusFieldToChangeMap(object, objectType, fieldConfiguration, changeMap, yesId);
 
     const fields = fieldConfiguration.fields?.ValueTable ?? [];
     return fields.reduce((result, field) => {
         const wfsFieldName = field.wfs_field_name.ValueText;
         const fylrFieldName = field.fylr_field_name.ValueText;
-        const fieldValues = getFieldValues(object, fylrFieldName.split('.'));
-
-        addToChangeMap(wfsFieldName, fieldValues?.[0], result);
-
+        const fylrFunction = field.fylr_function.ValueText;
+        if (fylrFieldName || fylrFunction) {
+            const fieldValue = fylrFieldName
+                ? getFieldValues(object, fylrFieldName.split('.'))?.[0]
+                : getValueFromCustomFunction(object, fylrFunction);
+            addToChangeMap(wfsFieldName, fieldValue, result);
+        }
         return result;
     }, changeMap);
+}
+
+function getValueFromCustomFunction(object, functionDefinition) {
+    const customFunction = new Function('object', functionDefinition);
+    return customFunction(object);
 }
 
 function addPoolFieldToChangeMap(fieldConfiguration, poolName, changeMap) {
@@ -241,47 +220,6 @@ function addPoolFieldToChangeMap(fieldConfiguration, poolName, changeMap) {
     if (!targetFieldName) return;
 
     changeMap[targetFieldName] = poolName;
-}
-
-function addDesignationEventStatusFieldToChangeMap(object, objectType, fieldConfiguration, changeMap, yesId) {
-    const targetFieldName = fieldConfiguration.wfs_event_status_field.ValueText;
-    if (!targetFieldName) return;
-
-    if (!yesId) throwErrorToFrontend('Missing value: ja', 'ja_nein_objekttyp is not set up correctly in Fylr database');
-
-    const latestEvent = getLatestDesignationEvent(object, objectType, yesId);
-    if (!latestEvent) return;
-
-    addToChangeMap(targetFieldName, latestEvent.lk_status, changeMap);
-}
-
-function getLatestDesignationEvent(object, objectType, yesId) {
-    const events = getDesignationEvents(object, objectType);
-    const latestEvent = getLatestEvent(events);
-
-    return latestEvent?.lk_veroeffentlichen?.ja_nein_objekttyp?._id === yesId
-        ? latestEvent
-        : undefined;
-}
-
-function getDesignationEvents(object, objectType) {
-    return object['_nested:' + objectType + '__event']
-        .filter(event => {
-            return event.lk_eventtyp?.conceptName === 'Ausweisung'
-                && event.lk_status !== undefined
-                && event.datum_ausweisung_beginn?.value !== undefined;
-            }
-        );
-}
-
-function getLatestEvent(events) {
-    if (!events.length) return undefined;
-
-    events.sort((event1, event2) => {
-        return new Date(event2.datum_ausweisung_beginn.value) - new Date(event1.datum_ausweisung_beginn.value);
-    });
-
-    return events[0];
 }
 
 function addToChangeMap(wfsFieldName, fieldValue, changeMap) {

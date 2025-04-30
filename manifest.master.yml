@@ -97,26 +97,26 @@ base_config:
               - name: fields
                 type: table
                 fields:
-                  - name: fylr_field_name
-                    type: text
-                    position: 0
                   - name: wfs_field_name
                     type: text
+                    position: 0
+                  - name: fylr_field_name
+                    type: text
                     position: 1
+                  - name: fylr_function
+                    type: text
+                    position: 2
                 position: 11
-              - name: wfs_event_status_field
-                type: text
-                position: 12
               - name: wfs_pool_field
                 type: text
-                position: 13
+                position: 12
               - name: allowed_pool_names
                 type: table
                 fields:
                   - name: allowed_pool_name
                     type: text
                     position: 0
-                position: 14
+                position: 13
             position: 1
         position: 4
 

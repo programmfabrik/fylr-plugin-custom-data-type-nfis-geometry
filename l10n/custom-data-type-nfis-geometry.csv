@@ -46,9 +46,9 @@ server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.edit_wfs_feature_type.label,WFS-Feature-Type für Datenübertragung,WFS feature type for data transfer
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.style_uuid.label,UUID des Style-Objekts,Style object UUID
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.fields.label,Zu übertragende Felddaten,Field data to be transferred
-server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.fields.fylr_field_name.label,Name des Feldes im Fylr-Objekt (inkl. Pfad),Name of field in Fylr object (including path)
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.fields.wfs_field_name.label,Name des WFS-Zielfeldes,Name of WFS target field
-server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.wfs_event_status_field.label,WFS-Zielfeld für den Status des neuesten Ausweisungsereignisses,WFS target field for the status of the newest designation event 
+server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.fields.fylr_field_name.label,Name des Feldes im fylr-Objekt (inkl. Pfad),Name of field in fylr object (including path)
+server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.fields.fylr_function.label,JavaScript-Funktion zum Auslesen des Wertes aus dem fylr-Objekt (Alternative zur Angabe des Feldnamens),JavaScript function for reading the value from the fylr object (Alternative to specifying the field name)
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.wfs_pool_field.label,WFS-Zielfeld für die Poolbezeichnung,WFS target field for pool name
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.allowed_pool_names.label,Erlaubte Poolbezeichnungen für Datenübertragung,Allowed pool names for data transfer
 base.error.realm.multipleGeometryLinking,Mehrfachverknüpfung von Geometrien nicht erlaubt,Multiple linking of geometries not permitted
