@@ -641,9 +641,3 @@ function getFieldConfiguration(objectType, fieldPath) {
     return getBaseConfiguration().wfs_configuration.find(objectConfiguration => objectConfiguration.object_type === objectType)
         ?.geometry_fields.find(fieldConfiguraton => fieldConfiguraton.field_path === fieldPath);
 }
-
-function getGeometryId(cdata) {
-    return cdata.geometry_ids.length > 0
-        ? cdata.geometry_ids[0]
-        : undefined;
-}
