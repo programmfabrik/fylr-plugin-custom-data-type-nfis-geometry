@@ -4,9 +4,9 @@ Programmfabrik GmbH. Please use the GitHub issue tracking to report bugs
 and self organize bug fixing. Feel free to directly contact the committing
 developers.
 
-# NFIS Geometry Fylr plugin
+# NFIS Geometry fylr plugin
 
-This plugin adds the new data type "NFIS Geometry" to a Fylr instance. The data type makes it possible to work with geometries via a Geoserver WFS and a Masterportal instance.
+This plugin adds the new data type "NFIS Geometry" to a fylr instance. The data type makes it possible to work with geometries via a Geoserver WFS and a Masterportal instance.
 
 
 ## Installation
@@ -43,14 +43,15 @@ make
         * *Masterportal: Vector layer IDs (based on WFS field value)*:
            * *Field value*: If this value is found in the configured WFS field, the corresponding layer is shown in Masterportal
            * *Layer ID*: The ID of the layer to show in Masterportal
-        * *Data transfer to geoserver*: If activated, field data is transferred from the Fylr object to the Geoserver (via the configured WFS).
+        * *Data transfer to geoserver*: If activated, field data is transferred from the fylr object to the Geoserver (via the configured WFS).
         * *WFS URL for data transfer*: The base URL of the WFS to be used for transferring data to the Geoserver. It has to be a WFS-T provided by the configured Geoserver instance.
         * *WFS feature type for data transfer*: The feature type to use when writing data to the WFS
-        * *Field data to be transferred*: Mappings of a source field (Fylr) to a target field (WFS). For each geometry field defined, entered field data is added to the corresponding geometry via a WFS provided by the configured Geoserver instance
-           * *Name of field in Fylr object*: The source field that contains the data to be transferred
+        * *Field data to be transferred*: Mappings of a source field (fylr) to a target field (WFS). For each geometry field defined, entered field data is added to the corresponding geometry via a WFS provided by the configured Geoserver instance
            * *Name of WFS target field*: The target field of the WFS to which the data is transferred
-        * *WFS target field for pool name* The field of the WFS where the name of the pool that the Fylr object belongs to should be stored
-        * *Allowed pool names for data transfer*: Data is only transferred if the Fylr object belongs to a pool with one of the specified pool names
+           * *Name of field in fylr object*: The source field that contains the data to be transferred
+           * *JavaScript function for reading the value from the fylr object*: Alternatively to specifying a field name, a custom JavaScript function body for reading the value from the fylr object can be entered. The object data can be accessed via the variable "object" (e. g. "return object._id;")
+        * *WFS target field for pool name* The field of the WFS where the name of the pool that the fylr object belongs to should be stored
+        * *Allowed pool names for data transfer*: Data is only transferred if the fylr object belongs to a pool with one of the specified pool names
 
 ### Data model configuration
 
