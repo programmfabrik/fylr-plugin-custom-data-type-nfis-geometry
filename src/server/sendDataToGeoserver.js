@@ -72,6 +72,8 @@ function getAuthorizationString(serverConfiguration) {
 }
 
 async function getCurrentObjectData(object, objectType, mask) {
+    if (!object._id) return undefined;
+
     const url = info.api_url + '/api/v1/db/' + objectType + '/' + mask + '/' + object._id
         + '?access_token=' + info.api_user_access_token;
 
@@ -83,7 +85,8 @@ async function getCurrentObjectData(object, objectType, mask) {
             }
         });
         const result = await response.json();
-        return result.length ? result[0][objectType] : undefined;
+        if (!result.length) throwErrorToFrontend('Retrieving current object data failed', JSON.stringify(err));
+        return result[0][objectType];
     } catch (err) {
         throwErrorToFrontend('Retrieving current object data failed', JSON.stringify(err));
     }
