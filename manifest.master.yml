@@ -66,15 +66,21 @@ base_config:
               - name: display_wfs_feature_type
                 type: text
                 position: 3
-              - name: masterportal_raster_layer_id
+              - name: edit_wfs_url
                 type: text
                 position: 4
-              - name: masterportal_default_vector_layer_id
+              - name: edit_wfs_feature_type
                 type: text
                 position: 5
-              - name: masterportal_vector_layer_field_name
+              - name: masterportal_raster_layer_id
                 type: text
                 position: 6
+              - name: masterportal_default_vector_layer_id
+                type: text
+                position: 7
+              - name: masterportal_vector_layer_field_name
+                type: text
+                position: 8
               - name: masterportal_vector_layer_ids
                 type: table
                 fields:
@@ -84,15 +90,9 @@ base_config:
                   - name: layer_id
                     type: text
                     position: 1
-                position: 7
+                position: 9
               - name: send_data_to_geoserver
                 type: bool
-                position: 8
-              - name: edit_wfs_url
-                type: text
-                position: 9
-              - name: edit_wfs_feature_type
-                type: text
                 position: 10
               - name: fields
                 type: table

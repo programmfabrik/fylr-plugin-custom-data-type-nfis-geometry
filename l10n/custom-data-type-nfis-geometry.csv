@@ -8,7 +8,7 @@ custom.data.type.nfis.geometry.search.badge.without,Ohne,Without
 custom.data.type.nfis.geometry.createNewGeometry,Neue Geometrie anlegen,Create new geometry
 custom.data.type.nfis.geometry.linkExistingGeometry,Existierende Geometrie verknüpfen,Link existing geometry
 custom.data.type.nfis.geometry.editGeometry,Bearbeiten,Edit
-custom.data.type.nfis.geometry.removeGeometry,Verknüpfung entfernen,Remove link
+custom.data.type.nfis.geometry.deleteGeometry,Geometrie löschen,Delete geometry
 custom.data.type.nfis.geometry.viewGeometry,Im Masterportal anzeigen,View in Masterportal
 custom.data.type.nfis.geometry.modal.cancel,Abbrechen,cancel
 custom.data.type.nfis.geometry.modal.ok,Ok,Ok
@@ -34,6 +34,8 @@ server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.field_path.label,Feldname (inkl. Pfad),Field name (including path)
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.display_wfs_url.label,WFS-URL für Kartendarstellung,WFS URL for map display
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.display_wfs_feature_type.label,WFS-Feature-Type für Kartendarstellung,WFS feature type for map display
+server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.edit_wfs_url.label,WFS-URL für Bearbeitung,WFS URL for editing data
+server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.edit_wfs_feature_type.label,WFS-Feature-Type für Bearbeitung,WFS feature type for editing data
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.masterportal_raster_layer_id.label,Masterportal: Raster-Layer-ID,Masterportal: Raster layer ID
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.masterportal_default_vector_layer_id.label,Masterportal: Vektor-Layer-ID (Standard),Masterportal: Vector layer ID (default)
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.masterportal_vector_layer_field_name.label,Masterportal: Name des WFS-Feldes für Zuordnung der Masterportal-Vektor-Layer-ID,Masterportal: Name of WFS field for assigning Masterportal vector layer ID
@@ -42,8 +44,6 @@ server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.masterportal_vector_layer_ids.layer_id.label,Layer-ID,Layer ID
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.send_data_to_geoserver.label,Datenübertragung an Geoserver,Data transfer to geoserver
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.send_data_to_geoserver.checkbox,Aktivieren,Activate
-server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.edit_wfs_url.label,WFS-URL für Datenübertragung,WFS URL for data transfer
-server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.edit_wfs_feature_type.label,WFS-Feature-Type für Datenübertragung,WFS feature type for data transfer
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.style_uuid.label,UUID des Style-Objekts,Style object UUID
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.fields.label,Zu übertragende Felddaten,Field data to be transferred
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.fields.wfs_field_name.label,Name des WFS-Zielfeldes,Name of WFS target field
