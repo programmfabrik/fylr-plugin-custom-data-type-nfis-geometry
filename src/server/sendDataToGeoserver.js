@@ -85,10 +85,10 @@ async function getCurrentObjectData(object, objectType, mask) {
             }
         });
         const result = await response.json();
-        if (!result.length) throwErrorToFrontend('Retrieving current object data failed', JSON.stringify(err));
+        if (!result.length) throwErrorToFrontend('Beim Abruf der aktuellen Objektversion ist ein Fehler aufgetreten.');
         return result[0][objectType];
     } catch (err) {
-        throwErrorToFrontend('Retrieving current object data failed', JSON.stringify(err));
+        throwErrorToFrontend('Beim Abruf der aktuellen Objektversion ist ein Fehler aufgetreten.', JSON.stringify(err));
     }
 }
 
@@ -146,7 +146,7 @@ async function hasUsedGeometryIds(configuration, geometryIds, uuid) {
         return result.objects.length > 1
             || (result.objects.length === 1 && (!uuid || result.objects[0]._uuid !== uuid));
     } catch (err) {
-        throwErrorToFrontend('Search request failed', JSON.stringify(err));
+        throwErrorToFrontend('Bei der Prüfung auf mehrfach verknüpfte Geometrien ist ein Fehler aufgetreten.', JSON.stringify(err));
     }    
 }
 
@@ -306,10 +306,10 @@ async function performTransaction(geometryIds, requestXml, wfsUrl, authorization
         });
         const xmlResult = await response.text();
         if (!new RegExp('<wfs:totalUpdated>' + geometryIds.length + '<\/wfs:totalUpdated>').test(xmlResult)) {
-            throwErrorToFrontend('Failed to update PostGIS database: ' + xmlResult);
+            throwErrorToFrontend('Bei der Aktualisierung von Geometrie-Datensätzen ist ein Fehler aufgetreten.', xmlResult);
         }
     } catch (err) {
-        throwErrorToFrontend(err);
+        throwErrorToFrontend('Bei der Aktualisierung von Geometrie-Datensätzen ist ein Fehler aufgetreten.', err);
     }    
 }
 
