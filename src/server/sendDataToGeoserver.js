@@ -275,24 +275,32 @@ function isDanteConcept(fieldValue) {
 }
 
 async function performEditTransaction(geometryIds, changeMap, fieldConfiguration, authorizationString) {
-    await performTransaction(
+    const result = await performTransaction(
         geometryIds,
-        getEditRequestXml(geometryIds, changeMap, fieldConfiguration.edit_wfs_feature_type.ValueText),
+        getEditRequestXml(changeMap, fieldConfiguration.edit_wfs_feature_type.ValueText),
         fieldConfiguration.edit_wfs_url.ValueText,
         authorizationString
     );
+
+    if (!new RegExp('<wfs:totalUpdated>' + geometryIds.length + '<\/wfs:totalUpdated>').test(result)) {
+        throwErrorToFrontend('Bei der Aktualisierung von Geometrie-Datensätzen ist ein Fehler aufgetreten.', result);
+    }
 }
 
 async function performDeleteTransaction(geometryIds, fieldConfiguration, authorizationString) {
-    await performTransaction(
+    const result = await performTransaction(
         geometryIds,
-        getDeleteRequestXml(geometryIds, fieldConfiguration.edit_wfs_feature_type.ValueText),
+        getDeleteRequestXml(fieldConfiguration.edit_wfs_feature_type.ValueText),
         fieldConfiguration.edit_wfs_url.ValueText,
         authorizationString
     );
+
+    if (!new RegExp('<wfs:totalDeleted>' + geometryIds.length + '<\/wfs:totalDeleted>').test(result)) {
+        throwErrorToFrontend('Beim Löschen von Geometrie-Datensätzen ist ein Fehler aufgetreten.', result);
+    }
 }
 
-async function performTransaction(geometryIds, requestXml, wfsUrl, authorizationString) {
+async function performTransaction(requestXml, wfsUrl, authorizationString) {
     const transactionUrl = wfsUrl + '?service=WFS&version=1.1.0&request=Transaction';
 
     try {
@@ -304,12 +312,9 @@ async function performTransaction(geometryIds, requestXml, wfsUrl, authorization
             },
             body: requestXml
         });
-        const xmlResult = await response.text();
-        if (!new RegExp('<wfs:totalUpdated>' + geometryIds.length + '<\/wfs:totalUpdated>').test(xmlResult)) {
-            throwErrorToFrontend('Bei der Aktualisierung von Geometrie-Datensätzen ist ein Fehler aufgetreten.', xmlResult);
-        }
+        return await response.text();
     } catch (err) {
-        throwErrorToFrontend('Bei der Aktualisierung von Geometrie-Datensätzen ist ein Fehler aufgetreten.', err);
+        throwErrorToFrontend('Beim Zugriff auf den WFS-T ist ein Fehler aufgetreten.', JSON.stringify(err));
     }    
 }
 
