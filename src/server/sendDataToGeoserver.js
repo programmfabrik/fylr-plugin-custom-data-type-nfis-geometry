@@ -301,8 +301,6 @@ async function performDeleteTransaction(geometryIds, fieldConfiguration, authori
 async function performTransaction(requestXml, wfsUrl, authorizationString) {
     const transactionUrl = wfsUrl + '?service=WFS&version=1.1.0&request=Transaction';
 
-    throwErrorToFrontend('Request XML', JSON.stringify(requestXml));
-
     try {
         const response = await fetch(transactionUrl, {
             method: 'POST',
