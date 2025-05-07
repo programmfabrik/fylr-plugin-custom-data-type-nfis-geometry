@@ -88,7 +88,7 @@ async function getCurrentObjectData(objectId, objectType) {
         if (!result.length) throwErrorToFrontend('Beim Abruf der aktuellen Objektversion ist ein Fehler aufgetreten.');
         return result[0][objectType];
     } catch (err) {
-        throwErrorToFrontend('Beim Abruf der aktuellen Objektversion ist ein Fehler aufgetreten.', JSON.stringify(err));
+        throwErrorToFrontend('Beim Abruf der aktuellen Objektversion ist ein Fehler aufgetreten:', err.toString());
     }
 }
 
@@ -107,7 +107,7 @@ async function getPreferredMask(objectType) {
         if (!mask) throwErrorToFrontend('Es konnte keine Maske für diesen Objekttyp gefunden werden.');
         return mask;
     } catch (err) {
-        throwErrorToFrontend('Beim Abruf der Maske ist ein Fehler aufgetreten:', err);
+        throwErrorToFrontend('Beim Abruf der Maske ist ein Fehler aufgetreten:', err.toString());
     }
 }
 
@@ -165,7 +165,7 @@ async function hasUsedGeometryIds(configuration, geometryIds, uuid) {
         return result.objects.length > 1
             || (result.objects.length === 1 && (!uuid || result.objects[0]._uuid !== uuid));
     } catch (err) {
-        throwErrorToFrontend('Bei der Prüfung auf mehrfach verknüpfte Geometrien ist ein Fehler aufgetreten.', JSON.stringify(err));
+        throwErrorToFrontend('Bei der Prüfung auf mehrfach verknüpfte Geometrien ist ein Fehler aufgetreten:', err.toString());
     }    
 }
 
@@ -301,7 +301,7 @@ async function performEditTransaction(geometryIds, changeMap, fieldConfiguration
     );
 
     if (!new RegExp('<wfs:totalUpdated>' + geometryIds.length + '<\/wfs:totalUpdated>').test(result)) {
-        throwErrorToFrontend('Bei der Aktualisierung von Geometrie-Datensätzen ist ein Fehler aufgetreten.', result);
+        throwErrorToFrontend('Bei der Aktualisierung von Geometrie-Datensätzen ist ein Fehler aufgetreten:', result);
     }
 }
 
@@ -313,7 +313,7 @@ async function performDeleteTransaction(geometryIds, fieldConfiguration, authori
     );
 
     if (!new RegExp('<wfs:totalDeleted>' + geometryIds.length + '<\/wfs:totalDeleted>').test(result)) {
-        throwErrorToFrontend('Beim Löschen von Geometrie-Datensätzen ist ein Fehler aufgetreten.', result);
+        throwErrorToFrontend('Beim Löschen von Geometrie-Datensätzen ist ein Fehler aufgetreten:', result);
     }
 }
 
@@ -331,7 +331,7 @@ async function performTransaction(requestXml, wfsUrl, authorizationString) {
         });
         return await response.text();
     } catch (err) {
-        throwErrorToFrontend('Beim Zugriff auf den WFS-T ist ein Fehler aufgetreten.', JSON.stringify(err));
+        throwErrorToFrontend('Beim Zugriff auf den WFS-T ist ein Fehler aufgetreten:', err.toString());
     }    
 }
 
