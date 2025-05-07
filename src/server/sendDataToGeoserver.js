@@ -307,7 +307,7 @@ async function performEditTransaction(geometryIds, changeMap, fieldConfiguration
 
 async function performDeleteTransaction(geometryIds, fieldConfiguration, authorizationString) {
     const result = await performTransaction(
-        getDeleteRequestXml(fieldConfiguration.edit_wfs_feature_type.ValueText),
+        getDeleteRequestXml(geometryIds, fieldConfiguration.edit_wfs_feature_type.ValueText),
         fieldConfiguration.edit_wfs_url.ValueText,
         authorizationString
     );
