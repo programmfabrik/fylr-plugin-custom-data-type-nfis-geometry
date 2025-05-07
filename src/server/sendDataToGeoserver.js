@@ -277,7 +277,7 @@ function isDanteConcept(fieldValue) {
 async function performEditTransaction(geometryIds, changeMap, fieldConfiguration, authorizationString) {
     const result = await performTransaction(
         geometryIds,
-        getEditRequestXml(changeMap, fieldConfiguration.edit_wfs_feature_type.ValueText),
+        getEditRequestXml(geometryIds, changeMap, fieldConfiguration.edit_wfs_feature_type.ValueText),
         fieldConfiguration.edit_wfs_url.ValueText,
         authorizationString
     );
