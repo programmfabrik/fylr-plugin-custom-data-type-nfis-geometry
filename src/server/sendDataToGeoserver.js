@@ -24,7 +24,7 @@ process.stdin.on('end', async () => {
             object[object._objecttype],
             object._objecttype,
             object._uuid,
-            await getCurrentObjectData(object[object._objecttype], object._objecttype, object._mask),
+            await getCurrentObjectData(object[object._objecttype]._id, object._objecttype),
             configuration,
             authorizationString
         );
@@ -71,11 +71,11 @@ function getAuthorizationString(serverConfiguration) {
     return btoa(username + ':' + password);
 }
 
-async function getCurrentObjectData(object, objectType, mask) {
-    if (!object._id) return undefined;
+async function getCurrentObjectData(objectId, objectType) {
+    if (!objectId) return undefined;
 
-    const url = info.api_url + '/api/v1/db/' + objectType + '/' + mask + '/' + object._id
-        + '?access_token=' + info.api_user_access_token;
+    const mask = await getPreferredMask(objectType);
+    const url = info.api_url + '/api/v1/db/' + objectType + '/' + mask + '/' + objectId + '?access_token=' + info.api_user_access_token;
 
     try {
         const response = await fetch(url, {
@@ -89,6 +89,25 @@ async function getCurrentObjectData(object, objectType, mask) {
         return result[0][objectType];
     } catch (err) {
         throwErrorToFrontend('Beim Abruf der aktuellen Objektversion ist ein Fehler aufgetreten.', JSON.stringify(err));
+    }
+}
+
+async function getPreferredMask(objectType) {
+    const url = info.api_url + '/api/v1/mask/CURRENT?access_token=' + info.api_user_access_token;
+
+    try {
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        const result = await response.json();
+        const mask = result?.masks?.find(mask => mask.table_name_hint === objectType && mask.is_preferred)?.name;
+        if (!mask) throwErrorToFrontend('Es konnte keine Maske für diesen Objekttyp gefunden werden.');
+        return mask;
+    } catch (err) {
+        throwErrorToFrontend('Beim Abruf der Maske ist ein Fehler aufgetreten:', err);
     }
 }
 
