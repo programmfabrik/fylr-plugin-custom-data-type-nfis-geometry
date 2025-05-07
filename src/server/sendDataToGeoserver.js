@@ -276,7 +276,6 @@ function isDanteConcept(fieldValue) {
 
 async function performEditTransaction(geometryIds, changeMap, fieldConfiguration, authorizationString) {
     const result = await performTransaction(
-        geometryIds,
         getEditRequestXml(geometryIds, changeMap, fieldConfiguration.edit_wfs_feature_type.ValueText),
         fieldConfiguration.edit_wfs_url.ValueText,
         authorizationString
@@ -289,7 +288,6 @@ async function performEditTransaction(geometryIds, changeMap, fieldConfiguration
 
 async function performDeleteTransaction(geometryIds, fieldConfiguration, authorizationString) {
     const result = await performTransaction(
-        geometryIds,
         getDeleteRequestXml(fieldConfiguration.edit_wfs_feature_type.ValueText),
         fieldConfiguration.edit_wfs_url.ValueText,
         authorizationString
@@ -302,6 +300,8 @@ async function performDeleteTransaction(geometryIds, fieldConfiguration, authori
 
 async function performTransaction(requestXml, wfsUrl, authorizationString) {
     const transactionUrl = wfsUrl + '?service=WFS&version=1.1.0&request=Transaction';
+
+    throwErrorToFrontend('Request XML', JSON.stringify(requestXml));
 
     try {
         const response = await fetch(transactionUrl, {
