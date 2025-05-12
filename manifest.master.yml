@@ -110,10 +110,10 @@ base_config:
               - name: wfs_pool_field
                 type: text
                 position: 12
-              - name: allowed_pool_names
+              - name: pool_names
                 type: table
                 fields:
-                  - name: allowed_pool_name
+                  - name: pool_name
                     type: text
                     position: 0
                 position: 13

@@ -183,9 +183,8 @@ function getGeometryFieldPaths(configuration) {
 }
 
 async function editGeometries(object, fieldConfiguration, geometryIds, authorizationString) {
-    const poolName = getPoolName(object, fieldConfiguration);
-    if (isSendingDataToGeoserverActivated(fieldConfiguration, geometryIds, poolName)) {
-        const changeMap = getChangeMap(object, fieldConfiguration, poolName);
+    if (isSendingDataToGeoserverActivated(fieldConfiguration, geometryIds)) {
+        const changeMap = getChangeMap(object, fieldConfiguration);
         if (Object.keys(changeMap).length) {
             await performEditTransaction(geometryIds, changeMap, fieldConfiguration, authorizationString);
         }
@@ -203,34 +202,15 @@ function getDeletedGeometryIds(geometryIds, currentObject, fieldConfiguration) {
     return currentGeometryIds.filter(geometryId => !geometryIds.includes(geometryId));
 }
 
-function isSendingDataToGeoserverActivated(fieldConfiguration, geometryIds, poolName) {
+function isSendingDataToGeoserverActivated(fieldConfiguration, geometryIds) {
     return fieldConfiguration.send_data_to_geoserver?.ValueBool
         && fieldConfiguration.edit_wfs_url?.ValueText
-        && geometryIds?.length
-        && poolName !== undefined;
+        && geometryIds?.length;
 }
 
-function getPoolName(object, fieldConfiguration) {
-    if (!object._pool) return undefined;
-
-    const allowedPoolNames = getAllowedPoolNames(fieldConfiguration);
-    for (let entry of object._pool._path) {
-        const poolName = entry.pool.name?.['de-DE'];
-        if (allowedPoolNames.includes(poolName)) return poolName;
-    }
-
-    return undefined;
-}
-
-function getAllowedPoolNames(fieldConfiguration) {
-    return fieldConfiguration.allowed_pool_names?.ValueTable?.map(entry => {
-        return entry.allowed_pool_name.ValueText;
-    }) ?? [];
-}
-
-function getChangeMap(object, fieldConfiguration, poolName) {
+function getChangeMap(object, fieldConfiguration) {
     const changeMap = {};
-    addPoolFieldToChangeMap(fieldConfiguration, poolName, changeMap);
+    addPoolFieldToChangeMap(object, fieldConfiguration, changeMap);
 
     const fields = fieldConfiguration.fields?.ValueTable ?? [];
     return fields.reduce((result, field) => {
@@ -269,11 +249,30 @@ function getValueFromCustomFunction(object, functionDefinition) {
     return customFunction(object);
 }
 
-function addPoolFieldToChangeMap(fieldConfiguration, poolName, changeMap) {
+function addPoolFieldToChangeMap(object, fieldConfiguration, changeMap) {
     const targetFieldName = fieldConfiguration.wfs_pool_field.ValueText;
     if (!targetFieldName) return;
 
-    changeMap[targetFieldName] = poolName;
+    const poolName = getPoolName(object, fieldConfiguration);
+    if (poolName) changeMap[targetFieldName] = poolName;
+}
+
+function getPoolName(object, fieldConfiguration) {
+    if (!object._pool) return undefined;
+
+    const poolNames = getPoolNamesForDataTransfer(fieldConfiguration);
+    for (let entry of object._pool._path) {
+        const poolName = entry.pool.name?.['de-DE'];
+        if (poolNames.includes(poolName)) return poolName;
+    }
+
+    return object._pool.pool?.name?.['de-DE'];
+}
+
+function getPoolNamesForDataTransfer(fieldConfiguration) {
+    return fieldConfiguration.pool_names?.ValueTable?.map(entry => {
+        return entry.pool_name.ValueText;
+    }) ?? [];
 }
 
 function addToChangeMap(wfsFieldName, fieldValue, changeMap) {

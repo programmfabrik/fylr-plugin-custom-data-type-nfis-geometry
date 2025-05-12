@@ -51,7 +51,7 @@ make
            * *Name of field in fylr object*: The source field that contains the data to be transferred
            * *JavaScript function for reading the value from the fylr object*: Alternatively to specifying a field name, a custom JavaScript function body for reading the value from the fylr object can be entered. The object data can be accessed via the variable "object" (e. g. "return object._id;")
         * *WFS target field for pool name* The field of the WFS where the name of the pool that the fylr object belongs to should be stored
-        * *Allowed pool names for data transfer*: Data is only transferred if the fylr object belongs to a pool with one of the specified pool names
+        * *Pool names for data transfer*: This field can be used to define the level of the pool hierarchy that should be used for writing the pool name into the WFS target field. If the pool that the fylr object belongs to is a child of one of these pools, the pool (of the higher hierarchy level) specified here is used. Otherwise, the actual pool is used.
 
 ### Data model configuration
 
