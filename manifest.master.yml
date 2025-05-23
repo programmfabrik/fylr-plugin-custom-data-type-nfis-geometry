@@ -1,6 +1,7 @@
 plugin:
   name: custom-data-type-nfis-geometry
   version: 1.0
+  url: https://github.com/programmfabrik/fylr-plugin-custom-data-type-nfis-geometry
   displayname:
     de-DE: NFIS-Geometrie
     en-US: NFIS Geometry
