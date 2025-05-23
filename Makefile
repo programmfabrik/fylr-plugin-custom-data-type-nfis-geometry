@@ -9,7 +9,7 @@ all: install build
 install:
 	cd src/webfrontend && npm install
 
-build: clean
+build: clean buildinfojson
 	mkdir -p build
 	mkdir -p build/$(PLUGIN_NAME)
 	mkdir -p build/$(PLUGIN_NAME)/webfrontend
@@ -32,5 +32,19 @@ build: clean
 
 	cp manifest.master.yml build/$(PLUGIN_NAME)/manifest.yml
 
+	cp build-info.json build/$(PLUGIN_NAME)/build-info.json
+
 clean:
 	rm -rf build
+
+buildinfojson:
+	repo=`git remote get-url origin | sed -e 's/\.git$$//' -e 's#.*[/\\]##'` ;\
+	rev=`git show --no-patch --format=%H` ;\
+	lastchanged=`git show --no-patch --format=%ad --date=format:%Y-%m-%dT%T%z` ;\
+	builddate=`date +"%Y-%m-%dT%T%z"` ;\
+	echo '{' > build-info.json ;\
+	echo '  "repository": "'$$repo'",' >> build-info.json ;\
+	echo '  "rev": "'$$rev'",' >> build-info.json ;\
+	echo '  "lastchanged": "'$$lastchanged'",' >> build-info.json ;\
+	echo '  "builddate": "'$$builddate'"' >> build-info.json ;\
+	echo '}' >> build-info.json

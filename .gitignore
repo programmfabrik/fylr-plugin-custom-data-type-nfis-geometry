@@ -3,6 +3,7 @@
 .#*
 \#*\#
 build
+build-info.json
 .DS_Store
 serverConfiguration.json
 src/webfrontend/node_modules
