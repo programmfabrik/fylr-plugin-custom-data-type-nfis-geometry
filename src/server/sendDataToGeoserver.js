@@ -16,7 +16,7 @@ process.stdin.on('data', d => {
 
 process.stdin.on('end', async () => {
     const data = JSON.parse(input);
-    const configuration = await getPluginConfiguration();
+    const configuration = getPluginConfiguration();
     const authorizationString = getAuthorizationString(serverConfiguration);
 
     for (let object of data.objects) {
@@ -36,32 +36,13 @@ process.stdin.on('end', async () => {
     return;
 });
 
-async function getPluginConfiguration() {
-    const baseConfiguration = await getBaseConfiguration();
-    return baseConfiguration.BaseConfigList.find(section => section.Name === 'nfisGeoservices').Values;
-}
-
-async function getBaseConfiguration() {
-    const url = 'http://fylr.localhost:8082/inspect/config';
-    const headers = { 'Accept': 'application/json' };
-
-    let response;
-    try {
-        response = await fetch(url, { headers });
-    } catch {
-        throwErrorToFrontend('Failed to fetch base configuration');
-    }
-
-    if (response.ok) {
-        return response.json();
-    } else {
-        throwErrorToFrontend('Failed to fetch base configuration', response.statusText);
-    }
+function getPluginConfiguration() {
+    return info.config.plugin['custom-data-type-nfis-geometry'].config.nfisGeoservices;
 }
 
 function getWFSConfiguration(configuration, objectType) {
-    const wfsConfiguration = configuration.wfs_configuration.ValueTable;
-    return wfsConfiguration?.find(configuration => configuration.object_type.ValueText === objectType);
+    const wfsConfiguration = configuration.wfs_configuration;
+    return wfsConfiguration?.find(configuration => configuration.object_type === objectType);
 }
 
 function getAuthorizationString(serverConfiguration) {
@@ -115,8 +96,8 @@ async function updateObject(object, objectType, uuid, currentObject, configurati
     const wfsConfiguration = getWFSConfiguration(configuration, objectType);
     if (!wfsConfiguration) return;
 
-    for (let fieldConfiguration of wfsConfiguration.geometry_fields.ValueTable) {
-        const geometryIds = getGeometryIds(object, fieldConfiguration.field_path.ValueText.split('.'));
+    for (let fieldConfiguration of wfsConfiguration.geometry_fields) {
+        const geometryIds = getGeometryIds(object, fieldConfiguration.field_path.split('.'));
         if (geometryIds.length && await hasUsedGeometryIds(configuration, geometryIds, uuid)) {
             return throwErrorToFrontend('Eine oder mehrere Geometrien sind bereits mit anderen Objekten verknüpft.', undefined, 'multipleGeometryLinking');
         }
@@ -172,10 +153,10 @@ async function hasUsedGeometryIds(configuration, geometryIds, uuid) {
 function getGeometryFieldPaths(configuration) {
     const fieldPaths = [];
 
-    for (let wfsConfiguration of configuration.wfs_configuration.ValueTable) {
-        const objectType = wfsConfiguration.object_type.ValueText;
-        for (let geometryFieldPath of wfsConfiguration.geometry_fields.ValueTable) {
-            fieldPaths.push(objectType + '.' + geometryFieldPath.field_path.ValueText + '.geometry_ids');
+    for (let wfsConfiguration of configuration.wfs_configuration) {
+        const objectType = wfsConfiguration.object_type;
+        for (let geometryFieldPath of wfsConfiguration.geometry_fields) {
+            fieldPaths.push(objectType + '.' + geometryFieldPath.field_path + '.geometry_ids');
         }
     }
 
@@ -198,13 +179,13 @@ async function deleteGeometries(fieldConfiguration, geometryIds, currentObject, 
 }
 
 function getDeletedGeometryIds(geometryIds, currentObject, fieldConfiguration) {
-    const currentGeometryIds = getGeometryIds(currentObject, fieldConfiguration.field_path.ValueText.split('.'));
+    const currentGeometryIds = getGeometryIds(currentObject, fieldConfiguration.field_path.split('.'));
     return currentGeometryIds.filter(geometryId => !geometryIds.includes(geometryId));
 }
 
 function isSendingDataToGeoserverActivated(fieldConfiguration, geometryIds) {
-    return fieldConfiguration.send_data_to_geoserver?.ValueBool
-        && fieldConfiguration.edit_wfs_url?.ValueText
+    return fieldConfiguration.send_data_to_geoserver
+        && fieldConfiguration.edit_wfs_url
         && geometryIds?.length;
 }
 
@@ -212,11 +193,11 @@ function getChangeMap(object, fieldConfiguration) {
     const changeMap = {};
     addPoolFieldToChangeMap(object, fieldConfiguration, changeMap);
 
-    const fields = fieldConfiguration.fields?.ValueTable ?? [];
+    const fields = fieldConfiguration.fields ?? [];
     return fields.reduce((result, field) => {
-        const wfsFieldName = field.wfs_field_name.ValueText;
-        const fylrFieldName = field.fylr_field_name.ValueText;
-        const fylrFunction = field.fylr_function.ValueText;
+        const wfsFieldName = field.wfs_field_name;
+        const fylrFieldName = field.fylr_field_name;
+        const fylrFunction = field.fylr_function;
         if (fylrFieldName || fylrFunction) {
             const fieldValue = fylrFieldName
                 ? getFieldValues(object, fylrFieldName.split('.'))?.[0]
@@ -250,7 +231,7 @@ function getValueFromCustomFunction(object, functionDefinition) {
 }
 
 function addPoolFieldToChangeMap(object, fieldConfiguration, changeMap) {
-    const targetFieldName = fieldConfiguration.wfs_pool_field.ValueText;
+    const targetFieldName = fieldConfiguration.wfs_pool_field;
     if (!targetFieldName) return;
 
     const poolName = getPoolName(object, fieldConfiguration);
@@ -270,8 +251,8 @@ function getPoolName(object, fieldConfiguration) {
 }
 
 function getPoolNamesForDataTransfer(fieldConfiguration) {
-    return fieldConfiguration.pool_names?.ValueTable?.map(entry => {
-        return entry.pool_name.ValueText;
+    return fieldConfiguration.pool_names?.map(entry => {
+        return entry.pool_name;
     }) ?? [];
 }
 
@@ -294,8 +275,8 @@ function isDanteConcept(fieldValue) {
 
 async function performEditTransaction(geometryIds, changeMap, fieldConfiguration, authorizationString) {
     const result = await performTransaction(
-        getEditRequestXml(geometryIds, changeMap, fieldConfiguration.edit_wfs_feature_type.ValueText),
-        fieldConfiguration.edit_wfs_url.ValueText,
+        getEditRequestXml(geometryIds, changeMap, fieldConfiguration.edit_wfs_feature_type),
+        fieldConfiguration.edit_wfs_url,
         authorizationString
     );
 
@@ -306,8 +287,8 @@ async function performEditTransaction(geometryIds, changeMap, fieldConfiguration
 
 async function performDeleteTransaction(geometryIds, fieldConfiguration, authorizationString) {
     const result = await performTransaction(
-        getDeleteRequestXml(geometryIds, fieldConfiguration.edit_wfs_feature_type.ValueText),
-        fieldConfiguration.edit_wfs_url.ValueText,
+        getDeleteRequestXml(geometryIds, fieldConfiguration.edit_wfs_feature_type),
+        fieldConfiguration.edit_wfs_url,
         authorizationString
     );
 
