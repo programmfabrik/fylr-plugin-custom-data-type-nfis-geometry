@@ -26,8 +26,10 @@ custom.data.type.nfis.geometry.config.parameter.schema.multi_select.value.checkb
 custom.data.type.nfis.geometry.config.parameter.mask.value.value.label,Nicht ausfüllen,Do not fill in
 server.config.name.system.nfisGeoservices,NFIS-Geodienste,NFIS Geoservices
 server.config.parameter.system.nfisGeoservices.masterportal_url.label,Masterportal-URL,Masterportal URL
-server.config.parameter.system.nfisGeoservices.geoserver_username.label,Geoserver: Username,Geoserver: User name
-server.config.parameter.system.nfisGeoservices.geoserver_password.label,Geoserver: Passwort,Geoserver: Password
+server.config.parameter.system.nfisGeoservices.geoserver_read_username.label,Geoserver-Account (nur Leserechte): Username,Geoserver account (read only): User name
+server.config.parameter.system.nfisGeoservices.geoserver_read_password.label,Geoserver-Account (nur Leserechte): Passwort,Geoserver account (read only): Password
+server.config.parameter.system.nfisGeoservices.geoserver_write_username.label,Geoserver-Account (Schreibrechte): Username,Geoserver account (write): User name
+server.config.parameter.system.nfisGeoservices.geoserver_write_password.label,Geoserver-Account (Schreibrechte): Passwort,Geoserver account (write): Password
 server.config.parameter.system.nfisGeoservices.wfs_configuration.label,Objekttypen,Object types
 server.config.parameter.system.nfisGeoservices.wfs_configuration.object_type.label,Name des Objekttyps,Object type name
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.label,Geometrie-Felder,Geometry fields

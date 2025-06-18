@@ -1,5 +1,3 @@
-const serverConfiguration = require('../serverConfiguration.json');
-
 const info = process.argv.length >= 3
     ? JSON.parse(process.argv[2])
     : {};
@@ -17,7 +15,7 @@ process.stdin.on('data', d => {
 process.stdin.on('end', async () => {
     const data = JSON.parse(input);
     const configuration = getPluginConfiguration();
-    const authorizationString = getAuthorizationString(serverConfiguration);
+    const authorizationString = getAuthorizationString(configuration);
 
     for (let object of data.objects) {
         await updateObject(
@@ -45,9 +43,9 @@ function getWFSConfiguration(configuration, objectType) {
     return wfsConfiguration?.find(configuration => configuration.object_type === objectType);
 }
 
-function getAuthorizationString(serverConfiguration) {
-    const username = serverConfiguration.geoserver.username;
-    const password = serverConfiguration.geoserver.password;
+function getAuthorizationString(configuration) {
+    const username = configuration.geoserver_write_username;
+    const password = configuration.geoserver_write_password;
 
     return btoa(username + ':' + password);
 }

@@ -628,8 +628,8 @@ function getWfsUrl(settings, geometryIds) {
 }
 
 function getAuthorizationString() {
-    const username = getBaseConfiguration().geoserver_username;
-    const password = getBaseConfiguration().geoserver_password;
+    const username = getBaseConfiguration().geoserver_read_username;
+    const password = getBaseConfiguration().geoserver_read_password;
 
     return 'Basic ' + window.btoa(username + ':' + password);
 }
