@@ -8,28 +8,21 @@ developers.
 
 This plugin adds the new data type "Geometry link via WFS-T and Masterportal" to a fylr instance. The data type makes it possible to work with geometries via a Geoserver WFS-T and a Masterportal instance.
 
-
 ## Installation
 
-1. Clone repository
-2. Create server configuration file
-```
-cp serverConfiguration.json.template serverConfiguration.json
-```
-3. Fill in credentials of Geoserver account with write permissions in serverConfiguration.json
-4. Build plugin:
-```
-make
-```
-5. Add path to plugin in fylr.yml
+The latest version of this plugin can be found [here](https://github.com/programmfabrik/fylr-plugin-custom-data-type-nfis-geometry/releases/latest/download/CustomDataTypeNFISGeometry.zip).
+
+The ZIP can be downloaded and installed using the plugin manager, or used directly (recommended).
 
 ## Configuration
 
 ### Base configuration
 
 * *Masterportal URL*: The base URL of the Masterportal instance to be used by the plugin
-* *Geoserver: User name*: The name of the Geoserver account that is used to access the WFS in read-only mode
-* *Geoserver: Password*: The password of the Geoserver account that is used to access the WFS in read-only mode
+* *Geoserver account (read only): User name*: The name of the Geoserver account that is used to access the WFS in read-only mode
+* *Geoserver account (read only): Password*: The password of the Geoserver account that is used to access the WFS in read-only mode
+* *Geoserver account (write permissions): User name*: The name of the Geoserver account that is used to access the WFS for editing data
+* *Geoserver account (write permissions): Password*: The password of the Geoserver account that is used to access the WFS for editing data
 * *Object types*: 
     * *Object type name*: The name of the object type
     * *Geometry fields*: The geometry fields to be configured
