@@ -123,6 +123,19 @@ base_config:
                 position: 13
             position: 1
         position: 5
+      masterportal_configurations:
+        type: table
+        fields:
+          - name: id
+            type: text
+            position: 0
+          - name: name
+            type: text
+            position: 1
+          - name: file_name
+            type: text
+            position: 2
+        position: 6
 
 callbacks:
   db_pre_save:

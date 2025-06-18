@@ -24,6 +24,8 @@ custom.data.type.nfis.geometry.placeholder.empty,Keine Geometrien vorhanden,No g
 custom.data.type.nfis.geometry.config.parameter.schema.multi_select.value.label,Mehrfachauswahl,Multi selection
 custom.data.type.nfis.geometry.config.parameter.schema.multi_select.value.checkbox,Erlauben,Allow
 custom.data.type.nfis.geometry.config.parameter.mask.value.value.label,Nicht ausfüllen,Do not fill in
+userPlugin.nfisGeometry.masterportalConfiguration.label,Konfiguration,Configuration
+userPlugin.nfisGeometry.masterportalConfiguration.default,Standard,Default
 server.config.name.system.nfisGeoservices,Geometrieverknüpfung per WFS-T und Masterportal,Geometry link via WFS-T and Masterportal
 server.config.parameter.system.nfisGeoservices.masterportal_url.label,Masterportal-URL,Masterportal URL
 server.config.parameter.system.nfisGeoservices.geoserver_read_username.label,Geoserver-Account (nur Leserechte): Username,Geoserver account (read only): User name
@@ -53,4 +55,8 @@ server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.fields.fylr_function.label,JavaScript-Funktion zum Auslesen des Wertes aus dem fylr-Objekt (Alternative zur Angabe des Feldnamens),JavaScript function for reading the value from the fylr object (Alternative to specifying the field name)
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.wfs_pool_field.label,WFS-Zielfeld für die Poolbezeichnung,WFS target field for pool name
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.pool_names.label,Poolbezeichnungen für Datenübertragung,Pool names for data transfer
+server.config.parameter.system.nfisGeoservices.masterportal_configurations.label,Masterportal-Konfigurationen,Masterportal configurations
+server.config.parameter.system.nfisGeoservices.masterportal_configurations.id.label,Identifier,Identifier
+server.config.parameter.system.nfisGeoservices.masterportal_configurations.name.label,Bezeichnung,Name
+server.config.parameter.system.nfisGeoservices.masterportal_configurations.file_name.label,Name der Konfigurationsdatei,Name of configuration file
 base.error.realm.multipleGeometryLinking,Mehrfachverknüpfung von Geometrien nicht erlaubt,Multiple linking of geometries not permitted

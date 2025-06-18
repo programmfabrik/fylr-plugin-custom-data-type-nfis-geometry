@@ -560,19 +560,18 @@ function configureCursor(map) {
 }
 
 function getViewGeometriesUrl(settings, wfsData, extent) {
-    const masterportalUrl = getBaseConfiguration().masterportal_url;
+    const url = getMasterportalUrl();
     const layerIds = getMasterportalLayerIds(settings.fieldConfiguration, wfsData);
-    if (!masterportalUrl || !layerIds.length) return '';
+    if (!url || !layerIds.length) return '';
     
-    return masterportalUrl + '?zoomToExtent=' + extent.join(',') + '&layerids=' + layerIds.join(',');
+    return url + 'zoomToExtent=' + extent.join(',') + '&layerids=' + layerIds.join(',');
 }
 
 function getEditGeometryUrl(settings, wfsData, extent) {
-    const masterportalUrl = getBaseConfiguration().masterportal_url;
+    let url = getMasterportalUrl();
     const layerIds = getMasterportalLayerIds(settings.fieldConfiguration, wfsData);
-    if (!masterportalUrl || !layerIds.length) return '';
+    if (!url || !layerIds.length) return '';
     
-    let url = masterportalUrl + '?';
     if (extent) url += 'zoomToExtent=' + extent.join(',') + '&';
     return url + 'isinitopen=wfst&layerids=' + layerIds.join(',');
 }
@@ -612,6 +611,25 @@ function getMasterportalVectorLayerIds(fieldConfiguration, wfsData, includeAll) 
     }
 }
 
+function getMasterportalUrl() {
+    let masterportalUrl = getBaseConfiguration().masterportal_url;
+    if (!masterportalUrl) return undefined;
+
+    const configurationFileName = getConfigurationFileName();
+    return configurationFileName
+        ? masterportalUrl + '?configJson=' + configurationFileName + '&'
+        : masterportalUrl + '?';
+}
+
+function getConfigurationFileName() {
+
+    const configurationId = getUserConfiguration().masterportal_configuration;
+    if (!configurationId?.length) return undefined;
+    
+    const configuration = getBaseConfiguration().masterportal_configurations?.find(entry => entry.id === configurationId);
+    return configuration?.file_name;
+}
+
 function getWfsUrl(settings, geometryIds) {
     let baseUrl = settings.fieldConfiguration.display_wfs_url;
     const featureType = settings.fieldConfiguration.display_wfs_feature_type;
@@ -641,4 +659,8 @@ function getBaseConfiguration() {
 function getFieldConfiguration(objectType, fieldPath) {
     return getBaseConfiguration().wfs_configuration.find(objectConfiguration => objectConfiguration.object_type === objectType)
         ?.geometry_fields.find(fieldConfiguraton => fieldConfiguraton.field_path === fieldPath);
+}
+
+function getUserConfiguration() {
+    return ez5.session.user.opts.user.user.custom_data;
 }
