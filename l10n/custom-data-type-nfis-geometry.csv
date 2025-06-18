@@ -1,5 +1,5 @@
 key,de-DE,en-US
-custom.data.type.nfis.geometry.name,NFIS-Geometrie,NFIS Geometry
+custom.data.type.nfis.geometry.name,Geometrieverknüpfung per WFS-T und Masterportal,Geometry link via WFS-T and Masterportal
 custom.data.type.nfis.geometry.multiSelect.yes,Mehrfachauswahl,Multi selection
 custom.data.type.nfis.geometry.multiSelect.no,Keine Mehrfachauswahl,No multi selection
 custom.data.type.nfis.geometry.edit.no_data,Keine Daten vorhanden,No data present
@@ -24,7 +24,7 @@ custom.data.type.nfis.geometry.placeholder.empty,Keine Geometrien vorhanden,No g
 custom.data.type.nfis.geometry.config.parameter.schema.multi_select.value.label,Mehrfachauswahl,Multi selection
 custom.data.type.nfis.geometry.config.parameter.schema.multi_select.value.checkbox,Erlauben,Allow
 custom.data.type.nfis.geometry.config.parameter.mask.value.value.label,Nicht ausfüllen,Do not fill in
-server.config.name.system.nfisGeoservices,NFIS-Geodienste,NFIS Geoservices
+server.config.name.system.nfisGeoservices,Geometrieverknüpfung per WFS-T und Masterportal,Geometry link via WFS-T and Masterportal
 server.config.parameter.system.nfisGeoservices.masterportal_url.label,Masterportal-URL,Masterportal URL
 server.config.parameter.system.nfisGeoservices.geoserver_read_username.label,Geoserver-Account (nur Leserechte): Username,Geoserver account (read only): User name
 server.config.parameter.system.nfisGeoservices.geoserver_read_password.label,Geoserver-Account (nur Leserechte): Passwort,Geoserver account (read only): Password

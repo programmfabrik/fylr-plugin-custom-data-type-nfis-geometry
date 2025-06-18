@@ -3,11 +3,8 @@ plugin:
   version: 1.0
   url: https://github.com/programmfabrik/fylr-plugin-custom-data-type-nfis-geometry
   displayname:
-    de-DE: NFIS-Geometrie
-    en-US: NFIS Geometry
-  info:
-    de-DE: NFIS-Geometrie
-    en-US: NFIS Geometry
+    de-DE: Geometrieverknüpfung per WFS-T und Masterportal
+    en-US: Geometry link via WFS-T and Masterportal
   server:
     api-version:
       require: 1

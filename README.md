@@ -4,9 +4,9 @@ Programmfabrik GmbH. Please use the GitHub issue tracking to report bugs
 and self organize bug fixing. Feel free to directly contact the committing
 developers.
 
-# NFIS Geometry fylr plugin
+# NFIS Geometry fylr plugin: Geometry link via WFS-T and Masterportal
 
-This plugin adds the new data type "NFIS Geometry" to a fylr instance. The data type makes it possible to work with geometries via a Geoserver WFS and a Masterportal instance.
+This plugin adds the new data type "Geometry link via WFS-T and Masterportal" to a fylr instance. The data type makes it possible to work with geometries via a Geoserver WFS-T and a Masterportal instance.
 
 
 ## Installation
