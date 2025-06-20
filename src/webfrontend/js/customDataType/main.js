@@ -127,28 +127,51 @@ CustomDataTypeNFISGeometry = (function(superClass) {
             return {
                 type: 'in',
                 bool: 'should',
-                fields: [this.path() + '.' + this.name() + '.geometry_ids'],
+                fields: [this.fullName() + '.geometry_ids'],
                 in: [null],
                 _unnest: true,
                 _unset_filter: true
             };
+        } else if (data[key + ':has_value']) {
+            return this.getHasValueFilter(data, key);
         } else if (data[key]?.length) {
             return {
                 type: 'match',
                 bool: 'should',
-                fields: [this.path() + '.' + this.name() + '.geometry_ids'],
+                fields: [this.fullName() + '.geometry_ids'],
                 string: data[key]
             };
         }
     }
 
+    Plugin.getHasValueFilter = function(data, key = this.name()) {
+        if (data[key + ':has_value']) {
+            return {
+                type: 'in',
+                bool: 'should',
+                fields: [this.fullName() + '.geometry_ids'],
+                in: [null],
+                bool: 'must_not',
+                _unnest: true,
+                _unset_filter: true
+            };
+        }
+    }
+
     Plugin.getQueryFieldBadge = function(data) {
-        return {
-            name: this.nameLocalized(),
-            value: data[this.name()]?.length
-                ? data[this.name()]
-                : $$('custom.data.type.nfis.geometry.search.badge.without')
+        const result = {
+            name: this.nameLocalized()
         };
+
+        if (data[this.name() + ':unset']) {
+            result.value = $$('text.column.badge.without');
+        } else if (data[this.name() + ':has_value']) {
+            result.value = $$('field.search.badge.has_value');
+        } else {
+            result.value = data[this.name()];
+        }
+
+        return result;
     }
 
     Plugin.__isMultiSelect = function() {
