@@ -1,10 +1,11 @@
 PLUGIN_NAME = custom-data-type-nfis-geometry
+ZIP_NAME = "CustomDataTypeNFISGeometry.zip"
 
 SERVER_FILE = sendDataToGeoserver.js
 MAIN_CSS = src/webfrontend/css/main.css
 OPENLAYERS_CSS = src/webfrontend/node_modules/ol/ol.css
 
-all: install build
+all: install build zip
 
 install:
 	cd src/webfrontend && npm install
@@ -35,6 +36,11 @@ build: clean buildinfojson
 
 clean:
 	rm -rf build
+
+zip:
+	cd build && zip $(ZIP_NAME) -r $(PLUGIN_NAME)/
+	cp -r build/$(PLUGIN_NAME)/* build/
+	rm -rf build/${PLUGIN_NAME}
 
 buildinfojson:
 	repo=`git remote get-url origin | sed -e 's/\.git$$//' -e 's#.*[/\\]##'` ;\
