@@ -114,7 +114,7 @@ function renderDetailContent(contentElement, cdata, settings, wfsData) {
     } else {
         renderMap(
             contentElement, cdata, settings, wfsData, false,
-            renderViewGeometriesButton(contentElement, settings, wfsData)
+            renderViewGeometriesButton(contentElement)
         );
     }
 }
@@ -159,10 +159,10 @@ function isAddingGeometriesAllowed(cdata, settings) {
     return settings.isMultiSelect || !cdata.geometry_ids?.length
 }
 
-function renderViewGeometriesButton(contentElement, settings, wfsData) {
+function renderViewGeometriesButton(contentElement) {
     return extent => {
         const showGeometryButton = new CUI.ButtonHref({
-            href: getViewGeometriesUrl(settings, wfsData, extent),
+            href: getViewGeometriesUrl(extent),
             target: '_blank',
             icon_left: new CUI.Icon({ class: 'fa-external-link' }),
             text: $$('custom.data.type.nfis.geometry.viewGeometry')
@@ -559,12 +559,11 @@ function configureCursor(map) {
     });
 }
 
-function getViewGeometriesUrl(settings, wfsData, extent) {
+function getViewGeometriesUrl(extent) {
     const url = getMasterportalUrl();
-    const layerIds = getMasterportalLayerIds(settings.fieldConfiguration, wfsData);
-    if (!url || !layerIds.length) return '';
+    if (!url) return '';
     
-    return url + 'zoomToExtent=' + extent.join(',') + '&layerids=' + layerIds.join(',');
+    return url + 'zoomToExtent=' + extent.join(',');
 }
 
 function getEditGeometryUrl(settings, wfsData, extent) {
