@@ -27,7 +27,8 @@ The ZIP can be downloaded and installed using the plugin manager, or used direct
     * *Object type name*: The name of the object type
     * *Geometry fields*: The geometry fields to be configured
         * *Field name (including path)*: The path to the geometry field (e. g. "_nested:object__event.geometry")
-        * *Style object UUID*: The UUID of the style object to be used for this geometry field
+        * *SLD file*: The SLD file containing the style definitions to use for displaying geometries on the map
+        * *Legend image file*: The image file that is shown in the overlay that can be opened by clicking the legend button in the top right corner of the map
         * *WFS URL for map display*: The base URL of the WFS to be used for displaying data on the map provided by the plugin. It has to be a WFS provided by the configured Geoserver instance. No data is changed via this WFS.
         * *WFS feature type for map display*: The feature type to use when displaying data on the map
         * *WFS URL for editing data*: The base URL of the WFS to be used for editing and deleting geometries. It has to be a WFS-T provided by the configured Geoserver instance.
