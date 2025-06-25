@@ -61,30 +61,33 @@ base_config:
               - name: field_path
                 type: text
                 position: 0
-              - name: style_uuid
-                type: text
+              - name: sld_file
+                type: file
                 position: 1
+              - name: legend_image_file
+                type: file
+                position: 2
               - name: display_wfs_url
                 type: text
-                position: 2
+                position: 3
               - name: display_wfs_feature_type
                 type: text
-                position: 3
+                position: 4
               - name: edit_wfs_url
                 type: text
-                position: 4
+                position: 5
               - name: edit_wfs_feature_type
                 type: text
-                position: 5
+                position: 6
               - name: masterportal_raster_layer_id
                 type: text
-                position: 6
+                position: 7
               - name: masterportal_default_vector_layer_id
                 type: text
-                position: 7
+                position: 8
               - name: masterportal_vector_layer_field_name
                 type: text
-                position: 8
+                position: 9
               - name: masterportal_vector_layer_ids
                 type: table
                 fields:
@@ -94,10 +97,10 @@ base_config:
                   - name: layer_id
                     type: text
                     position: 1
-                position: 9
+                position: 10
               - name: send_data_to_geoserver
                 type: bool
-                position: 10
+                position: 11
               - name: fields
                 type: table
                 fields:
@@ -110,17 +113,17 @@ base_config:
                   - name: fylr_function
                     type: text
                     position: 2
-                position: 11
+                position: 12
               - name: wfs_pool_field
                 type: text
-                position: 12
+                position: 13
               - name: pool_names
                 type: table
                 fields:
                   - name: pool_name
                     type: text
                     position: 0
-                position: 13
+                position: 14
             position: 1
         position: 5
       masterportal_configurations:

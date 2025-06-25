@@ -16,60 +16,15 @@ import SLDParser from 'geostyler-sld-parser';
 import OpenLayersParser from 'geostyler-openlayers-parser';
 
 
-const MISSING_STYLE_OBJECT_ID = 'missingStyleObjectId';
-
-
 export function load(contentElement, cdata, objectType, fieldPath, isMultiSelect, mode) {
-    const fieldConfiguration = getFieldConfiguration(objectType, fieldPath);
-
-    getStyleObject(fieldConfiguration).then(
-        styleObject => {
-            const settings = {
-                isMultiSelect,
-                styleObject,
-                fieldConfiguration
-            };
-            loadWFSData(settings, cdata.geometry_ids).then(
-                wfsData => renderContent(contentElement, cdata, settings, mode, wfsData),
-                error => console.error(error)
-            );
-        }, error => {
-            if (error === MISSING_STYLE_OBJECT_ID) {
-                console.warn('No style object ID provided in base configuration.');
-                renderPlaceholder(contentElement, 'unconfigured');
-            } else {
-                console.error(error);
-            }
-        }
+    const settings = {
+        isMultiSelect,
+        fieldConfiguration: getFieldConfiguration(objectType, fieldPath)
+    };
+    loadWFSData(settings, cdata.geometry_ids).then(
+        wfsData => renderContent(contentElement, cdata, settings, mode, wfsData),
+        error => console.error(error)
     );
-}
-
-function getStyleObject(fieldConfiguration) {
-    const styleId = fieldConfiguration?.style_uuid;
-
-    return new Promise((resolve, reject) => {
-        if (!styleId) return reject(MISSING_STYLE_OBJECT_ID);
-
-        ez5.api.search({
-            json_data: {
-                format: 'long',
-                objecttypes: ['geostyle'],
-                search: [{
-                    type: 'in',
-                    fields: ['_uuid'],
-                    in: [styleId]
-                }]
-            }
-        }).done(data => {
-            if (data.error) {
-                reject(data.error);
-            } else if (data.objects.length !== 1) {
-                reject('Style object not found');
-            } else {
-                resolve(data.objects[0].geostyle);
-            }
-        });
-    });
 }
 
 function loadWFSData(settings, geometryIds) {
@@ -352,14 +307,14 @@ function notifyEditor(contentElement) {
 function renderMap(contentElement, cdata, settings, wfsData, allowSelection, onLoad) {
     const mapElement = CUI.dom.div('nfis-geometry-map');
     CUI.dom.append(contentElement, mapElement);
-    CUI.dom.append(mapElement, createLegendButton(mapElement, settings.styleObject));
+    CUI.dom.append(mapElement, createLegendButton(mapElement, settings.fieldConfiguration));
 
     initializeMap(contentElement, mapElement, cdata, settings, wfsData, allowSelection, onLoad);
     
 }
 
-function createLegendButton(mapElement, styleObject) {
-    const legendElement = createLegend(styleObject);
+function createLegendButton(mapElement, fieldConfiguration) {
+    const legendElement = createLegend(fieldConfiguration);
     CUI.dom.append(mapElement, legendElement);
     
     const legendButtonElement = CUI.dom.div('nfis-geometry-legend-button');
@@ -372,12 +327,12 @@ function createLegendButton(mapElement, styleObject) {
     return legendButtonElement;
 }
 
-function createLegend(styleObject) {
+function createLegend(fieldConfiguration) {
     const legendElement = CUI.dom.div('nfis-geometry-legend');
     const legendImageElement = CUI.dom.img(
         'nfis-geometry-legend-image',
         {
-            src: styleObject.legende[0].versions.original.url + '&access_token=' + ez5.session.token
+            src: fieldConfiguration.legend_image_file.versions.original.url + '?access_token=' + ez5.session.token
         }
     );
     CUI.dom.append(legendElement, legendImageElement);
@@ -406,7 +361,7 @@ function initializeMap(contentElement, mapElement, cdata, settings, wfsData, all
         interactions: defaults({ mouseWheelZoom: false })
     });
 
-    getVectorStyle(settings.styleObject).then(vectorStyle => {
+    getVectorStyle(settings.fieldConfiguration).then(vectorStyle => {
         const rasterLayer = getRasterLayer(projection);
         const vectorLayer = getVectorLayer(cdata.geometry_ids, settings, vectorStyle);
         map.setLayers([rasterLayer, vectorLayer]);
@@ -425,9 +380,9 @@ function initializeMap(contentElement, mapElement, cdata, settings, wfsData, all
     }).catch(error => console.error('Failed to parse SLD data:', error));
 }
 
-function getVectorStyle(styleObject) {
+function getVectorStyle(fieldConfiguration) {
     return new Promise((resolve, reject) => {
-        loadSLDFile(styleObject).then(sldData => {
+        loadSLDFile(fieldConfiguration).then(sldData => {
             const sldParser = new SLDParser({ sldVersion: '1.1.0' });
             return sldParser.readStyle(sldData);
         }).then(({ output: parsedStyle }) => {
@@ -440,8 +395,8 @@ function getVectorStyle(styleObject) {
     });
 }
 
-function loadSLDFile(styleObject) {
-    const url = styleObject.sld_datei[0].versions.original.url + '&access_token=' + ez5.session.token;
+function loadSLDFile(fieldConfiguration) {
+    const url = fieldConfiguration.sld_file.versions.original.url + '?access_token=' + ez5.session.token;
     return fetch(url).then(result => result.text());
 }
 

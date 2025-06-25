@@ -35,6 +35,8 @@ server.config.parameter.system.nfisGeoservices.wfs_configuration.label,Objekttyp
 server.config.parameter.system.nfisGeoservices.wfs_configuration.object_type.label,Name des Objekttyps,Object type name
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.label,Geometrie-Felder,Geometry fields
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.field_path.label,Feldname (inkl. Pfad),Field name (including path)
+server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.sld_file.label,SLD-Datei,SLD file
+server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.legend_image_file.label,Legenden-Bilddatei,Legend image file
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.display_wfs_url.label,WFS-URL für Kartendarstellung,WFS URL for map display
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.display_wfs_feature_type.label,WFS-Feature-Type für Kartendarstellung,WFS feature type for map display
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.edit_wfs_url.label,WFS-URL für Bearbeitung,WFS URL for editing data
@@ -47,7 +49,6 @@ server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.masterportal_vector_layer_ids.layer_id.label,Layer-ID,Layer ID
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.send_data_to_geoserver.label,Datenübertragung an Geoserver,Data transfer to geoserver
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.send_data_to_geoserver.checkbox,Aktivieren,Activate
-server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.style_uuid.label,UUID des Style-Objekts,Style object UUID
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.fields.label,Zu übertragende Felddaten,Field data to be transferred
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.fields.wfs_field_name.label,Name des WFS-Zielfeldes,Name of WFS target field
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.fields.fylr_field_name.label,Name des Feldes im fylr-Objekt (inkl. Pfad),Name of field in fylr object (including path)
