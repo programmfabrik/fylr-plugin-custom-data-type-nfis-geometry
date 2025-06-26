@@ -17,10 +17,10 @@ import OpenLayersParser from 'geostyler-openlayers-parser';
 
 
 export function load(contentElement, cdata, objectType, fieldPath, isMultiSelect, mode) {
-    const settings = {
-        isMultiSelect,
-        fieldConfiguration: getFieldConfiguration(objectType, fieldPath)
-    };
+    const fieldConfiguration = getFieldConfiguration(objectType, fieldPath);
+    if (!fieldConfiguration) return console.error('No configuration found for field path "' + fieldPath + '"');
+
+    const settings = { isMultiSelect, fieldConfiguration };
     loadWFSData(settings, cdata.geometry_ids).then(
         wfsData => renderContent(contentElement, cdata, settings, mode, wfsData),
         error => console.error(error)
