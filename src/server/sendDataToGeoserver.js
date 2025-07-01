@@ -258,11 +258,19 @@ function addToChangeMap(wfsFieldName, fieldValue, changeMap) {
     if (!fieldValue) return;
 
     if (typeof fieldValue === 'string' || typeof fieldValue === 'number') {
-        changeMap[wfsFieldName] = fieldValue;
+        changeMap[wfsFieldName] = escapeSpecialCharacters(fieldValue);
     } else if (isDanteConcept(fieldValue)) {
-        changeMap[wfsFieldName + '_uri'] = fieldValue.conceptURI;
-        changeMap[wfsFieldName + '_text'] = fieldValue.conceptName;
+        changeMap[wfsFieldName + '_uri'] = escapeSpecialCharacters(fieldValue.conceptURI);
+        changeMap[wfsFieldName + '_text'] = escapeSpecialCharacters(fieldValue.conceptName);
     }
+}
+
+function escapeSpecialCharacters(fieldValue) {
+    return fieldValue.replaceAll('&', '&amp;')
+        .replaceAll('"', '&quot;')
+        .replaceAll('\'', '&apos;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;');
 }
 
 function isDanteConcept(fieldValue) {
