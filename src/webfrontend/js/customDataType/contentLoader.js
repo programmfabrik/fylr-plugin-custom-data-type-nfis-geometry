@@ -530,31 +530,27 @@ function getEditGeometryUrl(settings, wfsData, extent) {
     return url + 'isinitopen=wfst&layerids=' + layerIds.join(',');
 }
 
-function getMasterportalLayerIds(fieldConfiguration, wfsData, includeAll = false) {
+function getMasterportalLayerIds(fieldConfiguration, wfsData) {
     const rasterLayerId = fieldConfiguration.masterportal_raster_layer_id;
-    const vectorLayerIds = getMasterportalVectorLayerIds(fieldConfiguration, wfsData, includeAll);
+    const vectorLayerIds = getMasterportalVectorLayerIds(fieldConfiguration, wfsData);
     
     return rasterLayerId
         ? [rasterLayerId].concat(vectorLayerIds)
         : vectorLayerIds;
 }
 
-function getMasterportalVectorLayerIds(fieldConfiguration, wfsData, includeAll) {
+function getMasterportalVectorLayerIds(fieldConfiguration, wfsData) {
     const fieldName = fieldConfiguration.masterportal_vector_layer_field_name;
     const mapping = fieldConfiguration.masterportal_vector_layer_ids;
 
     let result;
     if (fieldName && mapping && wfsData) {
-        if (includeAll) {
-            result = fieldConfiguration.masterportal_vector_layer_ids.map(entry => entry.layer_id);
-        } else {
-            result = wfsData.features.map(feature => feature.properties[fieldName])
-                .reduce((result, value) => {
-                    const layerId = mapping.find(entry => entry.field_value === value)?.layer_id;
-                    if (layerId && !result.includes(layerId)) result.push(layerId);
-                    return result;
-                }, []);
-        }
+        result = wfsData.features.map(feature => feature.properties[fieldName])
+            .reduce((result, value) => {
+                const layerId = mapping.find(entry => entry.field_value === value)?.layer_id;
+                if (layerId && !result.includes(layerId)) result.push(layerId);
+                return result;
+            }, []);
     }
 
     if (result?.length) {
