@@ -83,7 +83,14 @@ base_config:
                 type: text
                 position: 7
               - name: masterportal_default_vector_layer_id
-                type: text
+                type: table
+                fields:
+                  - name: group_id
+                    type: int
+                    position: 0
+                  - name: layer_id
+                    type: text
+                    position: 1
                 position: 8
               - name: masterportal_vector_layer_field_name
                 type: text

@@ -556,9 +556,16 @@ function getMasterportalVectorLayerIds(fieldConfiguration, wfsData) {
     if (result?.length) {
         return result;
     } else {
-        const defaultLayerId = fieldConfiguration.masterportal_default_vector_layer_id;
+        const defaultLayerId = getDefaultMasterportalVectorLayerId(fieldConfiguration);
         return defaultLayerId ? [defaultLayerId] : [];
     }
+}
+
+function getDefaultMasterportalVectorLayerId(fieldConfiguration) {
+
+    return fieldConfiguration.masterportal_default_vector_layer_id
+        ?.find(entry => entry.group_id === null || getUserGroupIds().includes(entry.group_id))
+        ?.layer_id;
 }
 
 function getMasterportalUrl() {
@@ -613,4 +620,8 @@ function getFieldConfiguration(objectType, fieldPath) {
 
 function getUserConfiguration() {
     return ez5.session.user.opts.user.user.custom_data;
+}
+
+function getUserGroupIds() {
+    return ez5.session.user.data.__group_ids;
 }
