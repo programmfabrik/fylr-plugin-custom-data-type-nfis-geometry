@@ -257,8 +257,10 @@ function getPoolNamesForDataTransfer(fieldConfiguration) {
 function addToChangeMap(wfsFieldName, fieldValue, changeMap) {
     if (!fieldValue) return;
 
-    if (typeof fieldValue === 'string' || typeof fieldValue === 'number') {
+    if (typeof fieldValue === 'string') {
         changeMap[wfsFieldName] = escapeSpecialCharacters(fieldValue);
+    } else if (typeof fieldValue === 'number') {
+        changeMap[wfsFieldName] = fieldValue;
     } else if (isDanteConcept(fieldValue)) {
         changeMap[wfsFieldName + '_uri'] = escapeSpecialCharacters(fieldValue.conceptURI);
         changeMap[wfsFieldName + '_text'] = escapeSpecialCharacters(fieldValue.conceptName);
@@ -275,8 +277,8 @@ function escapeSpecialCharacters(fieldValue) {
 
 function isDanteConcept(fieldValue) {
     return typeof fieldValue === 'object'
-        && fieldValue.conceptName !== undefined
-        && fieldValue.conceptURI !== undefined;
+        && fieldValue.conceptName !== undefined && typeof fieldValue.conceptName === 'string'
+        && fieldValue.conceptURI !== undefined && typeof fieldValue.conceptURI === 'string';
 }
 
 async function performEditTransaction(geometryIds, changeMap, fieldConfiguration, authorizationString) {
