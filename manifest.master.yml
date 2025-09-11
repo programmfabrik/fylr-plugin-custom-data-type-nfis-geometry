@@ -53,6 +53,9 @@ base_config:
       geoserver_write_password:
         type: secret
         position: 5
+      wfs_geometry_id_field_name:
+        type: text
+        position: 6
       wfs_configuration:
         type: table
         fields:
@@ -136,7 +139,7 @@ base_config:
                     position: 0
                 position: 14
             position: 1
-        position: 6
+        position: 7
       masterportal_configurations:
         type: table
         fields:
@@ -149,7 +152,7 @@ base_config:
           - name: file_name
             type: text
             position: 2
-        position: 7
+        position: 8
 
 callbacks:
   db_pre_save:

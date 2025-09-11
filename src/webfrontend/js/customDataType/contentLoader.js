@@ -20,7 +20,12 @@ export function load(contentElement, cdata, objectType, fieldPath, isMultiSelect
     const fieldConfiguration = getFieldConfiguration(objectType, fieldPath);
     if (!fieldConfiguration) return console.error('No configuration found for field path "' + fieldPath + '"');
 
-    const settings = { isMultiSelect, fieldConfiguration };
+    const settings = {
+        isMultiSelect,
+        fieldConfiguration,
+        geometryIdFieldName: getGeometryIdFieldName()
+    };
+
     loadWFSData(settings, cdata.geometry_ids).then(
         wfsData => renderContent(contentElement, cdata, settings, mode, wfsData),
         error => console.error(error)
@@ -161,7 +166,10 @@ function createLinkExistingGeometryButton(contentElement, cdata, settings) {
 }
 
 function editGeometry(contentElement, cdata, settings, wfsData, uuid) {
-    const extent = wfsData?.features.find(feature => feature.properties.ouuid === uuid)?.bbox;
+    const extent = wfsData?.features.find(feature => {
+        return feature.properties[settings.geometryIdFieldName] === uuid;
+    })?.bbox;
+
     if (!extent) return;
 
     window.open(getEditGeometryUrl(settings, wfsData, extent), '_blank');
@@ -500,7 +508,7 @@ function configureGeometrySelection(map, contentElement, cdata, settings, wfsDat
     map.addInteraction(select);
     select.on('select', event => {
         const selectedGeometryId = event.selected.length > 0
-            ? event.selected[0].get('ouuid')
+            ? event.selected[0].get(settings.geometryIdFieldName)
             : undefined;
         rerenderEditorButtons(contentElement, cdata, settings, wfsData, extent, selectedGeometryId);
     });
@@ -562,7 +570,6 @@ function getMasterportalVectorLayerIds(fieldConfiguration, wfsData) {
 }
 
 function getDefaultMasterportalVectorLayerId(fieldConfiguration) {
-
     return fieldConfiguration.masterportal_default_vector_layer_id
         ?.find(entry => entry.group_id === null || getUserGroupIds().includes(entry.group_id))
         ?.layer_id;
@@ -579,7 +586,6 @@ function getMasterportalUrl() {
 }
 
 function getConfigurationFileName() {
-
     const configurationId = getUserConfiguration().masterportal_configuration;
     if (!configurationId?.length) return undefined;
     
@@ -597,7 +603,9 @@ function getWfsUrl(settings, geometryIds) {
     return baseUrl
         + '?service=WFS&version=1.1.0&request=GetFeature&typename='
         + featureType
-        + '&outputFormat=application/json&srsname=EPSG:25832&cql_filter=ouuid in ('
+        + '&outputFormat=application/json&srsname=EPSG:25832&cql_filter='
+        + settings.geometryIdFieldName
+        + ' in ('
         + geometryIds.map(id => '\'' + id + '\'').join(',')
         + ')';
 }
@@ -607,6 +615,14 @@ function getAuthorizationString() {
     const password = getBaseConfiguration().geoserver_read_password;
 
     return 'Basic ' + window.btoa(username + ':' + password);
+}
+
+function getGeometryIdFieldName() {
+    const fieldName = getBaseConfiguration().wfs_geometry_id_field_name;
+
+    return fieldName?.length
+        ? fieldName
+        : 'ouuid';
 }
 
 function getBaseConfiguration() {
