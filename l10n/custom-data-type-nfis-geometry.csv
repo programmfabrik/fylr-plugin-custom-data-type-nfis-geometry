@@ -27,6 +27,7 @@ userPlugin.nfisGeometry.masterportalConfiguration.label,Konfiguration,Configurat
 userPlugin.nfisGeometry.masterportalConfiguration.default,Standard,Default
 server.config.name.system.nfisGeoservices,Geometrieverknüpfung per WFS-T und Masterportal,Geometry link via WFS-T and Masterportal
 server.config.parameter.system.nfisGeoservices.masterportal_url.label,Masterportal-URL,Masterportal URL
+server.config.parameter.system.nfisGeoservices.masterportal_version.label,Masterportal-Version,Masterportal version
 server.config.parameter.system.nfisGeoservices.geoserver_read_username.label,Geoserver-Account (nur Leserechte): Username,Geoserver account (read only): User name
 server.config.parameter.system.nfisGeoservices.geoserver_read_password.label,Geoserver-Account (nur Leserechte): Passwort,Geoserver account (read only): Password
 server.config.parameter.system.nfisGeoservices.geoserver_write_username.label,Geoserver-Account (Schreibrechte): Username,Geoserver account (write permissions): User name
@@ -61,4 +62,6 @@ server.config.parameter.system.nfisGeoservices.masterportal_configurations.label
 server.config.parameter.system.nfisGeoservices.masterportal_configurations.id.label,Identifier,Identifier
 server.config.parameter.system.nfisGeoservices.masterportal_configurations.name.label,Bezeichnung,Name
 server.config.parameter.system.nfisGeoservices.masterportal_configurations.file_name.label,Name der Konfigurationsdatei,Name of configuration file
+server.config.option.system.nfisGeoservices.masterportal_version.2,2,2
+server.config.option.system.nfisGeoservices.masterportal_version.3,3,3
 base.error.realm.multipleGeometryLinking,Mehrfachverknüpfung von Geometrien nicht erlaubt,Multiple linking of geometries not permitted

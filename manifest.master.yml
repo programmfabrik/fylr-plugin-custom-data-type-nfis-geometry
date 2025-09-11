@@ -37,18 +37,22 @@ base_config:
       masterportal_url:
         type: text
         position: 0
+      masterportal_version:
+        type: select
+        options: ["2", "3"]
+        position: 1
       geoserver_read_username:
         type: text
-        position: 1
+        position: 2
       geoserver_read_password:
         type: text
-        position: 2
+        position: 3
       geoserver_write_username:
         type: secret
-        position: 3
+        position: 4
       geoserver_write_password:
         type: secret
-        position: 4
+        position: 5
       wfs_configuration:
         type: table
         fields:
@@ -132,7 +136,7 @@ base_config:
                     position: 0
                 position: 14
             position: 1
-        position: 5
+        position: 6
       masterportal_configurations:
         type: table
         fields:
@@ -145,7 +149,7 @@ base_config:
           - name: file_name
             type: text
             position: 2
-        position: 6
+        position: 7
 
 callbacks:
   db_pre_save:
