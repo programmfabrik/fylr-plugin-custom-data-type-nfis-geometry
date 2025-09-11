@@ -19,10 +19,12 @@ The ZIP can be downloaded and installed using the plugin manager, or used direct
 ### Base configuration
 
 * *Masterportal URL*: The base URL of the Masterportal instance to be used by the plugin
+* *Masterportal version*: The major version (2 or 3) of the Masterportal instance used with the plugin
 * *Geoserver account (read only): User name*: The name of the Geoserver account that is used to access the WFS in read-only mode
 * *Geoserver account (read only): Password*: The password of the Geoserver account that is used to access the WFS in read-only mode
 * *Geoserver account (write permissions): User name*: The name of the Geoserver account that is used to access the WFS for editing data
 * *Geoserver account (write permissions): Password*: The password of the Geoserver account that is used to access the WFS for editing data
+* *Name of the geometry ID field in the WFS*: The name of the WFS field that is used for storing the geometry UUIDs created by the plugin (default value: "ouuid")
 * *Object types*: 
     * *Object type name*: The name of the object type
     * *Geometry fields*: The geometry fields to be configured
