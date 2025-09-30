@@ -95,20 +95,20 @@ async function updateObject(object, objectType, uuid, currentObject, configurati
     if (!wfsConfiguration) return;
 
     for (let fieldConfiguration of wfsConfiguration.geometry_fields) {
-        const geometryIds = getGeometryIds(object, fieldConfiguration.field_path.split('.'));
+        const geometryIds = await getGeometryIds(object, fieldConfiguration.field_path.split('.'));
         if (geometryIds.length && await hasUsedGeometryIds(configuration, geometryIds, uuid)) {
             return throwErrorToFrontend('Eine oder mehrere Geometrien sind bereits mit anderen Objekten verknüpft.', undefined, 'multipleGeometryLinking');
         }
 
-        await editGeometries(object, fieldConfiguration, geometryIds, authorizationString);
+        await editGeometries(object, currentObject, fieldConfiguration, geometryIds, authorizationString);
         await deleteGeometries(fieldConfiguration, geometryIds, currentObject, authorizationString);
     }
 }
 
-function getGeometryIds(object, pathSegments) {
+async function getGeometryIds(object, pathSegments) {
     let geometryIds = [];
 
-    for (let fieldValue of getFieldValues(object, pathSegments)) {
+    for (let fieldValue of await getFieldValues(object, pathSegments)) {
         if (!fieldValue?.geometry_ids?.length) continue;
         geometryIds = geometryIds.concat(
             fieldValue.geometry_ids.filter(value => value !== undefined)
@@ -161,9 +161,10 @@ function getGeometryFieldPaths(configuration) {
     return fieldPaths;
 }
 
-async function editGeometries(object, fieldConfiguration, geometryIds, authorizationString) {
+async function editGeometries(object, currentObject, fieldConfiguration, geometryIds, authorizationString) {
     if (isSendingDataToGeoserverActivated(fieldConfiguration, geometryIds)) {
-        const changeMap = getChangeMap(object, fieldConfiguration);
+        addDataFromCurrentObject(object, currentObject);
+        const changeMap = await getChangeMap(object, fieldConfiguration);
         if (Object.keys(changeMap).length) {
             await performEditTransaction(geometryIds, changeMap, fieldConfiguration, authorizationString);
         }
@@ -172,12 +173,12 @@ async function editGeometries(object, fieldConfiguration, geometryIds, authoriza
 
 async function deleteGeometries(fieldConfiguration, geometryIds, currentObject, authorizationString) {
     if (!currentObject) return;
-    const deletedGeometryIds = getDeletedGeometryIds(geometryIds, currentObject, fieldConfiguration);
+    const deletedGeometryIds = await getDeletedGeometryIds(geometryIds, currentObject, fieldConfiguration);
     if (deletedGeometryIds.length) await performDeleteTransaction(deletedGeometryIds, fieldConfiguration, authorizationString);
 }
 
-function getDeletedGeometryIds(geometryIds, currentObject, fieldConfiguration) {
-    const currentGeometryIds = getGeometryIds(currentObject, fieldConfiguration.field_path.split('.'));
+async function getDeletedGeometryIds(geometryIds, currentObject, fieldConfiguration) {
+    const currentGeometryIds = await getGeometryIds(currentObject, fieldConfiguration.field_path.split('.'));
     return currentGeometryIds.filter(geometryId => !geometryIds.includes(geometryId));
 }
 
@@ -187,39 +188,102 @@ function isSendingDataToGeoserverActivated(fieldConfiguration, geometryIds) {
         && geometryIds?.length;
 }
 
-function getChangeMap(object, fieldConfiguration) {
+function addDataFromCurrentObject(object, currentObject) {
+    for (let fieldName of Object.keys(object)) {
+        if (!fieldName.startsWith('_reverse_nested')) continue;
+        if (Array.isArray(object[fieldName])) {
+            for (let i = 0; i < object[fieldName].length; i++) {
+                if (!hasLinkedObjectData(object[fieldName][i])) {
+                    object[fieldName][i] = currentObject[fieldName].find(entry => entry._id = object[fieldName][i]._id);
+                }
+            }
+        } else if (!hasLinkedObjectData(object[fieldName])) {
+            object[fieldName] = currentObject[fieldName];
+        }
+    }
+}
+
+function hasLinkedObjectData(fieldContent) {
+    return Object.values(fieldContent).find(subfield => subfield._mask && subfield._objecttype);
+}
+
+
+async function getChangeMap(object, fieldConfiguration) {
     const changeMap = {};
+    const linkedObjects = {};
     addPoolFieldToChangeMap(object, fieldConfiguration, changeMap);
 
-    const fields = fieldConfiguration.fields ?? [];
-    return fields.reduce((result, field) => {
+    if (!fieldConfiguration.fields) return changeMap;
+
+    for (let field of fieldConfiguration.fields) {
         const wfsFieldName = field.wfs_field_name;
         const fylrFieldName = field.fylr_field_name;
         const fylrFunction = field.fylr_function;
         if (fylrFieldName || fylrFunction) {
             const fieldValue = fylrFieldName
-                ? getFieldValues(object, fylrFieldName.split('.'))?.[0]
+                ? (await getFieldValues(object, fylrFieldName.split('.'), linkedObjects))?.[0]
                 : getValueFromCustomFunction(object, fylrFunction);
-            addToChangeMap(wfsFieldName, fieldValue, result);
+            addToChangeMap(wfsFieldName, fieldValue, changeMap);
         }
-        return result;
-    }, changeMap);
+    }
+
+    return changeMap;
 }
 
-function getFieldValues(object, pathSegments) {
+async function getFieldValues(object, pathSegments, linkedObjects = {}) {
     const fieldName = pathSegments.shift();
-    const field = object[fieldName];
+    let field = object[fieldName];
 
     if (field === undefined) {
         return [];
     } else if (pathSegments.length === 0) {
         return [field];
     } else if (Array.isArray(field)) {
-        return field.map(entry => getFieldValues(entry, pathSegments.slice()))
-            .filter(data => data !== undefined)
+        let fieldValues = [];
+        for (let entry of field) {
+            fieldValues.push(await getFieldValues(entry, pathSegments.slice()));
+        }
+        return fieldValues.filter(data => data !== undefined)
             .reduce((result, fieldValues) => result.concat(fieldValues), []);
     } else {
-        return getFieldValues(field, pathSegments);
+        if (field._objecttype && field._mask && field[field._objecttype]?._id) {
+            field = await getLinkedObject(field, linkedObjects);
+        }
+        return await getFieldValues(field, pathSegments);
+    }
+}
+
+async function getLinkedObject(field, linkedObjects) {
+    const cachedObject = linkedObjects[field._objecttype]?.[field._id];
+    if (cachedObject) return cachedObject;
+    
+    const linkedObject = (await fetchObject(field._objecttype, field._mask, field[field._objecttype]._id))?.[field._objecttype];
+    if (!linkedObject) {
+        throwErrorToFrontend('Das Objekt ' + field[field._objecttype]._id + ' vom Typ ' + field._objecttype + ' konnte nicht abgerufen werden.');
+    }
+
+    addToLinkedObjectsCache(linkedObject, linkedObjects);
+
+    return linkedObject;
+}
+
+function addToLinkedObjectsCache(linkedObject, linkedObjects) {
+    const objectType = linkedObject._objecttype;
+    const id = linkedObject._id;
+
+    if (!linkedObjects[objectType]) linkedObject[objectType] = {};
+    linkedObject[objectType][id] = linkedObject;
+}
+
+async function fetchObject(objectType, mask, id) {
+    const url = info.api_url + '/api/v1/db/' + objectType + '/' + mask + '/' + id + '?access_token=' + info.api_user_access_token;
+
+    try {
+        const response = await fetch(url, { method: 'GET' });
+        const result = await response.json();
+        return result?.length ? result[0] : undefined;
+    } catch (err) {
+        throwErrorToFrontend('Objektabfrage fehlgeschlagen.', JSON.stringify(err));
     }
 }
 
