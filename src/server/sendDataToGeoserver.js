@@ -436,8 +436,10 @@ function getFilterXml(geometryIds) {
 }
 
 function getGeometryFilterXml(geometryId) {
+    const geometryIdPropertyName = getPluginConfiguration().wfs_geometry_id_field_name;
+
     return '<ogc:PropertyIsEqualTo>'
-        + '<ogc:PropertyName>ouuid</ogc:PropertyName>'
+        + '<ogc:PropertyName>' + geometryIdPropertyName + '</ogc:PropertyName>'
         + '<ogc:Literal>' + geometryId + '</ogc:Literal>'
         + '</ogc:PropertyIsEqualTo>';
 }
