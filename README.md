@@ -43,13 +43,24 @@ The ZIP can be downloaded and installed using the plugin manager, or used direct
         * *Masterportal: Vector layer IDs (based on WFS field value)*:
            * *Field value*: If this value is found in the configured WFS field, the corresponding layer is shown in Masterportal
            * *Layer ID*: The ID of the layer to show in Masterportal
-        * *Data transfer to geoserver*: If activated, field data is transferred from the fylr object to the Geoserver (via the configured WFS).
+        * *Data transfer to Geoserver*: If activated, field data is transferred from the fylr object to the Geoserver (via the configured WFS).
         * *Field data to be transferred*: Mappings of a source field (fylr) to a target field (WFS). For each geometry field defined, entered field data is added to the corresponding geometry via a WFS provided by the configured Geoserver instance
            * *Name of WFS target field*: The target field of the WFS to which the data is transferred
            * *Name of field in fylr object*: The source field that contains the data to be transferred
            * *JavaScript function for reading the value from the fylr object*: Alternatively to specifying a field name, a custom JavaScript function body for reading the value from the fylr object can be entered. The object data can be accessed via the variable "object" (e. g. "return object._id;")
         * *WFS target field for pool name* The field of the WFS where the name of the pool that the fylr object belongs to should be stored
         * *Pool names for data transfer*: This field can be used to define the level of the pool hierarchy that should be used for writing the pool name into the WFS target field. If the pool that the fylr object belongs to is a child of one of these pools, the pool (of the higher hierarchy level) specified here is used. Otherwise, the actual pool is used.
+* *Linked objects*:
+
+   This option can be used to trigger Geoserver updates in linked objects instead of the object itself.
+   * *Object type*: If data is edited in an object of this type, the data in linked objects is transferred to the Geoserver.
+   * *Link field name (including path)*: Path to the field used for linking objects
+* *Masterportal configurations*:
+
+   You can set up options for multiple Masterportal configurations here. These configuration options are then shown in the "Masterportal" section of the user settings. In this way, a Masterportal configuration can be assigned to each user.
+   * *Identifier*: Interal identifier for this configuration (for usage by the Fylr plugin only)
+   * *Name*: Name of the configuration (as displayed in the selection field in the user settings)
+   * *Name of configuration file*: The file name of the configuration file. This file name is included in any Masterportal URL to apply the configuration.
 
 ### Data model configuration
 
