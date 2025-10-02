@@ -140,6 +140,16 @@ base_config:
                 position: 14
             position: 1
         position: 7
+      linked_objects:
+        type: table
+        fields:
+          - name: object_type
+            type: text
+            position: 0
+          - name: link_field_name
+            type: text
+            position: 1
+        position: 8
       masterportal_configurations:
         type: table
         fields:
@@ -152,7 +162,7 @@ base_config:
           - name: file_name
             type: text
             position: 2
-        position: 8
+        position: 9
 
 callbacks:
   db_pre_save:

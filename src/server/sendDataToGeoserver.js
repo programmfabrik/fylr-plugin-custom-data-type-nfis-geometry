@@ -2,6 +2,8 @@ const info = process.argv.length >= 3
     ? JSON.parse(process.argv[2])
     : {};
 
+const objectCache = {};
+
 let input = '';
 process.stdin.on('data', d => {
     try {
@@ -14,17 +16,11 @@ process.stdin.on('data', d => {
 
 process.stdin.on('end', async () => {
     const data = JSON.parse(input);
-    const configuration = getPluginConfiguration();
-    const authorizationString = getAuthorizationString(configuration);
 
     for (let object of data.objects) {
         await updateObject(
-            object[object._objecttype],
-            object._objecttype,
-            object._uuid,
-            await getCurrentObjectData(object[object._objecttype]._id, object._objecttype),
-            configuration,
-            authorizationString
+            getObjectData(object),
+            await getCurrentObjectData(object[object._objecttype]._id, object._objecttype)
         );
     }
 
@@ -33,6 +29,13 @@ process.stdin.on('end', async () => {
     process.exit(0);
     return;
 });
+
+function getObjectData(object) {
+    const objectData = object[object._objecttype];
+    objectData._uuid = object._uuid;
+    objectData._objecttype = object._objecttype;
+    return objectData;
+}
 
 function getPluginConfiguration() {
     return info.config.plugin['custom-data-type-nfis-geometry'].config.nfisGeoservices;
@@ -90,18 +93,39 @@ async function getPreferredMask(objectType) {
     }
 }
 
-async function updateObject(object, objectType, uuid, currentObject, configuration, authorizationString) {
-    const wfsConfiguration = getWFSConfiguration(configuration, objectType);
+async function updateObject(object, currentObject) {
+    const configuration = getPluginConfiguration();
+    const authorizationString = getAuthorizationString(configuration);
+
+    addDataFromCurrentObject(object, currentObject);
+    addToObjectCache(object);
+
+    const linkedObjectConfiguration = getLinkedObjectConfiguration(object._objecttype, configuration);
+    if (linkedObjectConfiguration) return await updateLinkedObjects(object, linkedObjectConfiguration);
+
+    const wfsConfiguration = getWFSConfiguration(configuration, object._objecttype);
     if (!wfsConfiguration) return;
 
     for (let fieldConfiguration of wfsConfiguration.geometry_fields) {
         const geometryIds = await getGeometryIds(object, fieldConfiguration.field_path.split('.'));
-        if (geometryIds.length && await hasUsedGeometryIds(configuration, geometryIds, uuid)) {
+        if (geometryIds.length && await hasUsedGeometryIds(configuration, geometryIds, object._uuid)) {
             return throwErrorToFrontend('Eine oder mehrere Geometrien sind bereits mit anderen Objekten verknüpft.', undefined, 'multipleGeometryLinking');
         }
 
         await editGeometries(object, currentObject, fieldConfiguration, geometryIds, authorizationString);
         await deleteGeometries(fieldConfiguration, geometryIds, currentObject, authorizationString);
+    }
+}
+
+function getLinkedObjectConfiguration(objectType, configuration) {
+    return configuration.linked_objects.find(entry => entry.object_type === objectType);
+}
+
+async function updateLinkedObjects(object, linkedObjectConfiguration) {
+    const linkedObjects = await getFieldValues(object, linkedObjectConfiguration.link_field_name.split('.'));
+    
+    for (let linkedObject of linkedObjects) {
+        await updateObject(linkedObject, linkedObject);
     }
 }
 
@@ -163,7 +187,6 @@ function getGeometryFieldPaths(configuration) {
 
 async function editGeometries(object, currentObject, fieldConfiguration, geometryIds, authorizationString) {
     if (isSendingDataToGeoserverActivated(fieldConfiguration, geometryIds)) {
-        addDataFromCurrentObject(object, currentObject);
         const changeMap = await getChangeMap(object, fieldConfiguration);
         if (Object.keys(changeMap).length) {
             await performEditTransaction(geometryIds, changeMap, fieldConfiguration, authorizationString);
@@ -207,10 +230,8 @@ function hasLinkedObjectData(fieldContent) {
     return Object.values(fieldContent).find(subfield => subfield._mask && subfield._objecttype);
 }
 
-
 async function getChangeMap(object, fieldConfiguration) {
     const changeMap = {};
-    const linkedObjects = {};
     addPoolFieldToChangeMap(object, fieldConfiguration, changeMap);
 
     if (!fieldConfiguration.fields) return changeMap;
@@ -221,7 +242,7 @@ async function getChangeMap(object, fieldConfiguration) {
         const fylrFunction = field.fylr_function;
         if (fylrFieldName || fylrFunction) {
             const fieldValue = fylrFieldName
-                ? (await getFieldValues(object, fylrFieldName.split('.'), linkedObjects))?.[0]
+                ? (await getFieldValues(object, fylrFieldName.split('.')))?.[0]
                 : getValueFromCustomFunction(object, fylrFunction);
             addToChangeMap(wfsFieldName, fieldValue, changeMap);
         }
@@ -230,13 +251,17 @@ async function getChangeMap(object, fieldConfiguration) {
     return changeMap;
 }
 
-async function getFieldValues(object, pathSegments, linkedObjects = {}) {
+async function getFieldValues(object, pathSegments) {
     const fieldName = pathSegments.shift();
     let field = object[fieldName];
 
-    if (field === undefined) {
-        return [];
-    } else if (pathSegments.length === 0) {
+    if (field === undefined) return [];
+
+    if (!Array.isArray(field) && field._objecttype && field._mask && field[field._objecttype]?._id !== undefined) {
+        field = await getLinkedObject(field);
+    }
+
+    if (pathSegments.length === 0) {
         return [field];
     } else if (Array.isArray(field)) {
         let fieldValues = [];
@@ -246,33 +271,33 @@ async function getFieldValues(object, pathSegments, linkedObjects = {}) {
         return fieldValues.filter(data => data !== undefined)
             .reduce((result, fieldValues) => result.concat(fieldValues), []);
     } else {
-        if (field._objecttype && field._mask && field[field._objecttype]?._id) {
-            field = await getLinkedObject(field, linkedObjects);
-        }
         return await getFieldValues(field, pathSegments);
     }
 }
 
-async function getLinkedObject(field, linkedObjects) {
-    const cachedObject = linkedObjects[field._objecttype]?.[field._id];
+async function getLinkedObject(field) {
+    const objectType = field._objecttype;
+    const id = field[objectType]._id;
+
+    const cachedObject = objectCache[objectType]?.[id];
     if (cachedObject) return cachedObject;
     
-    const linkedObject = (await fetchObject(field._objecttype, field._mask, field[field._objecttype]._id))?.[field._objecttype];
+    const linkedObject = await fetchObject(field._objecttype, field._mask, id);
     if (!linkedObject) {
-        throwErrorToFrontend('Das Objekt ' + field[field._objecttype]._id + ' vom Typ ' + field._objecttype + ' konnte nicht abgerufen werden.');
+        throwErrorToFrontend('Das Objekt ' + id + ' vom Typ ' + objectType + ' konnte nicht abgerufen werden.');
     }
 
-    addToLinkedObjectsCache(linkedObject, linkedObjects);
+    addToObjectCache(linkedObject);
 
     return linkedObject;
 }
 
-function addToLinkedObjectsCache(linkedObject, linkedObjects) {
-    const objectType = linkedObject._objecttype;
-    const id = linkedObject._id;
+function addToObjectCache(object) {
+    const objectType = object._objecttype;
+    const id = object._id;
 
-    if (!linkedObjects[objectType]) linkedObject[objectType] = {};
-    linkedObject[objectType][id] = linkedObject;
+    if (!objectCache[objectType]) objectCache[objectType] = {};
+    objectCache[objectType][id] = object;
 }
 
 async function fetchObject(objectType, mask, id) {
@@ -281,7 +306,9 @@ async function fetchObject(objectType, mask, id) {
     try {
         const response = await fetch(url, { method: 'GET' });
         const result = await response.json();
-        return result?.length ? result[0] : undefined;
+        return result?.length
+            ? getObjectData(result[0])
+            : undefined;
     } catch (err) {
         throwErrorToFrontend('Objektabfrage fehlgeschlagen.', JSON.stringify(err));
     }
