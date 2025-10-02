@@ -57,7 +57,7 @@ async function updateObject(object, currentObject) {
     const configuration = getPluginConfiguration();
     const authorizationString = getAuthorizationString(configuration);
 
-    addDataFromCurrentObject(object, currentObject);
+    if (currentObject) addDataFromCurrentObject(object, currentObject);
     addToObjectCache(object);
 
     const linkedObjectConfiguration = getLinkedObjectConfiguration(object._objecttype, configuration);
@@ -72,8 +72,8 @@ async function updateObject(object, currentObject) {
             return throwErrorToFrontend('Eine oder mehrere Geometrien sind bereits mit anderen Objekten verknüpft.', undefined, 'multipleGeometryLinking');
         }
 
-        await editGeometries(object, currentObject, fieldConfiguration, geometryIds, authorizationString);
-        await deleteGeometries(fieldConfiguration, geometryIds, currentObject, authorizationString);
+        await editGeometries(object, fieldConfiguration, geometryIds, authorizationString);
+        if (currentObject) await deleteGeometries(fieldConfiguration, geometryIds, currentObject, authorizationString);
     }
 }
 
@@ -83,9 +83,9 @@ function getLinkedObjectConfiguration(objectType, configuration) {
 
 async function updateLinkedObjects(object, linkedObjectConfiguration) {
     const linkedObjects = await getFieldValues(object, linkedObjectConfiguration.link_field_name.split('.'));
-    
+
     for (let linkedObject of linkedObjects) {
-        await updateObject(linkedObject, linkedObject);
+        await updateObject(linkedObject, undefined);
     }
 }
 
@@ -145,7 +145,7 @@ function getGeometryFieldPaths(configuration) {
     return fieldPaths;
 }
 
-async function editGeometries(object, currentObject, fieldConfiguration, geometryIds, authorizationString) {
+async function editGeometries(object, fieldConfiguration, geometryIds, authorizationString) {
     if (isSendingDataToGeoserverActivated(fieldConfiguration, geometryIds)) {
         const changeMap = await getChangeMap(object, fieldConfiguration);
         if (Object.keys(changeMap).length) {
@@ -177,7 +177,7 @@ function addDataFromCurrentObject(object, currentObject) {
         if (Array.isArray(object[fieldName])) {
             for (let i = 0; i < object[fieldName].length; i++) {
                 if (!hasLinkedObjectData(object[fieldName][i])) {
-                    object[fieldName][i] = currentObject[fieldName].find(entry => entry._id = object[fieldName][i]._id);
+                    object[fieldName][i] = currentObject[fieldName].find(entry => entry._id === object[fieldName][i]._id);
                 }
             }
         } else if (!hasLinkedObjectData(object[fieldName])) {
@@ -224,7 +224,7 @@ async function getFieldValues(object, pathSegments) {
     if (pathSegments.length === 0) {
         return [field];
     } else if (Array.isArray(field)) {
-        let fieldValues = [];
+        const fieldValues = [];
         for (let entry of field) {
             fieldValues.push(await getFieldValues(entry, pathSegments.slice()));
         }
