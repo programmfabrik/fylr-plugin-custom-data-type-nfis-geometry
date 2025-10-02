@@ -20,7 +20,7 @@ process.stdin.on('end', async () => {
     for (let object of data.objects) {
         await updateObject(
             getObjectData(object),
-            await getCurrentObjectData(object[object._objecttype]._id, object._objecttype)
+            getObjectData(object._current)
         );
     }
 
@@ -51,46 +51,6 @@ function getAuthorizationString(configuration) {
     const password = configuration.geoserver_write_password;
 
     return btoa(username + ':' + password);
-}
-
-async function getCurrentObjectData(objectId, objectType) {
-    if (!objectId) return undefined;
-
-    const mask = await getPreferredMask(objectType);
-    const url = info.api_url + '/api/v1/db/' + objectType + '/' + mask + '/' + objectId + '?access_token=' + info.api_user_access_token;
-
-    try {
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-        const result = await response.json();
-        if (!result.length) throwErrorToFrontend('Beim Abruf der aktuellen Objektversion ist ein Fehler aufgetreten.');
-        return result[0][objectType];
-    } catch (err) {
-        throwErrorToFrontend('Beim Abruf der aktuellen Objektversion ist ein Fehler aufgetreten:', err.toString());
-    }
-}
-
-async function getPreferredMask(objectType) {
-    const url = info.api_url + '/api/v1/mask/CURRENT?access_token=' + info.api_user_access_token;
-
-    try {
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-        const result = await response.json();
-        const mask = result?.masks?.find(mask => mask.table_name_hint === objectType && mask.is_preferred)?.name;
-        if (!mask) throwErrorToFrontend('Es konnte keine Maske für diesen Objekttyp gefunden werden.');
-        return mask;
-    } catch (err) {
-        throwErrorToFrontend('Beim Abruf der Maske ist ein Fehler aufgetreten:', err.toString());
-    }
 }
 
 async function updateObject(object, currentObject) {
