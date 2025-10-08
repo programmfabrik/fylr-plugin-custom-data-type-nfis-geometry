@@ -20,7 +20,7 @@ process.stdin.on('end', async () => {
     for (let object of data.objects) {
         await updateObject(
             getObjectData(object),
-            getObjectData(object._current)
+            object._current ? getObjectData(object._current) : undefined
         );
     }
 
