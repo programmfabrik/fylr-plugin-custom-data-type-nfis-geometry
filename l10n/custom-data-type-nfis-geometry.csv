@@ -5,6 +5,8 @@ custom.data.type.nfis.geometry.multiSelect.no,Keine Mehrfachauswahl,No multi sel
 custom.data.type.nfis.geometry.edit.no_data,Keine Daten vorhanden,No data present
 custom.data.type.nfis.geometry.search.placeholder,Geometrie-ID,Geometry ID
 custom.data.type.nfis.geometry.createNewGeometry,Neue Geometrie anlegen,Create new geometry
+custom.data.type.nfis.geometry.drawNewGeometry,Neue Geometrie zeichnen,Draw new geometry
+custom.data.type.nfis.geometry.uploadNewGeometry,Neue Geometrie hochladen,Upload new geometry
 custom.data.type.nfis.geometry.linkExistingGeometry,Existierende Geometrie verknüpfen,Link existing geometry
 custom.data.type.nfis.geometry.editGeometry,Bearbeiten,Edit
 custom.data.type.nfis.geometry.deleteGeometry,Geometrie löschen,Delete geometry
@@ -33,6 +35,8 @@ server.config.parameter.system.nfisGeoservices.geoserver_read_password.label,Geo
 server.config.parameter.system.nfisGeoservices.geoserver_write_username.label,Geoserver-Account (Schreibrechte): Username,Geoserver account (write permissions): User name
 server.config.parameter.system.nfisGeoservices.geoserver_write_password.label,Geoserver-Account (Schreibrechte): Passwort,Geoserver account (write permissions): Password
 server.config.parameter.system.nfisGeoservices.wfs_geometry_id_field_name.label,Name des Geometrie-ID-Feldes im WFS,Name of the geometry ID field in the WFS
+server.config.parameter.system.nfisGeoservices.show_upload_button.label,Hochladen von Geometrien im Masterportal,Upload geometries in Masterportal
+server.config.parameter.system.nfisGeoservices.show_upload_button.checkbox,Button anzeigen,Show button
 server.config.parameter.system.nfisGeoservices.wfs_configuration.label,Objekttypen,Object types
 server.config.parameter.system.nfisGeoservices.wfs_configuration.object_type.label,Name des Objekttyps,Object type name
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.label,Geometrie-Felder,Geometry fields

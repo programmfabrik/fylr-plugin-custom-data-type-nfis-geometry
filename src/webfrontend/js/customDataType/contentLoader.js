@@ -101,7 +101,12 @@ function renderEditorButtons(contentElement, cdata, settings, wfsData, selectedG
 
         if (!selectedGeometryId) {
             if (isAddingGeometriesAllowed(cdata, settings)) {
-                buttons.push(createCreateGeometryButton(contentElement, cdata, settings, wfsData, extent));
+                if (getBaseConfiguration().show_upload_button) {
+                    buttons.push(createUploadGeometryButton(contentElement, cdata, settings, wfsData, extent));
+                    buttons.push(createCreateGeometryButton(contentElement, cdata, settings, wfsData, extent, true));
+                } else {
+                    buttons.push(createCreateGeometryButton(contentElement, cdata, settings, wfsData, extent));
+                }
                 buttons.push(createLinkExistingGeometryButton(contentElement, cdata, settings));
             }
         } else {
@@ -148,11 +153,21 @@ function createDeleteGeometryButton(contentElement, cdata, settings, uuid) {
     });
 }
 
-function createCreateGeometryButton(contentElement, cdata, settings, wfsData, extent) {
+function createCreateGeometryButton(contentElement, cdata, settings, wfsData, extent, showDrawLabel = false) {
     return new CUI.Button({
-        text: $$('custom.data.type.nfis.geometry.createNewGeometry'),
+        text: showDrawLabel
+            ? $$('custom.data.type.nfis.geometry.drawNewGeometry')
+            : $$('custom.data.type.nfis.geometry.createNewGeometry'),
         icon_left: new CUI.Icon({ class: 'fa-plus' }),
         onClick: () => createGeometry(contentElement, cdata, settings, wfsData, extent)
+    });
+}
+
+function createUploadGeometryButton(contentElement, cdata, settings, wfsData, extent) {
+    return new CUI.Button({
+        text: $$('custom.data.type.nfis.geometry.uploadNewGeometry'),
+        icon_left: new CUI.Icon({ class: 'fa-upload' }),
+        onClick: () => createGeometry(contentElement, cdata, settings, wfsData, extent, true)
     });
 }
 
@@ -176,12 +191,12 @@ function editGeometry(contentElement, cdata, settings, wfsData, uuid) {
     openEditGeometryModal(contentElement, cdata, settings, wfsData);
 }
 
-function createGeometry(contentElement, cdata, settings, wfsData, extent) {
+function createGeometry(contentElement, cdata, settings, wfsData, extent, upload = false) {
     const newGeometryId = window.crypto.randomUUID();
     navigator.clipboard.writeText(newGeometryId);
-    window.open(getEditGeometryUrl(settings, wfsData, extent), '_blank');
+    window.open(getEditGeometryUrl(settings, wfsData, extent, upload), '_blank');
     openCreateGeometryModal(contentElement, cdata, settings, newGeometryId);
-};
+}
 
 function openEditGeometryModal(contentElement, cdata, settings) {
     const modalDialog = new CUI.ConfirmationDialog({
@@ -529,13 +544,19 @@ function getViewGeometriesUrl(extent) {
     return url + 'zoomToExtent=' + extent.join(',');
 }
 
-function getEditGeometryUrl(settings, wfsData, extent) {
+function getEditGeometryUrl(settings, wfsData, extent, upload = false) {
     let url = getMasterportalUrl();
     const layerIds = getMasterportalLayerIds(settings.fieldConfiguration, wfsData);
-    if (!url || !layerIds.length) return '';
+    if (!url) return '';
     
     if (extent) url += 'zoomToExtent=' + extent.join(',') + '&';
-    return url + 'isinitopen=wfst&layerids=' + layerIds.join(',');
+    url += upload
+        ? 'menu={%22secondary%22:{%22currentComponent%22:%22wfstUploader%22}}'
+        : 'isinitopen=wfst';
+    
+    if (layerIds?.length) url += '&layerids=' + layerIds.join(',');
+
+    return url;
 }
 
 function getMasterportalLayerIds(fieldConfiguration, wfsData) {
