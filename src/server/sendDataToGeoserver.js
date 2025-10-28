@@ -16,6 +16,7 @@ process.stdin.on('data', d => {
 
 process.stdin.on('end', async () => {
     const data = JSON.parse(input);
+    const tagGroups = await getTagGroups();
     const changedObjects = [];
 
     for (let object of data.objects) {
@@ -23,7 +24,7 @@ process.stdin.on('end', async () => {
             getObjectData(object),
             object._current ? getObjectData(object._current) : undefined
         );
-        if (await handleNewlyDrawnGeometries(object)) changedObjects.push(object);
+        if (await handleNewlyDrawnGeometries(object, tagGroups)) changedObjects.push(object);
     }
 
     console.log(JSON.stringify({ objects: changedObjects }));
@@ -435,7 +436,7 @@ function getGeometryFilterXml(geometryId) {
         + '</ogc:PropertyIsEqualTo>';
 }
 
-async function handleNewlyDrawnGeometries(object) {
+async function handleNewlyDrawnGeometries(object, tagGroups) {
     const configuration = getPluginConfiguration();
     const wfsConfiguration = getWFSConfiguration(configuration, object._objecttype);
     if (!wfsConfiguration) return false;
@@ -454,7 +455,7 @@ async function handleNewlyDrawnGeometries(object) {
             if (wfsTemporaryGeometryFieldName) {
                 await markGeometriesAsTemporary(newlyDrawnGeometryIds, fieldConfiguration, wfsTemporaryGeometryFieldName);
             }
-            if (temporaryGeometryTagId) object._tags = [{ _id: temporaryGeometryTagId }];
+            if (temporaryGeometryTagId) setTag(object, temporaryGeometryTagId, tagGroups);
         }
     }
 
@@ -471,6 +472,26 @@ function getAuthorizationString(configuration) {
     const password = configuration.geoserver_write_password;
 
     return btoa(username + ':' + password);
+}
+
+function setTag(object, tagId, tagGroups) {
+    const tagGroup = tagGroups.find(group => group._tags.find(entry => entry.tag._id === tagId));
+    const tagsIdsToRemove = tagGroup.taggroup.type === 'choice'
+        ? tagGroup._tags.map(entry => entry.tag._id)
+        : [tagId];
+    object._tags = object._tags.filter(tag => !tagsIdsToRemove.includes(tag._id))
+        .concat([{ _id: tagId }]);
+}
+
+async function getTagGroups() {
+    const url = info.api_url + '/api/v1/tags?access_token=' + info.api_user_access_token;
+
+    try {
+        const response = await fetch(url, { method: 'GET' });
+        return await response.json();
+    } catch (err) {
+        throwErrorToFrontend('Die Abfrage der konfigurierten Tags ist fehlgeschlagen.', JSON.stringify(err));
+    }
 }
 
 function throwErrorToFrontend(error, description, realm) {
