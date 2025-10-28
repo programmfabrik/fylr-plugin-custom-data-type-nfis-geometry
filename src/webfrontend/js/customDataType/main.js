@@ -50,6 +50,7 @@ CustomDataTypeNFISGeometry = (function(superClass) {
         }
 
         if (!cdata.geometry_ids) cdata.geometry_ids = [];
+        cdata.newly_drawn_geometry_ids = [];
 
         return cdata;
     }
@@ -94,7 +95,8 @@ CustomDataTypeNFISGeometry = (function(superClass) {
         const cdata = data[this.name()];
         if (this.__isValidData(cdata)) {
             save_data[this.name()] = {
-                geometry_ids: cdata.geometry_ids
+                geometry_ids: cdata.geometry_ids,
+                newly_drawn_geometry_ids: cdata.newly_drawn_geometry_ids
             };
         } else {
             save_data[this.name()] = null;

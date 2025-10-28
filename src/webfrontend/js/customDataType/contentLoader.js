@@ -195,7 +195,7 @@ function createGeometry(contentElement, cdata, settings, wfsData, extent, upload
     const newGeometryId = window.crypto.randomUUID();
     navigator.clipboard.writeText(newGeometryId);
     window.open(getEditGeometryUrl(settings, wfsData, extent, upload), '_blank');
-    openCreateGeometryModal(contentElement, cdata, settings, newGeometryId);
+    openCreateGeometryModal(contentElement, cdata, settings, newGeometryId, !upload);
 }
 
 function openEditGeometryModal(contentElement, cdata, settings) {
@@ -216,7 +216,7 @@ function openEditGeometryModal(contentElement, cdata, settings) {
     return modalDialog.show();
 }
 
-function openCreateGeometryModal(contentElement, cdata, settings, newGeometryId, error) {
+function openCreateGeometryModal(contentElement, cdata, settings, newGeometryId, drawn, error) {
     let text = '';
     if (error) text += $$('custom.data.type.nfis.geometry.create.modal.error.notFound') + '\n\n';
     text += $$('custom.data.type.nfis.geometry.create.modal.text.1') + '\n\n'
@@ -234,12 +234,12 @@ function openCreateGeometryModal(contentElement, cdata, settings, newGeometryId,
             text: $$('custom.data.type.nfis.geometry.modal.ok'),
             primary: true,
             onClick: () => {
-                setGeometryId(contentElement, cdata, settings, newGeometryId).then(
+                setGeometryId(contentElement, cdata, settings, newGeometryId, drawn).then(
                     () => {},
                     error => {
                         if (error) console.error(error);
                         openCreateGeometryModal(
-                            contentElement, cdata, settings, newGeometryId, true
+                            contentElement, cdata, settings, newGeometryId, drawn, true
                         );
                     }
                 );
@@ -270,12 +270,15 @@ function openSetGeometryModal(contentElement, cdata, settings, title, error) {
     });
 }
 
-function setGeometryId(contentElement, cdata, settings, newGeometryId) {
+function setGeometryId(contentElement, cdata, settings, newGeometryId, drawn = false) {
     return new Promise((resolve, reject) => {
         loadWFSData(settings, [newGeometryId]).then((wfsData) => {
             if (wfsData.totalFeatures > 0) {
                 if (!cdata.geometry_ids.includes(newGeometryId)) {
                     cdata.geometry_ids = cdata.geometry_ids.concat([newGeometryId]);
+                    if (drawn && !cdata.newly_drawn_geometry_ids.includes(newGeometryId)) {
+                        cdata.newly_drawn_geometry_ids = cdata.newly_drawn_geometry_ids.concat([newGeometryId]);
+                    }
                 }
                 applyChanges(
                     contentElement, cdata, settings, wfsData,
@@ -333,7 +336,6 @@ function renderMap(contentElement, cdata, settings, wfsData, allowSelection, onL
     CUI.dom.append(mapElement, createLegendButton(mapElement, settings.fieldConfiguration));
 
     initializeMap(contentElement, mapElement, cdata, settings, wfsData, allowSelection, onLoad);
-    
 }
 
 function createLegendButton(mapElement, fieldConfiguration) {

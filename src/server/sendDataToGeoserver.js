@@ -16,22 +16,26 @@ process.stdin.on('data', d => {
 
 process.stdin.on('end', async () => {
     const data = JSON.parse(input);
+    const changedObjects = [];
 
     for (let object of data.objects) {
         await updateObject(
             getObjectData(object),
             object._current ? getObjectData(object._current) : undefined
         );
+        if (await handleNewlyDrawnGeometries(object)) changedObjects.push(object);
     }
 
-    console.log(JSON.stringify({ objects: [] }));
-    console.error('No changes');
-    process.exit(0);
-    return;
+    console.log(JSON.stringify({ objects: changedObjects }));
+
+    if (!changedObjects.length) {
+        console.error('No changes');
+        process.exit(0);
+    }
 });
 
 function getObjectData(object) {
-    const objectData = object[object._objecttype];
+    const objectData = JSON.parse(JSON.stringify(object[object._objecttype]));
     objectData._uuid = object._uuid;
     objectData._objecttype = object._objecttype;
     return objectData;
@@ -46,16 +50,8 @@ function getWFSConfiguration(configuration, objectType) {
     return wfsConfiguration?.find(configuration => configuration.object_type === objectType);
 }
 
-function getAuthorizationString(configuration) {
-    const username = configuration.geoserver_write_username;
-    const password = configuration.geoserver_write_password;
-
-    return btoa(username + ':' + password);
-}
-
 async function updateObject(object, currentObject) {
     const configuration = getPluginConfiguration();
-    const authorizationString = getAuthorizationString(configuration);
 
     if (currentObject) addDataFromCurrentObject(object, currentObject);
     addToObjectCache(object);
@@ -72,8 +68,8 @@ async function updateObject(object, currentObject) {
             return throwErrorToFrontend('Eine oder mehrere Geometrien sind bereits mit anderen Objekten verknüpft.', undefined, 'multipleGeometryLinking');
         }
 
-        await editGeometries(object, fieldConfiguration, geometryIds, authorizationString);
-        if (currentObject) await deleteGeometries(fieldConfiguration, geometryIds, currentObject, authorizationString);
+        await editGeometries(object, fieldConfiguration, geometryIds);
+        if (currentObject) await deleteGeometries(fieldConfiguration, geometryIds, currentObject);
     }
 }
 
@@ -145,19 +141,20 @@ function getGeometryFieldPaths(configuration) {
     return fieldPaths;
 }
 
-async function editGeometries(object, fieldConfiguration, geometryIds, authorizationString) {
+async function editGeometries(object, fieldConfiguration, geometryIds) {
     if (isSendingDataToGeoserverActivated(fieldConfiguration, geometryIds)) {
         const changeMap = await getChangeMap(object, fieldConfiguration);
         if (Object.keys(changeMap).length) {
-            await performEditTransaction(geometryIds, changeMap, fieldConfiguration, authorizationString);
+            const requestXml = getEditRequestXml(geometryIds, changeMap, fieldConfiguration.edit_wfs_feature_type);
+            await performEditTransaction(geometryIds, requestXml, fieldConfiguration);
         }
     }
 }
 
-async function deleteGeometries(fieldConfiguration, geometryIds, currentObject, authorizationString) {
+async function deleteGeometries(fieldConfiguration, geometryIds, currentObject) {
     if (!currentObject) return;
     const deletedGeometryIds = await getDeletedGeometryIds(geometryIds, currentObject, fieldConfiguration);
-    if (deletedGeometryIds.length) await performDeleteTransaction(deletedGeometryIds, fieldConfiguration, authorizationString);
+    if (deletedGeometryIds.length) await performDeleteTransaction(deletedGeometryIds, fieldConfiguration);
 }
 
 async function getDeletedGeometryIds(geometryIds, currentObject, fieldConfiguration) {
@@ -332,23 +329,18 @@ function isDanteConcept(fieldValue) {
         && fieldValue.conceptURI !== undefined && typeof fieldValue.conceptURI === 'string';
 }
 
-async function performEditTransaction(geometryIds, changeMap, fieldConfiguration, authorizationString) {
-    const result = await performTransaction(
-        getEditRequestXml(geometryIds, changeMap, fieldConfiguration.edit_wfs_feature_type),
-        fieldConfiguration.edit_wfs_url,
-        authorizationString
-    );
+async function performEditTransaction(geometryIds, requestXml, fieldConfiguration) {
+    const result = await performTransaction(requestXml, fieldConfiguration.edit_wfs_url);
 
     if (!new RegExp('<wfs:totalUpdated>' + geometryIds.length + '<\/wfs:totalUpdated>').test(result)) {
         throwErrorToFrontend('Bei der Aktualisierung von Geometrie-Datensätzen ist ein Fehler aufgetreten:', result);
     }
 }
 
-async function performDeleteTransaction(geometryIds, fieldConfiguration, authorizationString) {
+async function performDeleteTransaction(geometryIds, fieldConfiguration) {
     const result = await performTransaction(
         getDeleteRequestXml(geometryIds, fieldConfiguration.edit_wfs_feature_type),
-        fieldConfiguration.edit_wfs_url,
-        authorizationString
+        fieldConfiguration.edit_wfs_url
     );
 
     if (!new RegExp('<wfs:totalDeleted>' + geometryIds.length + '<\/wfs:totalDeleted>').test(result)) {
@@ -356,15 +348,15 @@ async function performDeleteTransaction(geometryIds, fieldConfiguration, authori
     }
 }
 
-async function performTransaction(requestXml, wfsUrl, authorizationString) {
-    const transactionUrl = wfsUrl + '?service=WFS&version=1.1.0&request=Transaction';
+async function performTransaction(requestXml, wfsUrl) {
+    const transactionUrl = wfsUrl + '?service=WFS&version=1.1.0&request=Transaction';;
 
     try {
         const response = await fetch(transactionUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/xml',
-                'Authorization': 'Basic ' + authorizationString
+                'Authorization': 'Basic ' + getAuthorizationString(getPluginConfiguration())
             },
             body: requestXml
         });
@@ -378,6 +370,18 @@ function getEditRequestXml(geometryIds, changeMap, featureType) {
     return getTransactionXml(
         '<wfs:Update typeName="' + featureType + '">'
         + getPropertiesXml(changeMap)
+        + getFilterXml(geometryIds)
+        + '</wfs:Update>'
+    );
+}
+
+function getMarkAsTemporaryRequestXml(geometryIds, propertyName, featureType) {
+    return getTransactionXml(
+        '<wfs:Update typeName="' + featureType + '">'
+        + '<wfs:Property>'
+        + '<wfs:Name>' + propertyName + '</wfs:Name>'
+        + '<wfs:Value>true</wfs:Value>'
+        + '</wfs:Property>'
         + getFilterXml(geometryIds)
         + '</wfs:Update>'
     );
@@ -429,6 +433,44 @@ function getGeometryFilterXml(geometryId) {
         + '<ogc:PropertyName>' + geometryIdPropertyName + '</ogc:PropertyName>'
         + '<ogc:Literal>' + geometryId + '</ogc:Literal>'
         + '</ogc:PropertyIsEqualTo>';
+}
+
+async function handleNewlyDrawnGeometries(object) {
+    const configuration = getPluginConfiguration();
+    const wfsConfiguration = getWFSConfiguration(configuration, object._objecttype);
+    if (!wfsConfiguration) return false;
+
+    const wfsTemporaryGeometryFieldName = configuration.wfs_temporary_geometry_field_name;
+    const temporaryGeometryTagId = configuration.temporary_geometry_tag_id;
+
+    let changed = false;
+    for (let fieldConfiguration of wfsConfiguration.geometry_fields) {
+        for (let fieldValue of await getFieldValues(object[object._objecttype], fieldConfiguration.field_path.split('.'))) {
+            const newlyDrawnGeometryIds = fieldValue.newly_drawn_geometry_ids;
+            delete fieldValue.newly_drawn_geometry_ids;
+            changed = true;
+            if (!newlyDrawnGeometryIds?.length) continue;
+
+            if (wfsTemporaryGeometryFieldName) {
+                await markGeometriesAsTemporary(newlyDrawnGeometryIds, fieldConfiguration, wfsTemporaryGeometryFieldName);
+            }
+            if (temporaryGeometryTagId) object._tags = [{ _id: temporaryGeometryTagId }];
+        }
+    }
+
+    return changed;
+}
+
+async function markGeometriesAsTemporary(geometryIds, fieldConfiguration, wfsTemporaryGeometryFieldName) {
+    const requestXml = getMarkAsTemporaryRequestXml(geometryIds, wfsTemporaryGeometryFieldName, fieldConfiguration.edit_wfs_feature_type);
+    await performEditTransaction(geometryIds, requestXml, fieldConfiguration);
+}
+
+function getAuthorizationString(configuration) {
+    const username = configuration.geoserver_write_username;
+    const password = configuration.geoserver_write_password;
+
+    return btoa(username + ':' + password);
 }
 
 function throwErrorToFrontend(error, description, realm) {
