@@ -307,12 +307,20 @@ function addToChangeMap(wfsFieldName, fieldValue, changeMap) {
     if (!fieldValue) return;
 
     if (typeof fieldValue === 'string') {
-        changeMap[wfsFieldName] = escapeSpecialCharacters(fieldValue);
+        setOrAdd(wfsFieldName, escapeSpecialCharacters(fieldValue), changeMap);
     } else if (typeof fieldValue === 'number') {
-        changeMap[wfsFieldName] = fieldValue;
+        setOrAdd(wfsFieldName, fieldValue, changeMap);
     } else if (isDanteConcept(fieldValue)) {
         changeMap[wfsFieldName + '_uri'] = escapeSpecialCharacters(fieldValue.conceptURI);
         changeMap[wfsFieldName + '_text'] = escapeSpecialCharacters(fieldValue.conceptName);
+    }
+}
+
+function setOrAdd(wfsFieldName, value, changeMap) {
+    if (changeMap[wfsFieldName] !== undefined) {
+        changeMap[wfsFieldName] = changeMap[wfsFieldName] + ' ' + value;
+    } else {
+        changeMap[wfsFieldName] = value;
     }
 }
 
