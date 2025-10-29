@@ -149,6 +149,9 @@ base_config:
                   - name: fylr_tag_id
                     type: int
                     position: 2
+                  - name: wfs_field_value
+                    type: text
+                    position: 3
               - name: wfs_pool_field
                 type: text
                 position: 13

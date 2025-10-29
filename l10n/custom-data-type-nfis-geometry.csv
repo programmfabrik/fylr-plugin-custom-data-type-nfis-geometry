@@ -68,6 +68,7 @@ server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.tags.wfs_field_name.label,Name des WFS-Zielfeldes,Name of WFS target field
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.tags.fylr_tags_path.label,Pfad zu den Tags im fylr-Objekt,Path to tags in fylr object
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.tags.fylr_tag_id.label,Tag-ID,Tag ID
+server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.tags.wfs_field_value.label,Im WFS-Zielfeld einzutragender Wert (true/false falls leer),Value to enter in WFS target field (true/false if empty)
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.wfs_pool_field.label,WFS-Zielfeld für die Poolbezeichnung,WFS target field for pool name
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.pool_names.label,Poolbezeichnungen für Datenübertragung,Pool names for data transfer
 server.config.parameter.system.nfisGeoservices.linked_objects.label,Verknüpfte Objekte,Linked objects

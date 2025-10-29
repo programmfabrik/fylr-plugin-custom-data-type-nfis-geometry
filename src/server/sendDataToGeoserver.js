@@ -218,13 +218,20 @@ async function addFieldsToChangeMap(object, fieldConfiguration, changeMap) {
 async function addTagsToChangeMap(object, fieldConfiguration, changeMap) {
     if (!fieldConfiguration.tags) return;
 
-    for (let tag of fieldConfiguration.tags) {
-        const wfsFieldName = tag.wfs_field_name;
-        const tagsPath = tag.fylr_tags_path ?? '_tags';
-        const tagId = tag.fylr_tag_id;
+    for (let tagConfiguration of fieldConfiguration.tags) {
+        const wfsFieldName = tagConfiguration.wfs_field_name;
+        const wfsFieldValue = tagConfiguration.wfs_field_value;
+        const tagsPath = tagConfiguration.fylr_tags_path ?? '_tags';
+        const tagId = tagConfiguration.fylr_tag_id;
+
         if (wfsFieldName && tagId) {
             const tags = (await getFieldValues(object, tagsPath.split('.')))[0];
-            changeMap[wfsFieldName] = tags.find(entry => entry._id === tagId) !== undefined;
+            const tag = tags.find(entry => entry._id === tagId);
+            if (wfsFieldValue) {
+                if (tag !== undefined) changeMap[wfsFieldName] = wfsFieldValue;
+            } else {
+                changeMap[wfsFieldName] = tag !== undefined;
+            }
         }
     }
 }
