@@ -456,8 +456,10 @@ async function handleNewlyDrawnGeometries(object, tagGroups) {
     for (let fieldConfiguration of wfsConfiguration.geometry_fields) {
         for (let fieldValue of await getFieldValues(object[object._objecttype], fieldConfiguration.field_path.split('.'))) {
             const newlyDrawnGeometryIds = fieldValue.newly_drawn_geometry_ids;
-            delete fieldValue.newly_drawn_geometry_ids;
-            changed = true;
+            if (newlyDrawnGeometryIds) {
+                delete fieldValue.newly_drawn_geometry_ids;
+                changed = true;
+            }
             if (!newlyDrawnGeometryIds?.length) continue;
 
             if (wfsTemporaryGeometryFieldName) {

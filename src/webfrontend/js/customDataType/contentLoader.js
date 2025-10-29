@@ -114,7 +114,7 @@ function renderEditorButtons(contentElement, cdata, settings, wfsData, selectedG
             buttons.push(createDeleteGeometryButton(contentElement, cdata, settings, selectedGeometryId));
         }
 
-        const buttonBarElement = new CUI.Buttonbar({ buttons: buttons });
+        const buttonBarElement = new CUI.Buttonbar({ buttons });
 
         CUI.dom.append(contentElement, buttonBarElement);
     }

@@ -94,10 +94,9 @@ CustomDataTypeNFISGeometry = (function(superClass) {
     Plugin.getSaveData = function(data, save_data, opts = {}) {
         const cdata = data[this.name()];
         if (this.__isValidData(cdata)) {
-            save_data[this.name()] = {
-                geometry_ids: cdata.geometry_ids,
-                newly_drawn_geometry_ids: cdata.newly_drawn_geometry_ids
-            };
+            const saveData = { geometry_ids: cdata.geometry_ids };
+            if (cdata.newly_drawn_geometry_ids?.length) saveData.newly_drawn_geometry_ids = cdata.newly_drawn_geometry_ids;
+            save_data[this.name()] = saveData;
         } else {
             save_data[this.name()] = null;
         }
