@@ -137,6 +137,18 @@ base_config:
                     type: text
                     position: 2
                 position: 12
+              - name: tags
+                type: table
+                fields:
+                  - name: wfs_field_name
+                    type: text
+                    position: 0
+                  - name: fylr_tags_path
+                    type: text
+                    position: 1
+                  - name: fylr_tag_id
+                    type: int
+                    position: 2
               - name: wfs_pool_field
                 type: text
                 position: 13

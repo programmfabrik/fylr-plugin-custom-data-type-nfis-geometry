@@ -64,6 +64,10 @@ server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.fields.wfs_field_name.label,Name des WFS-Zielfeldes,Name of WFS target field
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.fields.fylr_field_name.label,Name des Feldes im fylr-Objekt (inkl. Pfad),Name of field in fylr object (including path)
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.fields.fylr_function.label,JavaScript-Funktion zum Auslesen des Wertes aus dem fylr-Objekt (Alternative zur Angabe des Feldnamens),JavaScript function for reading the value from the fylr object (Alternative to specifying the field name)
+server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.tags.label,Zu übertragende Tags,Tags to be transferred
+server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.tags.wfs_field_name.label,Name des WFS-Zielfeldes,Name of WFS target field
+server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.tags.fylr_tags_path.label,Pfad zu den Tags im fylr-Objekt,Path to tags in fylr object
+server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.tags.fylr_tag_id.label,Tag-ID,Tag ID
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.wfs_pool_field.label,WFS-Zielfeld für die Poolbezeichnung,WFS target field for pool name
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.pool_names.label,Poolbezeichnungen für Datenübertragung,Pool names for data transfer
 server.config.parameter.system.nfisGeoservices.linked_objects.label,Verknüpfte Objekte,Linked objects

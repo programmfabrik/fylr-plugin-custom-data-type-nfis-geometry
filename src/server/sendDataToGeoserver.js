@@ -39,6 +39,7 @@ function getObjectData(object) {
     const objectData = JSON.parse(JSON.stringify(object[object._objecttype]));
     objectData._uuid = object._uuid;
     objectData._objecttype = object._objecttype;
+    objectData._tags = object._tags;
     return objectData;
 }
 
@@ -190,23 +191,42 @@ function hasLinkedObjectData(fieldContent) {
 
 async function getChangeMap(object, fieldConfiguration) {
     const changeMap = {};
-    addPoolFieldToChangeMap(object, fieldConfiguration, changeMap);
 
-    if (!fieldConfiguration.fields) return changeMap;
+    addPoolFieldToChangeMap(object, fieldConfiguration, changeMap);
+    await addFieldsToChangeMap(object, fieldConfiguration, changeMap);
+    await addTagsToChangeMap(object, fieldConfiguration, changeMap)
+
+    return changeMap;
+}
+
+async function addFieldsToChangeMap(object, fieldConfiguration, changeMap) {
+    if (!fieldConfiguration.fields) return;
 
     for (let field of fieldConfiguration.fields) {
         const wfsFieldName = field.wfs_field_name;
         const fylrFieldName = field.fylr_field_name;
         const fylrFunction = field.fylr_function;
-        if (fylrFieldName || fylrFunction) {
+        if (wfsFieldName && (fylrFieldName || fylrFunction)) {
             const fieldValue = fylrFieldName
                 ? (await getFieldValues(object, fylrFieldName.split('.')))?.[0]
                 : getValueFromCustomFunction(object, fylrFunction);
             addToChangeMap(wfsFieldName, fieldValue, changeMap);
         }
     }
+}
 
-    return changeMap;
+async function addTagsToChangeMap(object, fieldConfiguration, changeMap) {
+    if (!fieldConfiguration.tags) return;
+
+    for (let tag of fieldConfiguration.tags) {
+        const wfsFieldName = tag.wfs_field_name;
+        const tagsPath = tag.fylr_tags_path ?? '_tags';
+        const tagId = tag.fylr_tag_id;
+        if (wfsFieldName && tagId) {
+            const tags = (await getFieldValues(object, tagsPath.split('.')))[0];
+            changeMap[wfsFieldName] = tags.find(entry => entry._id === tagId) !== undefined;
+        }
+    }
 }
 
 async function getFieldValues(object, pathSegments) {
