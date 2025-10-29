@@ -48,6 +48,10 @@ The ZIP can be downloaded and installed using the plugin manager, or used direct
            * *Name of WFS target field*: The target field of the WFS to which the data is transferred. If the same target field is used in multiple mapping entries, the values are concatenated with a space character as delimiter.
            * *Name of field in fylr object*: The source field that contains the data to be transferred
            * *JavaScript function for reading the value from the fylr object*: Alternatively to specifying a field name, a custom JavaScript function body for reading the value from the fylr object can be entered. The object data can be accessed via the variable "object" (e. g. "return object._id;")
+        * *Tags to be transferred*: Mappings of a tag ID (fylr) to a target field (WFS). The target field has to be of type "boolean". For each geometry field defined, the target field of the corresponding geometry dataset is set to true (if the tag is set) or false (if it is not set) via a WFS provided by the configured Geoserver instance
+           * *Name of WFS target field*: The target field (boolean) of the WFS which should be updated according to the tag
+           * *Path to tags in fylr object*: The path to the tags field to be used for reading the tags. If empty, the default "_tags" field is used. This option can be used to refer to tags in linked objects.
+           * *Tag ID*: The ID of the tag to check
         * *WFS target field for pool name* The field of the WFS where the name of the pool that the fylr object belongs to should be stored
         * *Pool names for data transfer*: This field can be used to define the level of the pool hierarchy that should be used for writing the pool name into the WFS target field. If the pool that the fylr object belongs to is a child of one of these pools, the pool (of the higher hierarchy level) specified here is used. Otherwise, the actual pool is used.
 * *Linked objects*:
