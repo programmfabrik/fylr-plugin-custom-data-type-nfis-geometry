@@ -45,7 +45,7 @@ The ZIP can be downloaded and installed using the plugin manager, or used direct
            * *Layer ID*: The ID of the layer to show in Masterportal
         * *Data transfer to Geoserver*: If activated, field data is transferred from the fylr object to the Geoserver (via the configured WFS).
         * *Field data to be transferred*: Mappings of a source field (fylr) to a target field (WFS). For each geometry field defined, entered field data is added to the corresponding geometry via a WFS provided by the configured Geoserver instance
-           * *Name of WFS target field*: The target field of the WFS to which the data is transferred
+           * *Name of WFS target field*: The target field of the WFS to which the data is transferred. If the same target field is used in multiple mapping entries, the values are concatenated with a space character as delimiter.
            * *Name of field in fylr object*: The source field that contains the data to be transferred
            * *JavaScript function for reading the value from the fylr object*: Alternatively to specifying a field name, a custom JavaScript function body for reading the value from the fylr object can be entered. The object data can be accessed via the variable "object" (e. g. "return object._id;")
         * *WFS target field for pool name* The field of the WFS where the name of the pool that the fylr object belongs to should be stored
