@@ -111,7 +111,10 @@ function renderEditorButtons(contentElement, cdata, settings, wfsData, selectedG
             }
         } else {
             buttons.push(createEditGeometryButton(contentElement, cdata, settings, wfsData, selectedGeometryId));
-            buttons.push(createDeleteGeometryButton(contentElement, cdata, settings, selectedGeometryId));
+
+            if (getBaseConfiguration().show_delete_button) {
+                buttons.push(createDeleteGeometryButton(contentElement, cdata, settings, selectedGeometryId));
+            }
         }
 
         const buttonBarElement = new CUI.Buttonbar({ buttons });

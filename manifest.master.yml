@@ -59,12 +59,15 @@ base_config:
       show_upload_button:
         type: bool
         position: 7
+      show_delete_button:
+        type: bool
+        position: 8
       wfs_temporary_geometry_field_name:
         type: text
-        position: 8
+        position: 9
       temporary_geometry_tag_id:
         type: int
-        position: 9
+        position: 10
       wfs_configuration:
         type: table
         fields:
@@ -163,7 +166,7 @@ base_config:
                     position: 0
                 position: 14
             position: 1
-        position: 10
+        position: 11
       linked_objects:
         type: table
         fields:
@@ -173,7 +176,7 @@ base_config:
           - name: link_field_name
             type: text
             position: 1
-        position: 11
+        position: 12
       masterportal_configurations:
         type: table
         fields:
@@ -186,7 +189,7 @@ base_config:
           - name: file_name
             type: text
             position: 2
-        position: 12
+        position: 13
 
 callbacks:
   db_pre_save:

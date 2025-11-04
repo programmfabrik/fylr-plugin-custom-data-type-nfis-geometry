@@ -37,7 +37,8 @@ server.config.parameter.system.nfisGeoservices.geoserver_write_password.label,Ge
 server.config.parameter.system.nfisGeoservices.wfs_geometry_id_field_name.label,Name des Geometrie-ID-Feldes im WFS,Name of the geometry ID field in the WFS
 server.config.parameter.system.nfisGeoservices.show_upload_button.label,Hochladen von Geometrien im Masterportal,Upload geometries in Masterportal
 server.config.parameter.system.nfisGeoservices.show_upload_button.checkbox,Button anzeigen,Show button
-server.config.parameter.system.nfisGeoservices.show_upload_button.label,Hochladen von Geometrien im Masterportal,Upload geometries in Masterportal
+server.config.parameter.system.nfisGeoservices.show_delete_button.label,Löschen von Geometrien,Delete geometries
+server.config.parameter.system.nfisGeoservices.show_delete_button.checkbox,Button anzeigen,Show button
 server.config.parameter.system.nfisGeoservices.wfs_temporary_geometry_field_name.label,Name des Feldes zur Kennzeichnung provisorischer Geometrien im WFS,Name of field for marking geometries as temporary in WFS
 server.config.parameter.system.nfisGeoservices.temporary_geometry_tag_id.label,ID des Tags zur Kennzeichnung von Objekten mit provisorischen Geometrien,ID of tag for marking objects with temporary geometries
 server.config.parameter.system.nfisGeoservices.wfs_configuration.label,Objekttypen,Object types
