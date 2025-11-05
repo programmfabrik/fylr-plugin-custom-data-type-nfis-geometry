@@ -25,6 +25,13 @@ The ZIP can be downloaded and installed using the plugin manager, or used direct
 * *Geoserver account (write permissions): User name*: The name of the Geoserver account that is used to access the WFS for editing data
 * *Geoserver account (write permissions): Password*: The password of the Geoserver account that is used to access the WFS for editing data
 * *Name of the geometry ID field in the WFS*: The name of the WFS field that is used for storing the geometry UUIDs created by the plugin (default value: "ouuid")
+* *Upload geometries in Masterportal*: If enabled, a button for uploading geometries in Masterportal is displayed in the editor
+* *Delete geometries*: If enabled, a button for deleting geometries is displayed in the editor
+* *Replace geometries*: If enabled, a button for replacing geometries is displayed in the editor. A new geometry can be created via upload in Masterportal while the old geometry is deleted.
+* *Name of WFS field 'Geometry to be deleted'*: This WFS field is set to true if a geometry is about to be replaced with a new one
+* *Name of WFS field 'Replaced by'*: For geometries that have been replaced with a new one, the UUID of the new geometry is stored in this WFS field
+* *Name of WFS field 'Temporary geometry'*: If the name of a boolean WFS field is entered here, the field is set to true for new geometries that have been created by drawing it via the Masterportal WFS tool
+* *ID of tag for marking objects with temporary geometries*: If a tag ID is entered here, the corresponding tag is set on the fylr object after a geometry has been created by drawing it via the Masterportal WFS tool
 * *Object types*: 
     * *Object type name*: The name of the object type
     * *Geometry fields*: The geometry fields to be configured
