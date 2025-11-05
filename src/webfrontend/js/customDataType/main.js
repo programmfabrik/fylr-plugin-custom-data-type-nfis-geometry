@@ -51,6 +51,7 @@ CustomDataTypeNFISGeometry = (function(superClass) {
 
         if (!cdata.geometry_ids) cdata.geometry_ids = [];
         cdata.newly_drawn_geometry_ids = [];
+        cdata.replaced_geometry_ids = {};
 
         return cdata;
     }
@@ -95,7 +96,12 @@ CustomDataTypeNFISGeometry = (function(superClass) {
         const cdata = data[this.name()];
         if (this.__isValidData(cdata)) {
             const saveData = { geometry_ids: cdata.geometry_ids };
-            if (cdata.newly_drawn_geometry_ids?.length) saveData.newly_drawn_geometry_ids = cdata.newly_drawn_geometry_ids;
+            if (cdata.newly_drawn_geometry_ids?.length) {
+                saveData.newly_drawn_geometry_ids = cdata.newly_drawn_geometry_ids;
+            }
+            if (cdata.replaced_geometry_ids && Object.keys(cdata.replaced_geometry_ids).length) {
+                saveData.replaced_geometry_ids = cdata.replaced_geometry_ids;
+            }
             save_data[this.name()] = saveData;
         } else {
             save_data[this.name()] = null;

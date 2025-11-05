@@ -20,11 +20,13 @@ process.stdin.on('end', async () => {
     const changedObjects = [];
 
     for (let object of data.objects) {
-        await updateObject(
+        const changed = await updateObject(
             getObjectData(object),
-            object._current ? getObjectData(object._current) : undefined
+            object,
+            object._current ? getObjectData(object._current) : undefined,
+            tagGroups
         );
-        if (await handleNewlyDrawnGeometries(object, tagGroups)) changedObjects.push(object);
+        if (changed) changedObjects.push(object);
     }
 
     console.log(JSON.stringify({ objects: changedObjects }));
@@ -52,7 +54,9 @@ function getWFSConfiguration(configuration, objectType) {
     return wfsConfiguration?.find(configuration => configuration.object_type === objectType);
 }
 
-async function updateObject(object, currentObject) {
+async function updateObject(object, rootObject, currentObject, tagGroups) {
+    let changed = false;
+
     const configuration = getPluginConfiguration();
 
     if (currentObject) addDataFromCurrentObject(object, currentObject);
@@ -65,14 +69,19 @@ async function updateObject(object, currentObject) {
     if (!wfsConfiguration) return;
 
     for (let fieldConfiguration of wfsConfiguration.geometry_fields) {
-        const geometryIds = await getGeometryIds(object, fieldConfiguration.field_path.split('.'));
-        if (geometryIds.length && await hasUsedGeometryIds(configuration, geometryIds, object._uuid)) {
+        const geometryFieldValues = await getFieldValues(object, fieldConfiguration.field_path.split('.'));
+        const geometryIds = await getGeometryIds(geometryFieldValues);
+        if (geometryIds.all.length && await hasUsedGeometryIds(configuration, geometryIds, object._uuid)) {
             return throwErrorToFrontend('Eine oder mehrere Geometrien sind bereits mit anderen Objekten verknüpft.', undefined, 'multipleGeometryLinking');
         }
 
         await editGeometries(object, fieldConfiguration, geometryIds);
         if (currentObject) await deleteGeometries(fieldConfiguration, geometryIds, currentObject);
+        if (await handleNewlyDrawnGeometries(rootObject, tagGroups, geometryIds, fieldConfiguration)) changed = true;
+        if (cleanUpGeometryIds(rootObject, fieldConfiguration)) changed = true;
     }
+
+    return changed;
 }
 
 function getLinkedObjectConfiguration(objectType, configuration) {
@@ -87,24 +96,54 @@ async function updateLinkedObjects(object, linkedObjectConfiguration) {
     }
 }
 
-async function getGeometryIds(object, pathSegments) {
-    let geometryIds = [];
+function getGeometryIds(fieldValues) {
+    const result = {
+        all: [],
+        newlyDrawn: [],
+        replaced: {}
+    };
 
-    for (let fieldValue of await getFieldValues(object, pathSegments)) {
-        if (!fieldValue?.geometry_ids?.length) continue;
-        geometryIds = geometryIds.concat(
-            fieldValue.geometry_ids.filter(value => value !== undefined)
-        );
+    for (let fieldValue of fieldValues) {
+        if (fieldValue?.geometry_ids?.length) {
+            result.all = result.all.concat(fieldValue.geometry_ids.filter(value => value !== undefined));
+        }
+        if (fieldValue?.newly_drawn_geometry_ids?.length) {
+            result.newlyDrawn = result.newlyDrawn.concat(fieldValue.newly_drawn_geometry_ids.filter(value => value !== undefined));
+        }
+        if (fieldValue?.replaced_geometry_ids) {
+            Object.keys(fieldValue.replaced_geometry_ids).forEach(geometryId => {
+                result.replaced[geometryId] = fieldValue.replaced_geometry_ids[geometryId];
+            });
+        }
     }
 
-    return geometryIds;
+    return result;
+}
+
+async function cleanUpGeometryIds(rootObject, fieldConfiguration) {
+    let changed = false;
+    
+    const fieldValues = await getFieldValues(rootObject[rootObject._objecttype], fieldConfiguration.field_path.split('.'));
+
+    for (let fieldValue of fieldValues) {
+        if (fieldValue?.newly_drawn_geometry_ids) {
+            delete fieldValue.newly_drawn_geometry_ids;
+            changed = true;
+        }
+        if (fieldValue?.replaced_geometry_ids) {
+            delete fieldValue.replaced_geometry_ids;
+            changed = true;
+        }
+    }
+
+    return changed;
 }
 
 async function hasUsedGeometryIds(configuration, geometryIds, uuid) {
     const geometryFieldPaths = getGeometryFieldPaths(configuration);
     const url = info.api_url + '/api/v1/search?access_token=' + info.api_user_access_token;
     const searchRequest = {
-        search: geometryIds.map(geometryId => {
+        search: geometryIds.all.map(geometryId => {
             return {
                 type: 'match',
                 bool: 'should',
@@ -147,27 +186,42 @@ async function editGeometries(object, fieldConfiguration, geometryIds) {
     if (isSendingDataToGeoserverActivated(fieldConfiguration, geometryIds)) {
         const changeMap = await getChangeMap(object, fieldConfiguration);
         if (Object.keys(changeMap).length) {
-            const requestXml = getEditRequestXml(geometryIds, changeMap, fieldConfiguration.edit_wfs_feature_type);
-            await performEditTransaction(geometryIds, requestXml, fieldConfiguration);
+            const requestXml = getEditRequestXml(geometryIds.all, changeMap, fieldConfiguration.edit_wfs_feature_type);
+            await performEditTransaction(geometryIds.all, requestXml, fieldConfiguration);
         }
     }
 }
 
 async function deleteGeometries(fieldConfiguration, geometryIds, currentObject) {
     if (!currentObject) return;
+    await markGeometriesAsReplaced(geometryIds, fieldConfiguration);
     const deletedGeometryIds = await getDeletedGeometryIds(geometryIds, currentObject, fieldConfiguration);
     if (deletedGeometryIds.length) await performDeleteTransaction(deletedGeometryIds, fieldConfiguration);
 }
 
 async function getDeletedGeometryIds(geometryIds, currentObject, fieldConfiguration) {
-    const currentGeometryIds = await getGeometryIds(currentObject, fieldConfiguration.field_path.split('.'));
-    return currentGeometryIds.filter(geometryId => !geometryIds.includes(geometryId));
+    const currentGeometryFieldValues = await getFieldValues(currentObject, fieldConfiguration.field_path.split('.'));
+    const currentGeometryIds = await getGeometryIds(currentGeometryFieldValues);
+    const replacedGeometryIds = Object.keys(geometryIds.replaced);
+    return currentGeometryIds.all.filter(geometryId => {
+        return !geometryIds.all.includes(geometryId) && !replacedGeometryIds.includes(geometryId);
+    }).concat(replacedGeometryIds);
+}
+
+async function markGeometriesAsReplaced(geometryIds, fieldConfiguration) {
+    const wfsReplacedByFieldName = getPluginConfiguration().wfs_replaced_by_field_name;
+    const featureType = fieldConfiguration.edit_wfs_feature_type;
+
+    for (let [replacedGeometryId, newGeometryId] of Object.entries(geometryIds.replaced)) {
+        const requestXml = getMarkAsReplacedRequestXml(replacedGeometryId, newGeometryId, wfsReplacedByFieldName, featureType);
+        await performEditTransaction([replacedGeometryId], requestXml, fieldConfiguration);
+    }
 }
 
 function isSendingDataToGeoserverActivated(fieldConfiguration, geometryIds) {
     return fieldConfiguration.send_data_to_geoserver
         && fieldConfiguration.edit_wfs_url
-        && geometryIds?.length;
+        && geometryIds.all.length;
 }
 
 function addDataFromCurrentObject(object, currentObject) {
@@ -385,7 +439,7 @@ async function performDeleteTransaction(geometryIds, fieldConfiguration) {
 }
 
 async function performTransaction(requestXml, wfsUrl) {
-    const transactionUrl = wfsUrl + '?service=WFS&version=1.1.0&request=Transaction';;
+    const transactionUrl = wfsUrl + '?service=WFS&version=1.1.0&request=Transaction';
 
     try {
         const response = await fetch(transactionUrl, {
@@ -419,6 +473,18 @@ function getMarkAsTemporaryRequestXml(geometryIds, propertyName, featureType) {
         + '<wfs:Value>true</wfs:Value>'
         + '</wfs:Property>'
         + getFilterXml(geometryIds)
+        + '</wfs:Update>'
+    );
+}
+
+function getMarkAsReplacedRequestXml(replacedGeometryId, newGeometryId, propertyName, featureType) {
+    return getTransactionXml(
+        '<wfs:Update typeName="' + featureType + '">'
+        + '<wfs:Property>'
+        + '<wfs:Name>' + propertyName + '</wfs:Name>'
+        + '<wfs:Value>' + newGeometryId +  '</wfs:Value>'
+        + '</wfs:Property>'
+        + getFilterXml([replacedGeometryId])
         + '</wfs:Update>'
     );
 }
@@ -471,32 +537,19 @@ function getGeometryFilterXml(geometryId) {
         + '</ogc:PropertyIsEqualTo>';
 }
 
-async function handleNewlyDrawnGeometries(object, tagGroups) {
-    const configuration = getPluginConfiguration();
-    const wfsConfiguration = getWFSConfiguration(configuration, object._objecttype);
-    if (!wfsConfiguration) return false;
+async function handleNewlyDrawnGeometries(rootObject, tagGroups, geometryIds, fieldConfiguration) {
+    if (!geometryIds.newlyDrawn?.length) return false;
 
+    const configuration = getPluginConfiguration();
     const wfsTemporaryGeometryFieldName = configuration.wfs_temporary_geometry_field_name;
     const temporaryGeometryTagId = configuration.temporary_geometry_tag_id;
 
-    let changed = false;
-    for (let fieldConfiguration of wfsConfiguration.geometry_fields) {
-        for (let fieldValue of await getFieldValues(object[object._objecttype], fieldConfiguration.field_path.split('.'))) {
-            const newlyDrawnGeometryIds = fieldValue.newly_drawn_geometry_ids;
-            if (newlyDrawnGeometryIds) {
-                delete fieldValue.newly_drawn_geometry_ids;
-                changed = true;
-            }
-            if (!newlyDrawnGeometryIds?.length) continue;
-
-            if (wfsTemporaryGeometryFieldName) {
-                await markGeometriesAsTemporary(newlyDrawnGeometryIds, fieldConfiguration, wfsTemporaryGeometryFieldName);
-            }
-            if (temporaryGeometryTagId) setTag(object, temporaryGeometryTagId, tagGroups);
-        }
+    if (wfsTemporaryGeometryFieldName) {
+        await markGeometriesAsTemporary(geometryIds.newlyDrawn, fieldConfiguration, wfsTemporaryGeometryFieldName);
     }
+    if (temporaryGeometryTagId) setTag(rootObject, temporaryGeometryTagId, tagGroups);
 
-    return changed;
+    return true;
 }
 
 async function markGeometriesAsTemporary(geometryIds, fieldConfiguration, wfsTemporaryGeometryFieldName) {
@@ -511,12 +564,12 @@ function getAuthorizationString(configuration) {
     return btoa(username + ':' + password);
 }
 
-function setTag(object, tagId, tagGroups) {
+function setTag(rootObject, tagId, tagGroups) {
     const tagGroup = tagGroups.find(group => group._tags.find(entry => entry.tag._id === tagId));
     const tagsIdsToRemove = tagGroup.taggroup.type === 'choice'
         ? tagGroup._tags.map(entry => entry.tag._id)
         : [tagId];
-    object._tags = object._tags.filter(tag => !tagsIdsToRemove.includes(tag._id))
+    rootObject._tags = rootObject._tags.filter(tag => !tagsIdsToRemove.includes(tag._id))
         .concat([{ _id: tagId }]);
 }
 

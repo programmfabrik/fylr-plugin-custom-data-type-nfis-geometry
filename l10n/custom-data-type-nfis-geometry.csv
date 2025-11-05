@@ -10,6 +10,7 @@ custom.data.type.nfis.geometry.uploadNewGeometry,Neue Geometrie hochladen,Upload
 custom.data.type.nfis.geometry.linkExistingGeometry,Existierende Geometrie verknüpfen,Link existing geometry
 custom.data.type.nfis.geometry.editGeometry,Bearbeiten,Edit
 custom.data.type.nfis.geometry.deleteGeometry,Geometrie löschen,Delete geometry
+custom.data.type.nfis.geometry.replaceGeometry,Geometrie ersetzen,Replace geometry
 custom.data.type.nfis.geometry.viewGeometry,Im Masterportal anzeigen,View in Masterportal
 custom.data.type.nfis.geometry.modal.cancel,Abbrechen,cancel
 custom.data.type.nfis.geometry.modal.ok,Ok,Ok
@@ -39,7 +40,11 @@ server.config.parameter.system.nfisGeoservices.show_upload_button.label,Hochlade
 server.config.parameter.system.nfisGeoservices.show_upload_button.checkbox,Button anzeigen,Show button
 server.config.parameter.system.nfisGeoservices.show_delete_button.label,Löschen von Geometrien,Delete geometries
 server.config.parameter.system.nfisGeoservices.show_delete_button.checkbox,Button anzeigen,Show button
-server.config.parameter.system.nfisGeoservices.wfs_temporary_geometry_field_name.label,Name des Feldes zur Kennzeichnung provisorischer Geometrien im WFS,Name of field for marking geometries as temporary in WFS
+server.config.parameter.system.nfisGeoservices.show_replace_button.label,Ersetzen von Geometrien,Replace geometries
+server.config.parameter.system.nfisGeoservices.show_replace_button.checkbox,Button anzeigen,Show button
+server.config.parameter.system.nfisGeoservices.wfs_marked_for_deletion_field_name.label,Name des WFS-Feldes 'Zu löschende Geometrie',Name of WFS field 'Geometry to be deleted'
+server.config.parameter.system.nfisGeoservices.wfs_replaced_by_field_name.label,Name des WFS-Feldes 'Ersetzt von',Name of WFS field 'Replaced by'
+server.config.parameter.system.nfisGeoservices.wfs_temporary_geometry_field_name.label,Name des WFS-Feldes 'Provisorische Geometrie',Name of WFS field 'Temporary geometry'
 server.config.parameter.system.nfisGeoservices.temporary_geometry_tag_id.label,ID des Tags zur Kennzeichnung von Objekten mit provisorischen Geometrien,ID of tag for marking objects with temporary geometries
 server.config.parameter.system.nfisGeoservices.wfs_configuration.label,Objekttypen,Object types
 server.config.parameter.system.nfisGeoservices.wfs_configuration.object_type.label,Name des Objekttyps,Object type name

@@ -26,33 +26,10 @@ export function load(contentElement, cdata, objectType, fieldPath, isMultiSelect
         geometryIdFieldName: getGeometryIdFieldName()
     };
 
-    loadWFSData(settings, cdata.geometry_ids).then(
+    loadWfsData(settings, cdata.geometry_ids).then(
         wfsData => renderContent(contentElement, cdata, settings, mode, wfsData),
         error => console.error(error)
     );
-}
-
-function loadWFSData(settings, geometryIds) {
-    return new Promise((resolve, reject) => {
-        const wfsUrl = geometryIds?.length ? getWfsUrl(settings, geometryIds) : undefined;
-        if (!wfsUrl) return resolve(undefined);
-
-        const xhr = new XMLHttpRequest();
-        xhr.open('GET', wfsUrl);
-        xhr.setRequestHeader('Authorization', getAuthorizationString());
-        xhr.onload = function() {
-            if (xhr.status == 200) {
-                const data = JSON.parse(xhr.responseText);
-                resolve(data)
-            } else {
-                reject('Failed to load data from WFS service');
-            }
-        };
-        xhr.onerror = error => {
-            reject(error);
-        };
-        xhr.send();
-    });
 }
 
 function renderPlaceholder(contentElement, type) {
@@ -111,9 +88,11 @@ function renderEditorButtons(contentElement, cdata, settings, wfsData, selectedG
             }
         } else {
             buttons.push(createEditGeometryButton(contentElement, cdata, settings, wfsData, selectedGeometryId));
-
             if (getBaseConfiguration().show_delete_button) {
                 buttons.push(createDeleteGeometryButton(contentElement, cdata, settings, selectedGeometryId));
+            }
+            if (getBaseConfiguration().show_replace_button) {
+                buttons.push(createReplaceGeometryButton(contentElement, cdata, settings, wfsData, selectedGeometryId));
             }
         }
 
@@ -156,6 +135,14 @@ function createDeleteGeometryButton(contentElement, cdata, settings, uuid) {
     });
 }
 
+function createReplaceGeometryButton(contentElement, cdata, settings, wfsData, uuid) {
+    return new CUI.Button({
+        text: $$('custom.data.type.nfis.geometry.replaceGeometry'),
+        icon_left: new CUI.Icon({ class: 'fa-refresh' }),
+        onClick: () => replaceGeometry(contentElement, cdata, settings, wfsData, uuid)
+    });
+}
+
 function createCreateGeometryButton(contentElement, cdata, settings, wfsData, extent, showDrawLabel = false) {
     return new CUI.Button({
         text: showDrawLabel
@@ -184,10 +171,7 @@ function createLinkExistingGeometryButton(contentElement, cdata, settings) {
 }
 
 function editGeometry(contentElement, cdata, settings, wfsData, uuid) {
-    const extent = wfsData?.features.find(feature => {
-        return feature.properties[settings.geometryIdFieldName] === uuid;
-    })?.bbox;
-
+    const extent = getExtent(wfsData, settings, uuid);
     if (!extent) return;
 
     window.open(getEditGeometryUrl(settings, wfsData, extent), '_blank');
@@ -195,10 +179,8 @@ function editGeometry(contentElement, cdata, settings, wfsData, uuid) {
 }
 
 function createGeometry(contentElement, cdata, settings, wfsData, extent, upload = false) {
-    const newGeometryId = window.crypto.randomUUID();
-    navigator.clipboard.writeText(newGeometryId);
     window.open(getEditGeometryUrl(settings, wfsData, extent, upload), '_blank');
-    openCreateGeometryModal(contentElement, cdata, settings, newGeometryId, !upload);
+    openCreateGeometryModal(contentElement, cdata, settings, generateGeometryId(), undefined, !upload);
 }
 
 function openEditGeometryModal(contentElement, cdata, settings) {
@@ -219,7 +201,7 @@ function openEditGeometryModal(contentElement, cdata, settings) {
     return modalDialog.show();
 }
 
-function openCreateGeometryModal(contentElement, cdata, settings, newGeometryId, drawn, error) {
+function openCreateGeometryModal(contentElement, cdata, settings, newGeometryId, replacedGeometryId, drawn, error) {
     let text = '';
     if (error) text += $$('custom.data.type.nfis.geometry.create.modal.error.notFound') + '\n\n';
     text += $$('custom.data.type.nfis.geometry.create.modal.text.1') + '\n\n'
@@ -227,22 +209,31 @@ function openCreateGeometryModal(contentElement, cdata, settings, newGeometryId,
         + $$('custom.data.type.nfis.geometry.create.modal.text.2');
 
     const modalDialog = new CUI.ConfirmationDialog({
-        title: $$('custom.data.type.nfis.geometry.createNewGeometry'),
+        title: replacedGeometryId
+            ? $$('custom.data.type.nfis.geometry.replaceGeometry')
+            : $$('custom.data.type.nfis.geometry.createNewGeometry'),
         text: text,
         cancel: false,
         buttons: [{
             text: $$('custom.data.type.nfis.geometry.modal.cancel'),
-            onClick: () => modalDialog.destroy()
+            onClick: () => {
+                if (replacedGeometryId) {
+                    unmarkGeometryForDeletion(settings, replacedGeometryId).then(() => modalDialog.destroy());
+                } else {
+                    modalDialog.destroy();
+                }
+            }
         }, {
             text: $$('custom.data.type.nfis.geometry.modal.ok'),
             primary: true,
             onClick: () => {
-                setGeometryId(contentElement, cdata, settings, newGeometryId, drawn).then(
+                if (replacedGeometryId) deleteGeometry(contentElement, cdata, settings, replacedGeometryId);
+                setGeometryId(contentElement, cdata, settings, newGeometryId, replacedGeometryId, drawn).then(
                     () => {},
                     error => {
                         if (error) console.error(error);
                         openCreateGeometryModal(
-                            contentElement, cdata, settings, newGeometryId, drawn, true
+                            contentElement, cdata, settings, newGeometryId, replacedGeometryId, drawn, true
                         );
                     }
                 );
@@ -273,14 +264,17 @@ function openSetGeometryModal(contentElement, cdata, settings, title, error) {
     });
 }
 
-function setGeometryId(contentElement, cdata, settings, newGeometryId, drawn = false) {
+function setGeometryId(contentElement, cdata, settings, newGeometryId, replacedGeometryId, drawn = false) {
     return new Promise((resolve, reject) => {
-        loadWFSData(settings, [newGeometryId]).then((wfsData) => {
+        loadWfsData(settings, [newGeometryId]).then((wfsData) => {
             if (wfsData.totalFeatures > 0) {
                 if (!cdata.geometry_ids.includes(newGeometryId)) {
                     cdata.geometry_ids = cdata.geometry_ids.concat([newGeometryId]);
                     if (drawn && !cdata.newly_drawn_geometry_ids.includes(newGeometryId)) {
                         cdata.newly_drawn_geometry_ids = cdata.newly_drawn_geometry_ids.concat([newGeometryId]);
+                    }
+                    if (replacedGeometryId) {
+                        cdata.replaced_geometry_ids[replacedGeometryId] = newGeometryId;
                     }
                 }
                 applyChanges(
@@ -301,10 +295,36 @@ function deleteGeometry(contentElement, cdata, settings, uuid) {
     reloadEditorContent(contentElement, cdata, settings);
 }
 
+function replaceGeometry(contentElement, cdata, settings, wfsData, uuid) {
+    const extent = getExtent(wfsData, settings, uuid);
+    if (!extent) return;
+
+    markGeometryForDeletion(settings, uuid).then(() => {
+        openCreateGeometryModal(contentElement, cdata, settings, generateGeometryId(), uuid, false);
+        window.open(getEditGeometryUrl(settings, wfsData, extent, true), '_blank');
+    });
+}
+
+function markGeometryForDeletion(settings, uuid) {
+    return setMarkedForDeletion(settings, uuid, true);
+}
+
+function unmarkGeometryForDeletion(settings, uuid) {
+    return setMarkedForDeletion(settings, uuid, false);
+}
+
+function setMarkedForDeletion(settings, uuid, value) {
+    const fieldName = getBaseConfiguration().wfs_marked_for_deletion_field_name;
+
+    return fieldName?.length
+        ? editWfsData(settings, uuid, fieldName, value)
+        : Promise.resolve();
+}
+
 function reloadEditorContent(contentElement, cdata, settings) {
     CUI.dom.removeChildren(contentElement);
 
-    loadWFSData(settings, cdata.geometry_ids).then(
+    loadWfsData(settings, cdata.geometry_ids).then(
         wfsData => renderContent(contentElement, cdata, settings, 'editor', wfsData),
         error => console.error(error)
     );
@@ -460,7 +480,7 @@ function getRasterSource(projection) {
 }
 
 function getVectorLayer(geometryIds, settings, style) {
-    const wfsUrl = getWfsUrl(settings, geometryIds);
+    const wfsUrl = getLoadWfsDataUrl(settings, geometryIds);
     const authorizationString = getAuthorizationString();
     const vectorSource = getVectorSource(wfsUrl, authorizationString);
 
@@ -619,30 +639,6 @@ function getConfigurationFileName() {
     return configuration?.file_name;
 }
 
-function getWfsUrl(settings, geometryIds) {
-    let baseUrl = settings.fieldConfiguration.display_wfs_url;
-    const featureType = settings.fieldConfiguration.display_wfs_feature_type;
-
-    if (!baseUrl || !featureType) return '';
-    if (!baseUrl.endsWith('/')) baseUrl += '/';
-
-    return baseUrl
-        + '?service=WFS&version=1.1.0&request=GetFeature&typename='
-        + featureType
-        + '&outputFormat=application/json&srsname=EPSG:25832&cql_filter='
-        + settings.geometryIdFieldName
-        + ' in ('
-        + geometryIds.map(id => '\'' + id + '\'').join(',')
-        + ')';
-}
-
-function getAuthorizationString() {
-    const username = getBaseConfiguration().geoserver_read_username;
-    const password = getBaseConfiguration().geoserver_read_password;
-
-    return 'Basic ' + window.btoa(username + ':' + password);
-}
-
 function getGeometryIdFieldName() {
     const fieldName = getBaseConfiguration().wfs_geometry_id_field_name;
 
@@ -666,4 +662,129 @@ function getUserConfiguration() {
 
 function getUserGroupIds() {
     return ez5.session.user.data.__group_ids;
+}
+
+function loadWfsData(settings, geometryIds) {
+    return new Promise((resolve, reject) => {
+        const wfsUrl = geometryIds?.length ? getLoadWfsDataUrl(settings, geometryIds) : undefined;
+        if (!wfsUrl) return resolve(undefined);
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', wfsUrl);
+        xhr.setRequestHeader('Authorization', getAuthorizationString());
+        xhr.onload = function() {
+            if (xhr.status == 200) {
+                const data = JSON.parse(xhr.responseText);
+                resolve(data);
+            } else {
+                reject('Failed to load data from WFS service');
+            }
+        };
+        xhr.onerror = error => {
+            reject(error);
+        };
+        xhr.send();
+    });
+}
+
+function getLoadWfsDataUrl(settings, geometryIds) {
+    let baseUrl = settings.fieldConfiguration.display_wfs_url;
+    const featureType = settings.fieldConfiguration.display_wfs_feature_type;
+
+    if (!baseUrl || !featureType) return '';
+    if (!baseUrl.endsWith('/')) baseUrl += '/';
+
+    return baseUrl
+        + '?service=WFS&version=1.1.0&request=GetFeature&typename='
+        + featureType
+        + '&outputFormat=application/json&srsname=EPSG:25832&cql_filter='
+        + settings.geometryIdFieldName
+        + ' in ('
+        + geometryIds.map(id => '\'' + id + '\'').join(',')
+        + ')';
+}
+
+function editWfsData(settings, geometryId, propertyName, propertyValue) {
+    return new Promise((resolve, reject) => {
+        const wfsUrl = getEditWfsDataUrl(settings);
+        if (!wfsUrl) return resolve(undefined);
+
+        const requestXml = getEditRequestXml(
+            settings.fieldConfiguration.edit_wfs_feature_type,
+            getBaseConfiguration().wfs_geometry_id_field_name,
+            geometryId,
+            propertyName,
+            propertyValue
+        );
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', wfsUrl);
+        xhr.setRequestHeader('Authorization', getAuthorizationString());
+        xhr.setRequestHeader('Content-Type', 'application/xml');
+        xhr.onload = function() {
+            if (xhr.status == 200) {
+                resolve();
+            } else {
+                reject('Failed to edit data via WFS service');
+            }
+        };
+        xhr.onerror = error => {
+            reject(error);
+        };
+        xhr.send(requestXml);
+    });
+}
+
+function getEditWfsDataUrl(settings) {
+    let baseUrl = settings.fieldConfiguration.edit_wfs_url;
+    const featureType = settings.fieldConfiguration.edit_wfs_feature_type;
+
+    if (!baseUrl || !featureType) return undefined;
+    if (!baseUrl.endsWith('/')) baseUrl += '/';
+
+    return baseUrl + 'service=WFS&version=1.1.0&request=Transaction';
+}
+
+function getAuthorizationString() {
+    const username = getBaseConfiguration().geoserver_read_username;
+    const password = getBaseConfiguration().geoserver_read_password;
+
+    return 'Basic ' + window.btoa(username + ':' + password);
+}
+
+function getEditRequestXml(featureType, geometryIdPropertyName, geometryId, propertyName, propertyValue) {
+    return '<?xml version="1.0" ?>'
+        + '<wfs:Transaction '
+        + 'version="1.1.0" '
+        + 'service="WFS" '
+        + 'xmlns:ogc="http://www.opengis.net/ogc" '
+        + 'xmlns:wfs="http://www.opengis.net/wfs" '
+        + 'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" '
+        + 'xsi:schemaLocation="http://www.opengis.net/wfs">'
+        + '<wfs:Update typeName="' + featureType + '">'
+        + '<wfs:Property>'
+        + '<wfs:Name>' + propertyName + '</wfs:Name>'
+        + '<wfs:Value>' + propertyValue + '</wfs:Value>'
+        + '</wfs:Property>'
+        + '<ogc:Filter>'
+        + '<ogc:PropertyIsEqualTo>'
+        + '<ogc:PropertyName>' + geometryIdPropertyName + '</ogc:PropertyName>'
+        + '<ogc:Literal>' + geometryId + '</ogc:Literal>'
+        + '</ogc:PropertyIsEqualTo>'
+        + '</ogc:Filter>'
+        + '</wfs:Update>'
+        + '</wfs:Transaction>';
+}
+
+function getExtent(wfsData, settings, uuid) {
+    return wfsData?.features.find(feature => {
+        return feature.properties[settings.geometryIdFieldName] === uuid;
+    })?.bbox;
+}
+
+function generateGeometryId() {
+    const newGeometryId = window.crypto.randomUUID();
+    navigator.clipboard.writeText(newGeometryId);
+
+    return newGeometryId;
 }
