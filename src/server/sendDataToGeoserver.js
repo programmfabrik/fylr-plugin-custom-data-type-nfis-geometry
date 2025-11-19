@@ -294,7 +294,7 @@ async function getFieldValues(object, pathSegments) {
     const fieldName = pathSegments.shift();
     let field = object[fieldName];
 
-    if (field === undefined) return [];
+    if (field === undefined || field === null) return [];
 
     if (!Array.isArray(field) && field._objecttype && field._mask && field[field._objecttype]?._id !== undefined) {
         field = await getLinkedObject(field);
