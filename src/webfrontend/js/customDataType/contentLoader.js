@@ -179,8 +179,9 @@ function editGeometry(contentElement, cdata, settings, wfsData, uuid) {
 }
 
 function createGeometry(contentElement, cdata, settings, wfsData, extent, upload = false) {
-    window.open(getEditGeometryUrl(settings, wfsData, extent, upload), '_blank');
-    openCreateGeometryModal(contentElement, cdata, settings, generateGeometryId(), undefined, !upload);
+    const newGeometryId = generateGeometryId();
+    window.open(getEditGeometryUrl(settings, wfsData, extent, upload ? newGeometryId : undefined, upload), '_blank');
+    openCreateGeometryModal(contentElement, cdata, settings, newGeometryId, undefined, !upload);
 }
 
 function openEditGeometryModal(contentElement, cdata, settings) {
@@ -303,8 +304,9 @@ function replaceGeometry(contentElement, cdata, settings, wfsData, uuid) {
     if (!extent) return;
 
     markGeometryForDeletion(settings, uuid).then(() => {
-        openCreateGeometryModal(contentElement, cdata, settings, generateGeometryId(), uuid, false);
-        window.open(getEditGeometryUrl(settings, wfsData, extent, true), '_blank');
+        const newGeometryId = generateGeometryId();
+        openCreateGeometryModal(contentElement, cdata, settings, newGeometryId, uuid, false);
+        window.open(getEditGeometryUrl(settings, wfsData, extent, newGeometryId, true), '_blank');
     });
 }
 
@@ -572,7 +574,7 @@ function getViewGeometriesUrl(extent) {
     return url + 'zoomToExtent=' + extent.join(',');
 }
 
-function getEditGeometryUrl(settings, wfsData, extent, upload = false) {
+function getEditGeometryUrl(settings, wfsData, extent, geometryId, upload = false) {
     let url = getMasterportalUrl();
     const layerIds = getMasterportalLayerIds(settings.fieldConfiguration, wfsData);
     if (!url) return '';
@@ -581,6 +583,8 @@ function getEditGeometryUrl(settings, wfsData, extent, upload = false) {
     url += upload
         ? 'menu={%22secondary%22:{%22currentComponent%22:%22wfstUploader%22}}'
         : 'isinitopen=wfst';
+
+    if (geometryId) url += '&uuid=' + geometryId;
     
     if (layerIds?.length) url += '&layerids=' + layerIds.join(',');
 
