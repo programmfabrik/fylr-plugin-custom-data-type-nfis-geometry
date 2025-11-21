@@ -227,7 +227,6 @@ function openCreateGeometryModal(contentElement, cdata, settings, newGeometryId,
             text: $$('custom.data.type.nfis.geometry.modal.ok'),
             primary: true,
             onClick: () => {
-                if (replacedGeometryId) deleteGeometry(contentElement, cdata, settings, replacedGeometryId);
                 setGeometryId(contentElement, cdata, settings, newGeometryId, replacedGeometryId, drawn).then(
                     () => {},
                     error => {
@@ -277,6 +276,7 @@ function setGeometryId(contentElement, cdata, settings, newGeometryId, replacedG
                         cdata.replaced_geometry_ids[replacedGeometryId] = newGeometryId;
                     }
                 }
+                if (replacedGeometryId) deleteGeometry(contentElement, cdata, settings, replacedGeometryId, false);
                 applyChanges(
                     contentElement, cdata, settings, wfsData,
                     settings.isMultiSelect ? undefined : newGeometryId
@@ -289,10 +289,13 @@ function setGeometryId(contentElement, cdata, settings, newGeometryId, replacedG
     });
 }
 
-function deleteGeometry(contentElement, cdata, settings, uuid) {
+function deleteGeometry(contentElement, cdata, settings, uuid, reload = true) {
     cdata.geometry_ids = cdata.geometry_ids.filter(geometryId => geometryId !== uuid);
-    notifyEditor(contentElement);
-    reloadEditorContent(contentElement, cdata, settings);
+
+    if (reload) {
+        notifyEditor(contentElement);
+        reloadEditorContent(contentElement, cdata, settings);
+    }
 }
 
 function replaceGeometry(contentElement, cdata, settings, wfsData, uuid) {
