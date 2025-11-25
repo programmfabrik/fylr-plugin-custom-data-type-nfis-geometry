@@ -26,6 +26,7 @@ The ZIP can be downloaded and installed using the plugin manager, or used direct
 * *Geoserver account (write permissions): Password*: The password of the Geoserver account that is used to access the WFS for editing data
 * *Name of the geometry ID field in the WFS*: The name of the WFS field that is used for storing the geometry UUIDs created by the plugin (default value: "ouuid")
 * *Upload geometries*: If enabled, a button for uploading geometries is displayed in the editor
+* *Edit geometries*: If enabled, a button for editing geometries is displayed in the editor
 * *Delete geometries*: If enabled, a button for deleting geometries is displayed in the editor
 * *Replace geometries*: If enabled, a button for replacing geometries is displayed in the editor. A new geometry can be created via upload in Masterportal while the old geometry is deleted.
 * *Name of WFS field 'Geometry to be deleted'*: This WFS field is set to true if a geometry is about to be replaced with a new one

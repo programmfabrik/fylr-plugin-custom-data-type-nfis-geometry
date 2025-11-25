@@ -87,7 +87,9 @@ function renderEditorButtons(contentElement, cdata, settings, wfsData, selectedG
                 buttons.push(createLinkExistingGeometryButton(contentElement, cdata, settings));
             }
         } else {
-            buttons.push(createEditGeometryButton(contentElement, cdata, settings, wfsData, selectedGeometryId));
+            if (getBaseConfiguration().show_edit_button) {
+                buttons.push(createEditGeometryButton(contentElement, cdata, settings, wfsData, selectedGeometryId));
+            }
             if (getBaseConfiguration().show_delete_button) {
                 buttons.push(createDeleteGeometryButton(contentElement, cdata, settings, selectedGeometryId));
             }
