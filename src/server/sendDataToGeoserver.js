@@ -280,6 +280,7 @@ async function addTagsToChangeMap(object, fieldConfiguration, changeMap) {
 
         if (wfsFieldName && tagId) {
             const tags = (await getFieldValues(object, tagsPath.split('.')))[0];
+            if (!tags) continue;
             const tag = tags.find(entry => entry._id === tagId);
             if (wfsFieldValue) {
                 if (tag !== undefined) changeMap[wfsFieldName] = wfsFieldValue;
