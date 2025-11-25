@@ -36,7 +36,7 @@ server.config.parameter.system.nfisGeoservices.geoserver_read_password.label,Geo
 server.config.parameter.system.nfisGeoservices.geoserver_write_username.label,Geoserver-Account (Schreibrechte): Username,Geoserver account (write permissions): User name
 server.config.parameter.system.nfisGeoservices.geoserver_write_password.label,Geoserver-Account (Schreibrechte): Passwort,Geoserver account (write permissions): Password
 server.config.parameter.system.nfisGeoservices.wfs_geometry_id_field_name.label,Name des Geometrie-ID-Feldes im WFS,Name of the geometry ID field in the WFS
-server.config.parameter.system.nfisGeoservices.show_upload_button.label,Hochladen von Geometrien im Masterportal,Upload geometries in Masterportal
+server.config.parameter.system.nfisGeoservices.show_upload_button.label,Hochladen von Geometrien,Upload geometries
 server.config.parameter.system.nfisGeoservices.show_upload_button.checkbox,Button anzeigen,Show button
 server.config.parameter.system.nfisGeoservices.show_delete_button.label,Löschen von Geometrien,Delete geometries
 server.config.parameter.system.nfisGeoservices.show_delete_button.checkbox,Button anzeigen,Show button
