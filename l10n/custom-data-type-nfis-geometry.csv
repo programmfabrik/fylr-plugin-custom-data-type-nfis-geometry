@@ -58,6 +58,8 @@ server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.display_wfs_feature_type.label,WFS-Feature-Type für Kartendarstellung,WFS feature type for map display
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.edit_wfs_url.label,WFS-URL für Bearbeitung,WFS URL for editing data
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.edit_wfs_feature_type.label,WFS-Feature-Type für Bearbeitung,WFS feature type for editing data
+server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.add_icon_points_to_polygons.label,Darstellung von Polygonen,Display of polygons
+server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.add_icon_points_to_polygons.checkbox,Punkte zur Icon-Anzeige hinzufügen,Add points for displaying icons
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.masterportal_raster_layer_id.label,Masterportal: Raster-Layer-ID,Masterportal: Raster layer ID
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.masterportal_default_vector_layer_id.label,Masterportal: Vektor-Layer-ID (Standard),Masterportal: Vector layer ID (default)
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.masterportal_default_vector_layer_id.group_id.label,Benutzergruppen-ID (optional),User group ID (optional)

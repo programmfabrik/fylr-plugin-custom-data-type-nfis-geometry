@@ -110,9 +110,12 @@ base_config:
               - name: edit_wfs_feature_type
                 type: text
                 position: 6
+              - name: add_icon_points_to_polygons
+                type: bool
+                position: 7
               - name: masterportal_raster_layer_id
                 type: text
-                position: 7
+                position: 8
               - name: masterportal_default_vector_layer_id
                 type: table
                 fields:
@@ -122,10 +125,10 @@ base_config:
                   - name: layer_id
                     type: text
                     position: 1
-                position: 8
+                position: 9
               - name: masterportal_vector_layer_field_name
                 type: text
-                position: 9
+                position: 10
               - name: masterportal_vector_layer_ids
                 type: table
                 fields:
@@ -135,10 +138,10 @@ base_config:
                   - name: layer_id
                     type: text
                     position: 1
-                position: 10
+                position: 11
               - name: send_data_to_geoserver
                 type: bool
-                position: 11
+                position: 12
               - name: fields
                 type: table
                 fields:
@@ -151,7 +154,7 @@ base_config:
                   - name: fylr_function
                     type: text
                     position: 2
-                position: 12
+                position: 13
               - name: tags
                 type: table
                 fields:
@@ -169,14 +172,14 @@ base_config:
                     position: 3
               - name: wfs_pool_field
                 type: text
-                position: 13
+                position: 14
               - name: pool_names
                 type: table
                 fields:
                   - name: pool_name
                     type: text
                     position: 0
-                position: 14
+                position: 15
             position: 1
         position: 15
       linked_objects:

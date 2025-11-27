@@ -2,6 +2,7 @@ import Map from 'ol/Map';
 import View from 'ol/View';
 import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer';
 import { TileWMS, Vector as VectorSource } from 'ol/source';
+import Feature from 'ol/Feature';
 import { defaults } from 'ol/interaction/defaults';
 import MouseWheelZoom from 'ol/interaction/MouseWheelZoom';
 import Select from 'ol/interaction/Select';
@@ -489,7 +490,7 @@ function getRasterSource(projection) {
 function getVectorLayer(geometryIds, settings, style) {
     const wfsUrl = getLoadWfsDataUrl(settings, geometryIds);
     const authorizationString = getAuthorizationString();
-    const vectorSource = getVectorSource(wfsUrl, authorizationString);
+    const vectorSource = getVectorSource(wfsUrl, authorizationString, settings);
 
     return new VectorLayer({
         source: vectorSource,
@@ -497,7 +498,7 @@ function getVectorLayer(geometryIds, settings, style) {
     });
 }
 
-function getVectorSource(wfsUrl, authorizationString) {
+function getVectorSource(wfsUrl, authorizationString, settings) {
     const vectorSource = new VectorSource({
         format: new GeoJSON(),
         loader: function(extent, resolution, projection, success, failure) {
@@ -515,6 +516,9 @@ function getVectorSource(wfsUrl, authorizationString) {
                 if (xhr.status == 200) {
                     const features = vectorSource.getFormat().readFeatures(xhr.responseText);
                     vectorSource.addFeatures(features);
+                    if (settings.fieldConfiguration.add_icon_points_to_polygons) {
+                        addIconPointsToVectorSource(vectorSource, features);
+                    }
                     success(features);
                 } else {
                     onError();
@@ -526,6 +530,19 @@ function getVectorSource(wfsUrl, authorizationString) {
     });
 
     return vectorSource;
+}
+
+function addIconPointsToVectorSource(vectorSource, features) {
+    features.forEach(feature => {
+        const geometry = feature.getGeometry();
+        if (geometry.getType() !== 'Polygon') return;
+    
+        const properties = JSON.parse(JSON.stringify(feature.getProperties()));
+        properties.geometry = geometry.getInteriorPoint();
+        properties.iconPoint = true;
+    
+        vectorSource.addFeature(new Feature(properties));
+    });
 }
 
 function configureMouseWheelZoom(map) {
@@ -549,7 +566,8 @@ function configureGeometrySelection(map, contentElement, cdata, settings, wfsDat
             fill: new Fill({
                 color: 'rgba(255,255,255,0.25)'
             })
-        })
+        }),
+        filter: (feature, _) => !feature.getProperties().iconPoint
     });
 
     map.addInteraction(select);
