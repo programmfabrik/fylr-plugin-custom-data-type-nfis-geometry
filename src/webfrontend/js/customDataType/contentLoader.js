@@ -738,7 +738,7 @@ function editWfsData(settings, geometryId, propertyName, propertyValue) {
 
         const requestXml = getEditRequestXml(
             settings.fieldConfiguration.edit_wfs_feature_type,
-            getBaseConfiguration().wfs_geometry_id_field_name,
+            settings.geometryIdFieldName,
             geometryId,
             propertyName,
             propertyValue
