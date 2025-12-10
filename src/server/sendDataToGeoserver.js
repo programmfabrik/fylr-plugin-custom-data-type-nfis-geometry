@@ -283,7 +283,11 @@ async function addTagsToChangeMap(object, fieldConfiguration, changeMap) {
             if (!tags) continue;
             const tag = tags.find(entry => entry._id === tagId);
             if (wfsFieldValue) {
-                if (tag !== undefined) changeMap[wfsFieldName] = wfsFieldValue;
+                if (tag !== undefined) {
+                    changeMap[wfsFieldName] = wfsFieldValue;
+                } else {
+                    changeMap[wfsFieldName] = null;
+                }
             } else {
                 changeMap[wfsFieldName] = tag !== undefined;
             }
@@ -386,9 +390,9 @@ function getPoolNamesForDataTransfer(fieldConfiguration) {
 }
 
 function addToChangeMap(wfsFieldName, fieldValue, changeMap) {
-    if (!fieldValue) return;
-
-    if (typeof fieldValue === 'string') {
+    if (!fieldValue) {
+        if (changeMap[wfsFieldName] === undefined) changeMap[wfsFieldName] = null;
+    } else if (typeof fieldValue === 'string') {
         setOrAdd(wfsFieldName, escapeSpecialCharacters(fieldValue), changeMap);
     } else if (typeof fieldValue === 'number') {
         setOrAdd(wfsFieldName, fieldValue, changeMap);
@@ -399,7 +403,7 @@ function addToChangeMap(wfsFieldName, fieldValue, changeMap) {
 }
 
 function setOrAdd(wfsFieldName, value, changeMap) {
-    if (changeMap[wfsFieldName] !== undefined) {
+    if (changeMap[wfsFieldName] !== undefined && changeMap[wfsFieldName] !== null) {
         changeMap[wfsFieldName] = changeMap[wfsFieldName] + ' ' + value;
     } else {
         changeMap[wfsFieldName] = value;
@@ -515,7 +519,7 @@ function getPropertiesXml(changeMap) {
     return Object.keys(changeMap).map(propertyName => {
         return '<wfs:Property>'
                 + '<wfs:Name>' + propertyName + '</wfs:Name>'
-                + '<wfs:Value>' + changeMap[propertyName] + '</wfs:Value>'
+                + (changeMap[propertyName] !== null ? ('<wfs:Value>' + changeMap[propertyName] + '</wfs:Value>') : '')
             + '</wfs:Property>';
     }).join('');
 }
