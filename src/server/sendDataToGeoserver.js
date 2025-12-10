@@ -77,8 +77,10 @@ async function updateObject(object, rootObject, currentObject, tagGroups) {
 
         await editGeometries(object, fieldConfiguration, geometryIds);
         if (currentObject) await deleteGeometries(fieldConfiguration, geometryIds, currentObject);
-        if (await handleNewlyDrawnGeometries(rootObject, tagGroups, geometryIds, fieldConfiguration)) changed = true;
-        if (cleanUpGeometryIds(rootObject, fieldConfiguration)) changed = true;
+        if (rootObject) {
+            if (await handleNewlyDrawnGeometries(rootObject, tagGroups, geometryIds, fieldConfiguration)) changed = true;
+            if (cleanUpGeometryIds(rootObject, fieldConfiguration)) changed = true;
+        }
     }
 
     return changed;
@@ -92,7 +94,7 @@ async function updateLinkedObjects(object, linkedObjectConfiguration) {
     const linkedObjects = await getFieldValues(object, linkedObjectConfiguration.link_field_name.split('.'));
 
     for (let linkedObject of linkedObjects) {
-        await updateObject(linkedObject, undefined);
+        await updateObject(linkedObject, undefined, undefined, undefined);
     }
 }
 
