@@ -287,7 +287,7 @@ async function addTagsToChangeMap(object, fieldConfiguration, changeMap) {
             if (wfsFieldValue) {
                 if (tag !== undefined) {
                     changeMap[wfsFieldName] = wfsFieldValue;
-                } else {
+                } else if (changeMap[wfsFieldName] === undefined) {
                     changeMap[wfsFieldName] = null;
                 }
             } else {
