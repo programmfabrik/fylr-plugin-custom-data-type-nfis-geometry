@@ -398,9 +398,6 @@ function addToChangeMap(wfsFieldName, fieldValue, changeMap) {
         setOrAdd(wfsFieldName, escapeSpecialCharacters(fieldValue), changeMap);
     } else if (typeof fieldValue === 'number') {
         setOrAdd(wfsFieldName, fieldValue, changeMap);
-    } else if (isDanteConcept(fieldValue)) {
-        changeMap[wfsFieldName + '_uri'] = escapeSpecialCharacters(fieldValue.conceptURI);
-        changeMap[wfsFieldName + '_text'] = escapeSpecialCharacters(fieldValue.conceptName);
     }
 }
 
@@ -418,12 +415,6 @@ function escapeSpecialCharacters(fieldValue) {
         .replaceAll('\'', '&apos;')
         .replaceAll('<', '&lt;')
         .replaceAll('>', '&gt;');
-}
-
-function isDanteConcept(fieldValue) {
-    return typeof fieldValue === 'object'
-        && fieldValue.conceptName !== undefined && typeof fieldValue.conceptName === 'string'
-        && fieldValue.conceptURI !== undefined && typeof fieldValue.conceptURI === 'string';
 }
 
 async function performEditTransaction(geometryIds, requestXml, fieldConfiguration) {
