@@ -26,8 +26,6 @@ custom.data.type.nfis.geometry.placeholder.empty,Keine Geometrien vorhanden,No g
 custom.data.type.nfis.geometry.config.parameter.schema.multi_select.value.label,Mehrfachauswahl,Multi selection
 custom.data.type.nfis.geometry.config.parameter.schema.multi_select.value.checkbox,Erlauben,Allow
 custom.data.type.nfis.geometry.config.parameter.mask.value.value.label,Nicht ausfüllen,Do not fill in
-userPlugin.nfisGeometry.masterportalConfiguration.label,Konfiguration,Configuration
-userPlugin.nfisGeometry.masterportalConfiguration.default,Standard,Default
 server.config.name.system.nfisGeoservices,Geometrieverknüpfung per WFS-T und Masterportal,Geometry link via WFS-T and Masterportal
 server.config.parameter.system.nfisGeoservices.masterportal_url.label,Masterportal-URL,Masterportal URL
 server.config.parameter.system.nfisGeoservices.masterportal_version.label,Masterportal-Version,Masterportal version
@@ -83,8 +81,7 @@ server.config.parameter.system.nfisGeoservices.linked_objects.label,Verknüpfte 
 server.config.parameter.system.nfisGeoservices.linked_objects.object_type.label,Objekttyp,Object type
 server.config.parameter.system.nfisGeoservices.linked_objects.link_field_name.label,Name des Verknüpfungsfeldes (inkl. Pfad),Link field name (including path)
 server.config.parameter.system.nfisGeoservices.masterportal_configurations.label,Masterportal-Konfigurationen,Masterportal configurations
-server.config.parameter.system.nfisGeoservices.masterportal_configurations.id.label,Identifier,Identifier
-server.config.parameter.system.nfisGeoservices.masterportal_configurations.name.label,Bezeichnung,Name
+server.config.parameter.system.nfisGeoservices.masterportal_configurations.group_id.label,Benutzergruppen-ID,User group ID
 server.config.parameter.system.nfisGeoservices.masterportal_configurations.file_name.label,Name der Konfigurationsdatei,Name of configuration file
 server.config.option.system.nfisGeoservices.masterportal_version.2,2,2
 server.config.option.system.nfisGeoservices.masterportal_version.3,3,3

@@ -651,11 +651,9 @@ function getMasterportalUrl() {
 }
 
 function getConfigurationFileName() {
-    const configurationId = getUserConfiguration().masterportal_configuration;
-    if (!configurationId?.length) return undefined;
-    
-    const configuration = getBaseConfiguration().masterportal_configurations?.find(entry => entry.id === configurationId);
-    return configuration?.file_name;
+    return getBaseConfiguration().masterportal_configurations?.find(entry => {
+        return !entry.group_id || getUserGroupIds().includes(entry.group_id);
+    })?.file_name;
 }
 
 function getGeometryIdFieldName() {
@@ -673,10 +671,6 @@ function getBaseConfiguration() {
 function getFieldConfiguration(objectType, fieldPath) {
     return getBaseConfiguration().wfs_configuration.find(objectConfiguration => objectConfiguration.object_type === objectType)
         ?.geometry_fields.find(fieldConfiguraton => fieldConfiguraton.field_path === fieldPath);
-}
-
-function getUserConfiguration() {
-    return ez5.session.user.opts.user.user.custom_data;
 }
 
 function getUserGroupIds() {
