@@ -61,12 +61,10 @@ server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.add_icon_points_to_polygons.label,Darstellung von Polygonen,Display of polygons
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.add_icon_points_to_polygons.checkbox,Punkte zur Icon-Anzeige hinzufügen,Add points for displaying icons
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.masterportal_raster_layer_id.label,Masterportal: Raster-Layer-ID,Masterportal: Raster layer ID
-server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.masterportal_default_vector_layer_id.label,Masterportal: Vektor-Layer-ID (Standard),Masterportal: Vector layer ID (default)
-server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.masterportal_default_vector_layer_id.group_id.label,Benutzergruppen-ID (optional),User group ID (optional)
-server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.masterportal_default_vector_layer_id.layer_id.label,Layer-ID,Layer ID
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.masterportal_vector_layer_field_name.label,Masterportal: Name des WFS-Feldes für Zuordnung der Masterportal-Vektor-Layer-ID,Masterportal: Name of WFS field for assigning Masterportal vector layer ID
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.masterportal_vector_layer_ids.label,Masterportal: Vektor-Layer-IDs abhängig von WFS-Feldwert,Masterportal: Vector layer IDs based on WFS field value
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.masterportal_vector_layer_ids.field_value.label,Feldwert,Field value
+server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.masterportal_vector_layer_ids.group_id.label,Benutzergruppen-ID,User group ID
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.masterportal_vector_layer_ids.layer_id.label,Layer-ID,Layer ID
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.send_data_to_geoserver.label,Datenübertragung an Geoserver,Data transfer to geoserver
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.send_data_to_geoserver.checkbox,Aktivieren,Activate

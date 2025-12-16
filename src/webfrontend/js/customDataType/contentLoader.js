@@ -590,8 +590,7 @@ function configureCursor(map) {
 function getViewGeometriesUrl(settings, extent, wfsData) {
     const url = getMasterportalUrl();
     const masterportalVersion = getBaseConfiguration().masterportal_version;
-    const vectorLayerIds = getMasterportalVectorLayerIds(settings.fieldConfiguration, wfsData);
-    const layerId = vectorLayerIds?.length ? vectorLayerIds[0] : undefined;
+    const layerId = getMasterportalVectorLayerId(settings.fieldConfiguration, wfsData);
 
     if (!url || !layerId) return '';
 
@@ -622,39 +621,23 @@ function getEditGeometryUrl(settings, wfsData, extent, geometryId, upload = fals
 
 function getMasterportalLayerIds(fieldConfiguration, wfsData) {
     const rasterLayerId = fieldConfiguration.masterportal_raster_layer_id;
-    const vectorLayerIds = getMasterportalVectorLayerIds(fieldConfiguration, wfsData);
-    
-    return rasterLayerId
-        ? [rasterLayerId].concat(vectorLayerIds)
-        : vectorLayerIds;
+    const vectorLayerId = getMasterportalVectorLayerId(fieldConfiguration, wfsData);
+
+    const result = [];
+    if (rasterLayerId) result.push(rasterLayerId);
+    if (vectorLayerId) result.push(vectorLayerId);
+
+    return result;
 }
 
-function getMasterportalVectorLayerIds(fieldConfiguration, wfsData) {
+function getMasterportalVectorLayerId(fieldConfiguration, wfsData) {
     const fieldName = fieldConfiguration.masterportal_vector_layer_field_name;
     const mapping = fieldConfiguration.masterportal_vector_layer_ids;
 
-    let result;
-    if (fieldName && mapping && wfsData) {
-        result = wfsData.features.map(feature => feature.properties[fieldName])
-            .reduce((result, value) => {
-                const layerId = mapping.find(entry => entry.field_value === value)?.layer_id;
-                if (layerId && !result.includes(layerId)) result.push(layerId);
-                return result;
-            }, []);
-    }
-
-    if (result?.length) {
-        return result;
-    } else {
-        const defaultLayerId = getDefaultMasterportalVectorLayerId(fieldConfiguration);
-        return defaultLayerId ? [defaultLayerId] : [];
-    }
-}
-
-function getDefaultMasterportalVectorLayerId(fieldConfiguration) {
-    return fieldConfiguration.masterportal_default_vector_layer_id
-        ?.find(entry => entry.group_id === null || getUserGroupIds().includes(entry.group_id))
-        ?.layer_id;
+    return mapping.find(entry => {
+        return (!entry.field_value || wfsData?.features.find(feature => feature.properties[fieldName] === entry.field_value))
+            && (!entry.group_id || getUserGroupIds().includes(entry.group_id));
+    })?.layer_id;
 }
 
 function getMasterportalUrl() {
