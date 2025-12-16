@@ -52,7 +52,7 @@ function renderDetailContent(contentElement, cdata, settings, wfsData) {
     } else {
         renderMap(
             contentElement, cdata, settings, wfsData, false,
-            renderViewGeometriesButton(contentElement)
+            renderViewGeometriesButton(contentElement, settings, wfsData)
         );
     }
 }
@@ -109,10 +109,10 @@ function isAddingGeometriesAllowed(cdata, settings) {
     return settings.isMultiSelect || !cdata.geometry_ids?.length
 }
 
-function renderViewGeometriesButton(contentElement) {
+function renderViewGeometriesButton(contentElement, settings, wfsData) {
     return extent => {
         const showGeometryButton = new CUI.ButtonHref({
-            href: getViewGeometriesUrl(extent),
+            href: getViewGeometriesUrl(settings, extent, wfsData),
             target: '_blank',
             icon_left: new CUI.Icon({ class: 'fa-external-link' }),
             text: $$('custom.data.type.nfis.geometry.viewGeometry')
@@ -587,11 +587,20 @@ function configureCursor(map) {
     });
 }
 
-function getViewGeometriesUrl(extent) {
+function getViewGeometriesUrl(settings, extent, wfsData) {
     const url = getMasterportalUrl();
-    if (!url) return '';
-    
-    return url + 'zoomToExtent=' + extent.join(',');
+    const masterportalVersion = getBaseConfiguration().masterportal_version;
+    const vectorLayerIds = getMasterportalVectorLayerIds(settings.fieldConfiguration, wfsData);
+    const layerId = vectorLayerIds?.length ? vectorLayerIds[0] : undefined;
+
+    if (!url || !layerId) return '';
+
+    return masterportalVersion === '2' || masterportalVersion === '3_use_extent'
+        ? (url + 'zoomToExtent=' + extent.join(','))
+        : (url + 'highlightFeaturesByAttribute=1&wfsId=' + layerId
+            + '&attributeName=' + settings.geometryIdFieldName
+            + '&attributeValue=' + wfsData.features.map(feature => feature.properties[settings.geometryIdFieldName])
+            + '&attributeQuery=isIn');
 }
 
 function getEditGeometryUrl(settings, wfsData, extent, geometryId, upload = false) {

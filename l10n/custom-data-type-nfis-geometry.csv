@@ -90,4 +90,5 @@ server.config.parameter.system.nfisGeoservices.masterportal_configurations.name.
 server.config.parameter.system.nfisGeoservices.masterportal_configurations.file_name.label,Name der Konfigurationsdatei,Name of configuration file
 server.config.option.system.nfisGeoservices.masterportal_version.2,2,2
 server.config.option.system.nfisGeoservices.masterportal_version.3,3,3
+server.config.option.system.nfisGeoservices.masterportal_version.3_use_extent,3 (ohne 'Highlight features by attribute'),3 (without 'Highlight features by attribute')
 base.error.realm.multipleGeometryLinking,Mehrfachverknüpfung von Geometrien nicht erlaubt,Multiple linking of geometries not permitted
