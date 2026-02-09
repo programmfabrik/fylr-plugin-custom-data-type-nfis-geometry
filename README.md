@@ -44,13 +44,11 @@ The ZIP can be downloaded and installed using the plugin manager, or used direct
         * *WFS URL for editing data*: The base URL of the WFS to be used for editing and deleting geometries. It has to be a WFS-T provided by the configured Geoserver instance.
         * *WFS feature type for editing data*: The feature type to use when editing or deleting geometries via WFS
         * *Masterportal: Raster layer ID*: The ID of a raster layer that should be displayed in addition to the vector data in Masterportal. Only displayed when opening Masterportal via the editor.
-        * *Masterportal: Vector layer ID (Default)*: The ID of the default layer used for displaying WFS data in Masterportal. This layer is used if no other layers are configured or if no geometries have been added yet to a geometry field. Only displayed when opening Masterportal via the editor. The default layer ID is selected based on the user groups the user belongs to: The list of possible layers is iterated until an entry is found that contains either the ID of a user group that the user belongs to or does not contain a user group ID. 
-          * *User group ID (optional)*: The ID of the user group. If left entry, this layer is selected as the default layer if none of the predecessors in the list were selected.
-          * *Layer ID*: The ID of the Masterportal layer to select as default layer if the user belongs to the specified user group (or if the user group field is left empty)
         * *Masterportal: Name of WFS field for assigning Masterportal vector layer ID*: The value of this field is used for selecting Masterportal layers based on WFS data (see next setting). Only displayed when opening Masterportal via the editor.
-        * *Masterportal: Vector layer IDs (based on WFS field value)*:
-           * *Field value*: If this value is found in the configured WFS field, the corresponding layer is shown in Masterportal
-           * *Layer ID*: The ID of the layer to show in Masterportal
+        * *Masterportal: Vector layer IDs*: The list of possible layer IDs is iterated until an entry is found that matches all conditions.
+           * *User group ID*: The ID of a user group that the user must be a member of
+           * *Field value*: The value that has to be entered in the configured WFS field
+           * *Layer ID*: The ID of the layer to show in Masterportal if the two conditions above are matched (or empty)
         * *Data transfer to Geoserver*: If activated, field data is transferred from the fylr object to the Geoserver (via the configured WFS).
         * *Field data to be transferred*: Mappings of a source field (fylr) to a target field (WFS). For each geometry field defined, entered field data is added to the corresponding geometry via a WFS provided by the configured Geoserver instance
            * *Name of WFS target field*: The target field of the WFS to which the data is transferred. If the same target field is used in multiple mapping entries, the values are concatenated with a space character as delimiter.
