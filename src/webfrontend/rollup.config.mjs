@@ -4,9 +4,9 @@ import terser from '@rollup/plugin-terser';
 
 
 export default {
-  input: 'js/customDataType/contentLoader.js',
+  input: 'js/core/core.js',
   output: [
-    { file: 'contentLoaderBundle.js', format: 'iife', name: 'ContentLoader' }
+    { file: 'coreBundle.js', format: 'iife', name: 'Core' }
   ],
   plugins: [
     node({ browser: true }),

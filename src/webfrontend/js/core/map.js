@@ -15,9 +15,10 @@ import * as olLoadingstrategy from 'ol/loadingstrategy';
 import proj4 from 'proj4';
 import SLDParser from 'geostyler-sld-parser';
 import OpenLayersParser from 'geostyler-openlayers-parser';
+import masterportal from './masterportal';
 
 
-export function load(contentElement, cdata, objectType, fieldPath, isMultiSelect, mode) {
+function load(contentElement, cdata, objectType, fieldPath, isMultiSelect, mode) {
     const fieldConfiguration = getFieldConfiguration(objectType, fieldPath);
     if (!fieldConfiguration) return console.error('No configuration found for field path "' + fieldPath + '"');
 
@@ -112,7 +113,7 @@ function isAddingGeometriesAllowed(cdata, settings) {
 function renderViewGeometriesButton(contentElement, settings, wfsData) {
     return extent => {
         const showGeometryButton = new CUI.ButtonHref({
-            href: getViewGeometriesUrl(settings, extent, wfsData),
+            href: masterportal.getViewGeometriesUrl(settings.fieldConfiguration, settings.geometryIdFieldName, extent, wfsData),
             target: '_blank',
             icon_left: new CUI.Icon({ class: 'fa-external-link' }),
             text: $$('custom.data.type.nfis.geometry.viewGeometry')
@@ -177,13 +178,13 @@ function editGeometry(contentElement, cdata, settings, wfsData, uuid) {
     const extent = getExtent(wfsData, settings, uuid);
     if (!extent) return;
 
-    window.open(getEditGeometryUrl(settings, wfsData, extent), '_blank');
+    window.open(masterportal.getEditGeometryUrl(settings.fieldConfiguration, wfsData, extent), '_blank');
     openEditGeometryModal(contentElement, cdata, settings, wfsData);
 }
 
 function createGeometry(contentElement, cdata, settings, wfsData, extent, upload = false) {
     const newGeometryId = generateGeometryId();
-    window.open(getEditGeometryUrl(settings, wfsData, extent, upload ? newGeometryId : undefined, upload), '_blank');
+    window.open(masterportal.getEditGeometryUrl(settings.fieldConfiguration, wfsData, extent, upload ? newGeometryId : undefined, upload), '_blank');
     openCreateGeometryModal(contentElement, cdata, settings, newGeometryId, undefined, !upload);
 }
 
@@ -309,7 +310,7 @@ function replaceGeometry(contentElement, cdata, settings, wfsData, uuid) {
     markGeometryForDeletion(settings, uuid).then(() => {
         const newGeometryId = generateGeometryId();
         openCreateGeometryModal(contentElement, cdata, settings, newGeometryId, uuid, false);
-        window.open(getEditGeometryUrl(settings, wfsData, extent, newGeometryId, true), '_blank');
+        window.open(masterportal.getEditGeometryUrl(settings.fieldConfiguration, wfsData, extent, newGeometryId, true), '_blank');
     });
 }
 
@@ -587,75 +588,6 @@ function configureCursor(map) {
     });
 }
 
-function getViewGeometriesUrl(settings, extent, wfsData) {
-    const url = getMasterportalUrl();
-    const masterportalVersion = getBaseConfiguration().masterportal_version;
-    const layerId = getMasterportalVectorLayerId(settings.fieldConfiguration, wfsData);
-
-    if (!url || !layerId) return '';
-
-    return masterportalVersion === '2' || masterportalVersion === '3_use_extent'
-        ? (url + 'zoomToExtent=' + extent.join(','))
-        : (url + 'highlightFeaturesByAttribute=1&wfsId=' + layerId
-            + '&attributeName=' + settings.geometryIdFieldName
-            + '&attributeValue=' + wfsData.features.map(feature => feature.properties[settings.geometryIdFieldName])
-            + '&attributeQuery=isIn');
-}
-
-function getEditGeometryUrl(settings, wfsData, extent, geometryId, upload = false) {
-    let url = getMasterportalUrl();
-    const layerIds = getMasterportalLayerIds(settings.fieldConfiguration, wfsData);
-    if (!url) return '';
-    
-    if (extent) url += 'zoomToExtent=' + extent.join(',') + '&';
-    url += upload
-        ? 'menu={%22secondary%22:{%22currentComponent%22:%22wfstUploader%22}}'
-        : 'isinitopen=wfst';
-
-    if (geometryId) url += '&uuid=' + geometryId;
-    
-    if (layerIds?.length) url += '&layerids=' + layerIds.join(',');
-
-    return url;
-}
-
-function getMasterportalLayerIds(fieldConfiguration, wfsData) {
-    const rasterLayerId = fieldConfiguration.masterportal_raster_layer_id;
-    const vectorLayerId = getMasterportalVectorLayerId(fieldConfiguration, wfsData);
-
-    const result = [];
-    if (rasterLayerId) result.push(rasterLayerId);
-    if (vectorLayerId) result.push(vectorLayerId);
-
-    return result;
-}
-
-function getMasterportalVectorLayerId(fieldConfiguration, wfsData) {
-    const fieldName = fieldConfiguration.masterportal_vector_layer_field_name;
-    const mapping = fieldConfiguration.masterportal_vector_layer_ids;
-
-    return mapping.find(entry => {
-        return (!entry.field_value || wfsData?.features.find(feature => feature.properties[fieldName] === entry.field_value))
-            && (!entry.group_id || getUserGroupIds().includes(entry.group_id));
-    })?.layer_id;
-}
-
-function getMasterportalUrl() {
-    let masterportalUrl = getBaseConfiguration().masterportal_url;
-    if (!masterportalUrl) return undefined;
-
-    const configurationFileName = getConfigurationFileName();
-    return configurationFileName
-        ? masterportalUrl + '?configJson=' + configurationFileName + '&'
-        : masterportalUrl + '?';
-}
-
-function getConfigurationFileName() {
-    return getBaseConfiguration().masterportal_configurations?.find(entry => {
-        return !entry.group_id || getUserGroupIds().includes(entry.group_id);
-    })?.file_name;
-}
-
 function getGeometryIdFieldName() {
     const fieldName = getBaseConfiguration().wfs_geometry_id_field_name;
 
@@ -671,10 +603,6 @@ function getBaseConfiguration() {
 function getFieldConfiguration(objectType, fieldPath) {
     return getBaseConfiguration().wfs_configuration.find(objectConfiguration => objectConfiguration.object_type === objectType)
         ?.geometry_fields.find(fieldConfiguraton => fieldConfiguraton.field_path === fieldPath);
-}
-
-function getUserGroupIds() {
-    return ez5.session.user.data.__group_ids;
 }
 
 function loadWfsData(settings, geometryIds) {
@@ -801,3 +729,7 @@ function generateGeometryId() {
 
     return newGeometryId;
 }
+
+export default {
+    load
+};

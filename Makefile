@@ -18,9 +18,9 @@ build: clean buildinfojson
 	mkdir -p build/$(PLUGIN_NAME)/l10n
 
 	cd src/webfrontend && npm run bundle
-	cp src/webfrontend/contentLoaderBundle.js build/$(PLUGIN_NAME)/webfrontend/$(PLUGIN_NAME).js
-	cat src/webfrontend/js/customDataType/main.js >> build/$(PLUGIN_NAME)/webfrontend/${PLUGIN_NAME}.js
-	rm src/webfrontend/contentLoaderBundle.js
+	cp src/webfrontend/coreBundle.js build/$(PLUGIN_NAME)/webfrontend/$(PLUGIN_NAME).js
+	cat src/webfrontend/js/customDataType.js >> build/$(PLUGIN_NAME)/webfrontend/${PLUGIN_NAME}.js
+	rm src/webfrontend/coreBundle.js
 
 	cp src/server/${SERVER_FILE} build/${PLUGIN_NAME}/server/${SERVER_FILE}
 
