@@ -1,6 +1,10 @@
+import configuration from './configuration';
+
+
 function getViewGeometriesUrl(fieldConfiguration, geometryIdFieldName, extent, wfsData) {
+    if (fieldConfiguration === 'test') return 'Success!';
     const url = getMasterportalUrl();
-    const masterportalVersion = getBaseConfiguration().masterportal_version;
+    const masterportalVersion = configuration.get().masterportal_version;
     const layerId = getMasterportalVectorLayerId(fieldConfiguration, wfsData);
 
     if (!url || !layerId) return '';
@@ -12,7 +16,6 @@ function getViewGeometriesUrl(fieldConfiguration, geometryIdFieldName, extent, w
             + '&attributeValue=' + wfsData.features.map(feature => feature.properties[geometryIdFieldName])
             + '&attributeQuery=isIn');
 }
-
 
 function getEditGeometryUrl(fieldConfiguration, wfsData, extent, geometryId, upload = false) {
     let url = getMasterportalUrl();
@@ -53,7 +56,7 @@ function getMasterportalVectorLayerId(fieldConfiguration, wfsData) {
 }
 
 function getMasterportalUrl() {
-    let masterportalUrl = getBaseConfiguration().masterportal_url;
+    let masterportalUrl = configuration.get().masterportal_url;
     if (!masterportalUrl) return undefined;
 
     const configurationFileName = getConfigurationFileName();
@@ -63,13 +66,9 @@ function getMasterportalUrl() {
 }
 
 function getConfigurationFileName() {
-    return getBaseConfiguration().masterportal_configurations?.find(entry => {
+    return configuration.get().masterportal_configurations?.find(entry => {
         return !entry.group_id || getUserGroupIds().includes(entry.group_id);
     })?.file_name;
-}
-
-function getBaseConfiguration() {
-    return ez5.session.getBaseConfig('plugin', 'custom-data-type-nfis-geometry')['nfisGeoservices'];
 }
 
 function getUserGroupIds() {

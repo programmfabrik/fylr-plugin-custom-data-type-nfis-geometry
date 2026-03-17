@@ -15,11 +15,12 @@ import * as olLoadingstrategy from 'ol/loadingstrategy';
 import proj4 from 'proj4';
 import SLDParser from 'geostyler-sld-parser';
 import OpenLayersParser from 'geostyler-openlayers-parser';
+import configuration from './configuration';
 import masterportal from './masterportal';
 
 
 function load(contentElement, cdata, objectType, fieldPath, isMultiSelect, mode) {
-    const fieldConfiguration = getFieldConfiguration(objectType, fieldPath);
+    const fieldConfiguration = configuration.getFieldConfiguration(objectType, fieldPath);
     if (!fieldConfiguration) return console.error('No configuration found for field path "' + fieldPath + '"');
 
     const settings = {
@@ -80,7 +81,7 @@ function renderEditorButtons(contentElement, cdata, settings, wfsData, selectedG
 
         if (!selectedGeometryId) {
             if (isAddingGeometriesAllowed(cdata, settings)) {
-                if (getBaseConfiguration().show_upload_button) {
+                if (configuration.get().show_upload_button) {
                     buttons.push(createUploadGeometryButton(contentElement, cdata, settings, wfsData, extent));
                     buttons.push(createCreateGeometryButton(contentElement, cdata, settings, wfsData, extent, true));
                 } else {
@@ -89,13 +90,13 @@ function renderEditorButtons(contentElement, cdata, settings, wfsData, selectedG
                 buttons.push(createLinkExistingGeometryButton(contentElement, cdata, settings));
             }
         } else {
-            if (getBaseConfiguration().show_edit_button) {
+            if (configuration.get().show_edit_button) {
                 buttons.push(createEditGeometryButton(contentElement, cdata, settings, wfsData, selectedGeometryId));
             }
-            if (getBaseConfiguration().show_delete_button) {
+            if (configuration.get().show_delete_button) {
                 buttons.push(createDeleteGeometryButton(contentElement, cdata, settings, selectedGeometryId));
             }
-            if (getBaseConfiguration().show_replace_button) {
+            if (configuration.get().show_replace_button) {
                 buttons.push(createReplaceGeometryButton(contentElement, cdata, settings, wfsData, selectedGeometryId));
             }
         }
@@ -323,7 +324,7 @@ function unmarkGeometryForDeletion(settings, uuid) {
 }
 
 function setMarkedForDeletion(settings, uuid, value) {
-    const fieldName = getBaseConfiguration().wfs_marked_for_deletion_field_name;
+    const fieldName = configuration.get().wfs_marked_for_deletion_field_name;
 
     return fieldName?.length
         ? editWfsData(settings, uuid, fieldName, value)
@@ -589,20 +590,11 @@ function configureCursor(map) {
 }
 
 function getGeometryIdFieldName() {
-    const fieldName = getBaseConfiguration().wfs_geometry_id_field_name;
+    const fieldName = configuration.get().wfs_geometry_id_field_name;
 
     return fieldName?.length
         ? fieldName
         : 'ouuid';
-}
-
-function getBaseConfiguration() {
-    return ez5.session.getBaseConfig('plugin', 'custom-data-type-nfis-geometry')['nfisGeoservices'];
-}
-
-function getFieldConfiguration(objectType, fieldPath) {
-    return getBaseConfiguration().wfs_configuration.find(objectConfiguration => objectConfiguration.object_type === objectType)
-        ?.geometry_fields.find(fieldConfiguraton => fieldConfiguraton.field_path === fieldPath);
 }
 
 function loadWfsData(settings, geometryIds) {
@@ -687,8 +679,8 @@ function getEditWfsDataUrl(settings) {
 }
 
 function getAuthorizationString() {
-    const username = getBaseConfiguration().geoserver_read_username;
-    const password = getBaseConfiguration().geoserver_read_password;
+    const username = configuration.get().geoserver_read_username;
+    const password = configuration.get().geoserver_read_password;
 
     return 'Basic ' + window.btoa(username + ':' + password);
 }
