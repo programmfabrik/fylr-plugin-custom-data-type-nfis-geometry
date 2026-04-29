@@ -22,7 +22,7 @@ async function getFilterGeometriesUrl(geometryIds, geometryIdFieldName) {
     if (masterportalVersion === '2') return '';
 
     const url = getMasterportalUrl();
-    const masterportalConfiguration = await getMasterportalConfiguration();
+    const masterportalConfiguration = await getConfigurationFile();
 
     const menuSettings = {
         main: {
@@ -76,21 +76,6 @@ function getFilters(geometryIds, geometryIdFieldName, masterportalConfiguration)
     });
 }
 
-async function getMasterportalConfiguration() {
-    const masterportalUrl = configuration.get().masterportal_url;
-    if (!masterportalUrl) return undefined;
-
-    const configurationUrl = masterportalUrl + '/' + (getConfigurationFileName() ?? 'config.json');
-
-    try {
-        const response = await fetch(configurationUrl, { method: 'GET' });
-        return response.json();
-    } catch (err) {
-        console.error(err);
-        return undefined;
-    }
-}
-
 function getEditGeometryUrl(fieldConfiguration, wfsData, extent, geometryId, upload = false) {
     let url = getMasterportalUrl();
     const layerIds = getLayerIds(fieldConfiguration, wfsData);
@@ -140,9 +125,19 @@ function getMasterportalUrl() {
 }
 
 function getConfigurationFileName() {
+    return getConfigurationFileDefinition()?.file_name;
+}
+
+async function getConfigurationFile() {
+    const url = getConfigurationFileDefinition()?.file?.versions.original.url + '?access_token=' + ez5.session.token;
+    const fileContent = await fetch(url);
+    return fileContent.json();
+}
+
+function getConfigurationFileDefinition() {
     return configuration.get().masterportal_configurations?.find(entry => {
         return !entry.group_id || getUserGroupIds().includes(entry.group_id);
-    })?.file_name;
+    });
 }
 
 function getUserGroupIds() {

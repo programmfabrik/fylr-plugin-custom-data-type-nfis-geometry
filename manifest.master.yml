@@ -195,6 +195,9 @@ base_config:
           - name: file_name
             type: text
             position: 1
+          - name: file
+            type: file
+            position: 2
         position: 17
 
 callbacks:

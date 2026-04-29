@@ -83,6 +83,7 @@ server.config.parameter.system.nfisGeoservices.linked_objects.link_field_name.la
 server.config.parameter.system.nfisGeoservices.masterportal_configurations.label,Masterportal-Konfigurationen,Masterportal configurations
 server.config.parameter.system.nfisGeoservices.masterportal_configurations.group_id.label,Benutzergruppen-ID,User group ID
 server.config.parameter.system.nfisGeoservices.masterportal_configurations.file_name.label,Name der Konfigurationsdatei,Name of configuration file
+server.config.parameter.system.nfisGeoservices.masterportal_configurations.file.label,Konfigurationsdatei,Configuration file
 server.config.option.system.nfisGeoservices.masterportal_version.2,2,2
 server.config.option.system.nfisGeoservices.masterportal_version.3,3,3
 server.config.option.system.nfisGeoservices.masterportal_version.3_use_extent,3 (ohne 'Highlight features by attribute'),3 (without 'Highlight features by attribute')
