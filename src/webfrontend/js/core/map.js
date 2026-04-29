@@ -17,6 +17,7 @@ import SLDParser from 'geostyler-sld-parser';
 import OpenLayersParser from 'geostyler-openlayers-parser';
 import configuration from './configuration';
 import masterportal from './masterportal';
+import wfs from './wfs';
 
 
 function load(contentElement, cdata, objectType, fieldPath, isMultiSelect, mode) {
@@ -29,7 +30,7 @@ function load(contentElement, cdata, objectType, fieldPath, isMultiSelect, mode)
         geometryIdFieldName: getGeometryIdFieldName()
     };
 
-    loadWfsData(settings, cdata.geometry_ids).then(
+    wfs.loadData(settings.fieldConfiguration, cdata.geometry_ids, settings.geometryIdFieldName, getAuthorizationString()).then(
         wfsData => renderContent(contentElement, cdata, settings, mode, wfsData),
         error => console.error(error)
     );
@@ -271,7 +272,7 @@ function openSetGeometryModal(contentElement, cdata, settings, title, error) {
 
 function setGeometryId(contentElement, cdata, settings, newGeometryId, replacedGeometryId, drawn = false) {
     return new Promise((resolve, reject) => {
-        loadWfsData(settings, [newGeometryId]).then((wfsData) => {
+        wfs.loadData(settings.fieldConfiguration, [newGeometryId], settings.geometryIdFieldName, getAuthorizationString()).then((wfsData) => {
             if (wfsData.totalFeatures > 0) {
                 if (!cdata.geometry_ids.includes(newGeometryId)) {
                     cdata.geometry_ids = cdata.geometry_ids.concat([newGeometryId]);
@@ -327,14 +328,14 @@ function setMarkedForDeletion(settings, uuid, value) {
     const fieldName = configuration.get().wfs_marked_for_deletion_field_name;
 
     return fieldName?.length
-        ? editWfsData(settings, uuid, fieldName, value)
+        ? wfs.editData(settings.fieldConfiguration, uuid, fieldName, value, settings.geometryIdFieldName, getAuthorizationString())
         : Promise.resolve();
 }
 
 function reloadEditorContent(contentElement, cdata, settings) {
     CUI.dom.removeChildren(contentElement);
 
-    loadWfsData(settings, cdata.geometry_ids).then(
+    wfs.loadData(settings.fieldConfiguration, cdata.geometry_ids, settings.geometryIdFieldName, getAuthorizationString()).then(
         wfsData => renderContent(contentElement, cdata, settings, 'editor', wfsData),
         error => console.error(error)
     );
@@ -490,7 +491,7 @@ function getRasterSource(projection) {
 }
 
 function getVectorLayer(geometryIds, settings, style) {
-    const wfsUrl = getLoadWfsDataUrl(settings, geometryIds);
+    const wfsUrl = wfs.getLoadDataUrl(settings.fieldConfiguration, geometryIds, settings.geometryIdFieldName);
     const authorizationString = getAuthorizationString();
     const vectorSource = getVectorSource(wfsUrl, authorizationString, settings);
 
@@ -597,116 +598,11 @@ function getGeometryIdFieldName() {
         : 'ouuid';
 }
 
-function loadWfsData(settings, geometryIds) {
-    return new Promise((resolve, reject) => {
-        const wfsUrl = geometryIds?.length ? getLoadWfsDataUrl(settings, geometryIds) : undefined;
-        if (!wfsUrl) return resolve(undefined);
-
-        const xhr = new XMLHttpRequest();
-        xhr.open('GET', wfsUrl);
-        xhr.setRequestHeader('Authorization', getAuthorizationString());
-        xhr.onload = function() {
-            if (xhr.status == 200) {
-                const data = JSON.parse(xhr.responseText);
-                resolve(data);
-            } else {
-                reject('Failed to load data from WFS service');
-            }
-        };
-        xhr.onerror = error => {
-            reject(error);
-        };
-        xhr.send();
-    });
-}
-
-function getLoadWfsDataUrl(settings, geometryIds) {
-    let baseUrl = settings.fieldConfiguration.display_wfs_url;
-    const featureType = settings.fieldConfiguration.display_wfs_feature_type;
-
-    if (!baseUrl || !featureType) return '';
-    if (!baseUrl.endsWith('/')) baseUrl += '/';
-
-    return baseUrl
-        + '?service=WFS&version=1.1.0&request=GetFeature&typename='
-        + featureType
-        + '&outputFormat=application/json&srsname=EPSG:25832&cql_filter='
-        + settings.geometryIdFieldName
-        + ' in ('
-        + geometryIds.map(id => '\'' + id + '\'').join(',')
-        + ')';
-}
-
-function editWfsData(settings, geometryId, propertyName, propertyValue) {
-    return new Promise((resolve, reject) => {
-        const wfsUrl = getEditWfsDataUrl(settings);
-        if (!wfsUrl) return resolve(undefined);
-
-        const requestXml = getEditRequestXml(
-            settings.fieldConfiguration.edit_wfs_feature_type,
-            settings.geometryIdFieldName,
-            geometryId,
-            propertyName,
-            propertyValue
-        );
-
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', wfsUrl);
-        xhr.setRequestHeader('Authorization', getAuthorizationString());
-        xhr.setRequestHeader('Content-Type', 'application/xml');
-        xhr.onload = function() {
-            if (xhr.status == 200) {
-                resolve();
-            } else {
-                reject('Failed to edit data via WFS service');
-            }
-        };
-        xhr.onerror = error => {
-            reject(error);
-        };
-        xhr.send(requestXml);
-    });
-}
-
-function getEditWfsDataUrl(settings) {
-    let baseUrl = settings.fieldConfiguration.edit_wfs_url;
-    const featureType = settings.fieldConfiguration.edit_wfs_feature_type;
-
-    if (!baseUrl || !featureType) return undefined;
-    if (!baseUrl.endsWith('/')) baseUrl += '/';
-
-    return baseUrl + 'service=WFS&version=1.1.0&request=Transaction';
-}
-
 function getAuthorizationString() {
     const username = configuration.get().geoserver_read_username;
     const password = configuration.get().geoserver_read_password;
 
     return 'Basic ' + window.btoa(username + ':' + password);
-}
-
-function getEditRequestXml(featureType, geometryIdPropertyName, geometryId, propertyName, propertyValue) {
-    return '<?xml version="1.0" ?>'
-        + '<wfs:Transaction '
-        + 'version="1.1.0" '
-        + 'service="WFS" '
-        + 'xmlns:ogc="http://www.opengis.net/ogc" '
-        + 'xmlns:wfs="http://www.opengis.net/wfs" '
-        + 'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" '
-        + 'xsi:schemaLocation="http://www.opengis.net/wfs">'
-        + '<wfs:Update typeName="' + featureType + '">'
-        + '<wfs:Property>'
-        + '<wfs:Name>' + propertyName + '</wfs:Name>'
-        + '<wfs:Value>' + propertyValue + '</wfs:Value>'
-        + '</wfs:Property>'
-        + '<ogc:Filter>'
-        + '<ogc:PropertyIsEqualTo>'
-        + '<ogc:PropertyName>' + geometryIdPropertyName + '</ogc:PropertyName>'
-        + '<ogc:Literal>' + geometryId + '</ogc:Literal>'
-        + '</ogc:PropertyIsEqualTo>'
-        + '</ogc:Filter>'
-        + '</wfs:Update>'
-        + '</wfs:Transaction>';
 }
 
 function getExtent(wfsData, settings, uuid) {

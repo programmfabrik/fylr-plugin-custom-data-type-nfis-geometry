@@ -20,6 +20,7 @@ build: clean buildinfojson
 	cd src/webfrontend && npm run bundle
 	cp src/webfrontend/coreBundle.js build/$(PLUGIN_NAME)/webfrontend/$(PLUGIN_NAME).js
 	cat src/webfrontend/js/customDataType.js >> build/$(PLUGIN_NAME)/webfrontend/${PLUGIN_NAME}.js
+	cat src/webfrontend/js/collectionPlugin.js >> build/$(PLUGIN_NAME)/webfrontend/${PLUGIN_NAME}.js
 	rm src/webfrontend/coreBundle.js
 
 	cp src/server/${SERVER_FILE} build/${PLUGIN_NAME}/server/${SERVER_FILE}

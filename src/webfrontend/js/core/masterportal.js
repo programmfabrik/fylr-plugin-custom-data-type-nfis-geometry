@@ -5,7 +5,7 @@ function getViewGeometriesUrl(fieldConfiguration, geometryIdFieldName, extent, w
     if (fieldConfiguration === 'test') return 'Success!';
     const url = getMasterportalUrl();
     const masterportalVersion = configuration.get().masterportal_version;
-    const layerId = getMasterportalVectorLayerId(fieldConfiguration, wfsData);
+    const layerId = getVectorLayerId(fieldConfiguration, wfsData);
 
     if (!url || !layerId) return '';
 
@@ -17,9 +17,83 @@ function getViewGeometriesUrl(fieldConfiguration, geometryIdFieldName, extent, w
             + '&attributeQuery=isIn');
 }
 
+async function getFilterGeometriesUrl(geometryIds, geometryIdFieldName) {
+    const masterportalVersion = configuration.get().masterportal_version;
+    if (masterportalVersion === '2') return '';
+
+    const url = getMasterportalUrl();
+    const masterportalConfiguration = await getMasterportalConfiguration();
+
+    const menuSettings = {
+        main: {
+            currentComponent: 'root'
+        },
+        secondary: {
+            currentComponent: 'filter',
+            attributes: {
+                rulesOfFilters: getFilters(geometryIds, geometryIdFieldName, masterportalConfiguration),
+                selectedAccordions: []
+            },
+            selectedGroups: []
+        }
+    };
+
+    const layerSettings = masterportalConfiguration.layerConfig.baselayer.elements.filter(layer => layer.type !== 'folder').map(layer => {
+        return {
+            id: Array.isArray(layer.id) ? layer.id.join('-') : layer.id,
+            visibility: layer.visibility
+        };
+    }).concat(masterportalConfiguration.layerConfig.subjectlayer.elements.filter(layer => layer.type !== 'folder').map(layer => {
+        return {
+            id: Array.isArray(layer.id) ? layer.id.join('-') : layer.id,
+            visibility: Object.keys(geometryIds).includes(layer.id)
+        };
+    }));
+
+    return url + 'menu=' + JSON.stringify(menuSettings) + '&layers=' + JSON.stringify(layerSettings);
+}
+
+function getFilters(geometryIds, geometryIdFieldName, masterportalConfiguration) {
+    const filterConfiguration = masterportalConfiguration.portalConfig.secondaryMenu.sections?.[0].find(section => section.type === 'filter');
+    if (!filterConfiguration) return [];
+
+    return filterConfiguration.layers.map(layerConfiguration => {
+        if (!geometryIds[layerConfiguration.layerId]) return null;
+
+        const snippetConfiguration = layerConfiguration.snippets.find(snippet => snippet.attrName === geometryIdFieldName);
+        const snippetIndex = layerConfiguration.snippets.indexOf(snippetConfiguration);
+
+        return [{
+            snippetId: snippetIndex,
+            startup: false,
+            fixed: false,
+            attrName: geometryIdFieldName,
+            attrLabel: snippetConfiguration.title,
+            operatorForAttrName: 'AND',
+            operator: 'EQ',
+            value: geometryIds[layerConfiguration.layerId]
+        }];
+    });
+}
+
+async function getMasterportalConfiguration() {
+    const masterportalUrl = configuration.get().masterportal_url;
+    if (!masterportalUrl) return undefined;
+
+    const configurationUrl = masterportalUrl + '/' + (getConfigurationFileName() ?? 'config.json');
+
+    try {
+        const response = await fetch(configurationUrl, { method: 'GET' });
+        return response.json();
+    } catch (err) {
+        console.error(err);
+        return undefined;
+    }
+}
+
 function getEditGeometryUrl(fieldConfiguration, wfsData, extent, geometryId, upload = false) {
     let url = getMasterportalUrl();
-    const layerIds = getMasterportalLayerIds(fieldConfiguration, wfsData);
+    const layerIds = getLayerIds(fieldConfiguration, wfsData);
     if (!url) return '';
     
     if (extent) url += 'zoomToExtent=' + extent.join(',') + '&';
@@ -34,9 +108,9 @@ function getEditGeometryUrl(fieldConfiguration, wfsData, extent, geometryId, upl
     return url;
 }
 
-function getMasterportalLayerIds(fieldConfiguration, wfsData) {
+function getLayerIds(fieldConfiguration, wfsData) {
     const rasterLayerId = fieldConfiguration.masterportal_raster_layer_id;
-    const vectorLayerId = getMasterportalVectorLayerId(fieldConfiguration, wfsData);
+    const vectorLayerId = getVectorLayerId(fieldConfiguration, wfsData);
 
     const result = [];
     if (rasterLayerId) result.push(rasterLayerId);
@@ -45,7 +119,7 @@ function getMasterportalLayerIds(fieldConfiguration, wfsData) {
     return result;
 }
 
-function getMasterportalVectorLayerId(fieldConfiguration, wfsData) {
+function getVectorLayerId(fieldConfiguration, wfsData) {
     const fieldName = fieldConfiguration.masterportal_vector_layer_field_name;
     const mapping = fieldConfiguration.masterportal_vector_layer_ids;
 
@@ -56,7 +130,7 @@ function getMasterportalVectorLayerId(fieldConfiguration, wfsData) {
 }
 
 function getMasterportalUrl() {
-    let masterportalUrl = configuration.get().masterportal_url;
+    const masterportalUrl = configuration.get().masterportal_url;
     if (!masterportalUrl) return undefined;
 
     const configurationFileName = getConfigurationFileName();
@@ -77,5 +151,8 @@ function getUserGroupIds() {
 
 export default {
     getViewGeometriesUrl,
-    getEditGeometryUrl
+    getEditGeometryUrl,
+    getLayerIds,
+    getVectorLayerId,
+    getFilterGeometriesUrl
 };
