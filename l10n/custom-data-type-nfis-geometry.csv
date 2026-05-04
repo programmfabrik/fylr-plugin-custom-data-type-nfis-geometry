@@ -46,6 +46,8 @@ server.config.parameter.system.nfisGeoservices.wfs_marked_for_deletion_field_nam
 server.config.parameter.system.nfisGeoservices.wfs_replaced_by_field_name.label,Name des WFS-Feldes 'Ersetzt von',Name of WFS field 'Replaced by'
 server.config.parameter.system.nfisGeoservices.wfs_temporary_geometry_field_name.label,Name des WFS-Feldes 'Provisorische Geometrie',Name of WFS field 'Temporary geometry'
 server.config.parameter.system.nfisGeoservices.temporary_geometry_tag_id.label,ID des Tags zur Kennzeichnung von Objekten mit provisorischen Geometrien,ID of tag for marking objects with temporary geometries
+server.config.parameter.system.nfisGeoservices.min_zoom_level.label,Minimales Zoom-Level (Standard: 2),Minimum zoom level (Default: 2)
+server.config.parameter.system.nfisGeoservices.max_zoom_level.label,Maximales Zoom-Level (Standard: 19),Maximum zoom level (Default: 19)
 server.config.parameter.system.nfisGeoservices.wfs_configuration.label,Objekttypen,Object types
 server.config.parameter.system.nfisGeoservices.wfs_configuration.object_type.label,Name des Objekttyps,Object type name
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.label,Geometrie-Felder,Geometry fields

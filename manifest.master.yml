@@ -80,6 +80,12 @@ base_config:
       temporary_geometry_tag_id:
         type: int
         position: 14
+      min_zoom_level:
+        type: int
+        position: 15
+      max_zoom_level:
+        type: int
+        position: 16
       wfs_configuration:
         type: table
         fields:
@@ -175,7 +181,7 @@ base_config:
                     position: 0
                 position: 15
             position: 1
-        position: 15
+        position: 17
       linked_objects:
         type: table
         fields:
@@ -185,7 +191,7 @@ base_config:
           - name: link_field_name
             type: text
             position: 1
-        position: 16
+        position: 18
       masterportal_configurations:
         type: table
         fields:
@@ -198,7 +204,7 @@ base_config:
           - name: file
             type: file
             position: 2
-        position: 17
+        position: 19
 
 callbacks:
   db_pre_save:

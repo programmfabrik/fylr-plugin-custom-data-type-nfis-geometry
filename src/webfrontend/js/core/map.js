@@ -409,13 +409,16 @@ function toggleLegend(legendElement) {
 
 function initializeMap(contentElement, mapElement, cdata, settings, wfsData, allowSelection, onLoad) {
     const projection = getMapProjection();
+    let minZoom = configuration.get().min_zoom_level ?? 2;
+    let maxZoom = Math.max(minZoom, configuration.get().max_zoom_level ?? 19);
     const map = new Map({
         target: mapElement,
         view: new View({
             projection,
             center: [561397, 5709705],
-            maxZoom: 19,
-            zoom: 7,
+            minZoom,
+            maxZoom,
+            zoom: Math.max(minZoom, Math.min(7, maxZoom))
         }),
         interactions: defaults({ mouseWheelZoom: false })
     });

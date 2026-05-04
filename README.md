@@ -33,6 +33,8 @@ The ZIP can be downloaded and installed using the plugin manager, or used direct
 * *Name of WFS field 'Replaced by'*: For geometries that have been replaced with a new one, the UUID of the new geometry is stored in this WFS field
 * *Name of WFS field 'Temporary geometry'*: If the name of a boolean WFS field is entered here, the field is set to true for new geometries that have been created by drawing it via the Masterportal WFS tool
 * *ID of tag for marking objects with temporary geometries*: If a tag ID is entered here, the corresponding tag is set on the fylr object after a geometry has been created by drawing it via the Masterportal WFS tool
+* *Minimum zoom level*: The minimum zoom level of the plugin map shown in fylr (Default: 2)
+* *Maximum zoom level*: The maximum zoom level of the plugin map shown in fylr (Default: 19)
 * *Object types*: 
     * *Object type name*: The name of the object type
     * *Geometry fields*: The geometry fields to be configured
