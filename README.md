@@ -29,6 +29,7 @@ The ZIP can be downloaded and installed using the plugin manager, or used direct
 * *Edit geometries*: If enabled, a button for editing geometries is displayed in the editor
 * *Delete geometries*: If enabled, a button for deleting geometries is displayed in the editor
 * *Replace geometries*: If enabled, a button for replacing geometries is displayed in the editor. A new geometry can be created via upload in Masterportal while the old geometry is deleted.
+* *Show search results in Masterportal*: If enabled, a new option in the context menu for selected search results is added that allows opening the geometries of the selected objects in Masterportal
 * *Name of WFS field 'Geometry to be deleted'*: This WFS field is set to true if a geometry is about to be replaced with a new one
 * *Name of WFS field 'Replaced by'*: For geometries that have been replaced with a new one, the UUID of the new geometry is stored in this WFS field
 * *Name of WFS field 'Temporary geometry'*: If the name of a boolean WFS field is entered here, the field is set to true for new geometries that have been created by drawing it via the Masterportal WFS tool

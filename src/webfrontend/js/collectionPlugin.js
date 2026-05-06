@@ -12,6 +12,9 @@ CollectionPluginNFISGeometry = (function(superClass) {
     const Plugin = CollectionPluginNFISGeometry.prototype;
 
     Plugin.getCurrentTools = function(collection) {
+        const configuration = Core.configuration.get();
+        if (!configuration.show_masterportal_context_menu_option) return [];
+
         let objects;
         try {
             objects = collection.getObjects().map(collectionObject => collectionObject.getObject());
@@ -33,7 +36,7 @@ CollectionPluginNFISGeometry = (function(superClass) {
                     _this.__getGeometryIds(objects).then(geometryIds => {
                         return Core.masterportal.getFilterGeometriesUrl(
                             geometryIds,
-                            Core.configuration.get().wfs_geometry_id_field_name
+                            configuration.wfs_geometry_id_field_name
                         );
                     }).then(masterportalUrl => {
                         window.open(masterportalUrl, '_blank');

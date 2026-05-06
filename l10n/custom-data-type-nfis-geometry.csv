@@ -42,6 +42,8 @@ server.config.parameter.system.nfisGeoservices.show_delete_button.label,Löschen
 server.config.parameter.system.nfisGeoservices.show_delete_button.checkbox,Button anzeigen,Show button
 server.config.parameter.system.nfisGeoservices.show_replace_button.label,Ersetzen von Geometrien,Replace geometries
 server.config.parameter.system.nfisGeoservices.show_replace_button.checkbox,Button anzeigen,Show button
+server.config.parameter.system.nfisGeoservices.show_masterportal_context_menu_option.label,Suchergebnisse im Masterportal anzeigen,Show search results in Masterportal
+server.config.parameter.system.nfisGeoservices.show_masterportal_context_menu_option.checkbox,Eintrag im Kontextmenü anzeigen,Show entry in context menu
 server.config.parameter.system.nfisGeoservices.wfs_marked_for_deletion_field_name.label,Name des WFS-Feldes 'Zu löschende Geometrie',Name of WFS field 'Geometry to be deleted'
 server.config.parameter.system.nfisGeoservices.wfs_replaced_by_field_name.label,Name des WFS-Feldes 'Ersetzt von',Name of WFS field 'Replaced by'
 server.config.parameter.system.nfisGeoservices.wfs_temporary_geometry_field_name.label,Name des WFS-Feldes 'Provisorische Geometrie',Name of WFS field 'Temporary geometry'
