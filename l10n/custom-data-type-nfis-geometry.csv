@@ -51,7 +51,7 @@ server.config.parameter.system.nfisGeoservices.max_zoom_level.label,Maximales Zo
 server.config.parameter.system.nfisGeoservices.values.label,Werte,Values
 server.config.parameter.system.nfisGeoservices.values.name.label,Name,Name
 server.config.parameter.system.nfisGeoservices.values.function.label,JavaScript-Funktion,JavaScript function
-server.config.parameter.system.nfisGeoservices.pool_names.label,Poolbezeichnungen (für Wert "poolName"),Pool names (for value "poolName")
+server.config.parameter.system.nfisGeoservices.pool_names.label,Poolbezeichnungen (für Wert 'poolName'),Pool names (for value 'poolName')
 server.config.parameter.system.nfisGeoservices.wfs_configuration.label,Objekttypen,Object types
 server.config.parameter.system.nfisGeoservices.wfs_configuration.object_type.label,Name des Objekttyps,Object type name
 server.config.parameter.system.nfisGeoservices.wfs_configuration.geometry_fields.label,Geometrie-Felder,Geometry fields

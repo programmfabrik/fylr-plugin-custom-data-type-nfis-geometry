@@ -38,7 +38,7 @@ The ZIP can be downloaded and installed using the plugin manager, or used direct
 * *Values*: Allows defining values that can be used in custom JavaScript functions defined in the plugin configuration (see section "Custom JavaScript functions" below).
    * *Name*: Name of the value. The value can be accessed by this name from within a custom JavaScript function.
    * *JavaScript function*: The function to determine the value.
-* *Pool names (for value "poolName")*: The pool name is automatically added to the "values" object. This field can be used to define the level of the pool hierarchy that should be used for determining that pool name. If the pool that the fylr object belongs to is a child of one of these pools, the pool (of the higher hierarchy level) specified here is used. Otherwise, the actual pool is used.
+* *Pool names (for value 'poolName')*: The pool name is automatically added to the "values" object. This field can be used to define the level of the pool hierarchy that should be used for determining that pool name. If the pool that the fylr object belongs to is a child of one of these pools, the pool (of the higher hierarchy level) specified here is used. Otherwise, the actual pool is used.
 * *Object types*: 
     * *Object type name*: The name of the object type
     * *Geometry fields*: The geometry fields to be configured
