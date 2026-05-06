@@ -69,7 +69,7 @@ CustomDataTypeNFISGeometry = (function(superClass) {
 
         contentElement = CUI.dom.div();
         Core.map.load(
-            contentElement, cdata, this.__getObjectType(), this.__getFieldPath(),
+            contentElement, cdata, topLevelData, this.__getObjectType(), this.__getFieldPath(),
             this.__isMultiSelect(), 'editor'
         );
 
@@ -85,7 +85,7 @@ CustomDataTypeNFISGeometry = (function(superClass) {
 
         const contentElement = CUI.dom.div();
         Core.map.load(
-            contentElement, cdata, this.__getObjectType(), this.__getFieldPath(),
+            contentElement, cdata, topLevelData, this.__getObjectType(), this.__getFieldPath(),
             this.__isMultiSelect(), 'detail'
         );
         

@@ -20,7 +20,7 @@ import masterportal from './masterportal';
 import wfs from './wfs';
 
 
-function load(contentElement, cdata, objectType, fieldPath, isMultiSelect, mode) {
+function load(contentElement, cdata, object, objectType, fieldPath, isMultiSelect, mode) {
     const fieldConfiguration = configuration.getFieldConfiguration(objectType, fieldPath);
     if (!fieldConfiguration) return console.error('No configuration found for field path "' + fieldPath + '"');
 
@@ -31,7 +31,7 @@ function load(contentElement, cdata, objectType, fieldPath, isMultiSelect, mode)
     };
 
     wfs.loadData(settings.fieldConfiguration, cdata.geometry_ids, settings.geometryIdFieldName, getAuthorizationString()).then(
-        wfsData => renderContent(contentElement, cdata, settings, mode, wfsData),
+        wfsData => renderContent(contentElement, cdata, object, settings, mode, wfsData),
         error => console.error(error)
     );
 }
@@ -41,64 +41,64 @@ function renderPlaceholder(contentElement, type) {
     CUI.dom.append(contentElement, placeholderElement);
 }
 
-function renderContent(contentElement, cdata, settings, mode, wfsData, selectedGeometryId) {
+function renderContent(contentElement, cdata, object, settings, mode, wfsData, selectedGeometryId) {
     if (mode === 'detail') {
-        renderDetailContent(contentElement, cdata, settings, wfsData);
+        renderDetailContent(contentElement, cdata, object, settings, wfsData);
     } else {
-        renderEditorContent(contentElement, cdata, settings, wfsData, selectedGeometryId);
+        renderEditorContent(contentElement, cdata, object, settings, wfsData, selectedGeometryId);
     }
 }
 
-function renderDetailContent(contentElement, cdata, settings, wfsData) {
+function renderDetailContent(contentElement, cdata, object, settings, wfsData) {
     if (!wfsData?.totalFeatures) {
         renderPlaceholder(contentElement, 'empty');
     } else {
         renderMap(
-            contentElement, cdata, settings, wfsData, false,
-            renderViewGeometriesButton(contentElement, settings, wfsData)
+            contentElement, cdata, object, settings, wfsData, false,
+            renderViewGeometriesButton(object, contentElement, settings, wfsData)
         );
     }
 }
 
-function renderEditorContent(contentElement, cdata, settings, wfsData, selectedGeometryId) {
+function renderEditorContent(contentElement, cdata, object, settings, wfsData, selectedGeometryId) {
     if (!settings.isMultiSelect && cdata.geometry_ids?.length === 1) {
         selectedGeometryId = cdata.geometry_ids[0];
     }
 
     if (wfsData?.totalFeatures) {
         renderMap(
-            contentElement, cdata, settings, wfsData,
+            contentElement, cdata, object, settings, wfsData,
             settings.isMultiSelect || cdata.geometry_ids?.length > 1,
-            renderEditorButtons(contentElement, cdata, settings, wfsData, selectedGeometryId)
+            renderEditorButtons(contentElement, cdata, object, settings, wfsData, selectedGeometryId)
         );
     } else {
-        renderEditorButtons(contentElement, cdata, settings, wfsData, selectedGeometryId)(undefined);
+        renderEditorButtons(contentElement, cdata, object, settings, wfsData, selectedGeometryId)(undefined);
     }
 }
 
-function renderEditorButtons(contentElement, cdata, settings, wfsData, selectedGeometryId) {
+function renderEditorButtons(contentElement, cdata, object, settings, wfsData, selectedGeometryId) {
     return extent => {
         const buttons = [];
 
         if (!selectedGeometryId) {
             if (isAddingGeometriesAllowed(cdata, settings)) {
                 if (configuration.get().show_upload_button) {
-                    buttons.push(createUploadGeometryButton(contentElement, cdata, settings, wfsData, extent));
-                    buttons.push(createCreateGeometryButton(contentElement, cdata, settings, wfsData, extent, true));
+                    buttons.push(createUploadGeometryButton(contentElement, cdata, object, settings, extent));
+                    buttons.push(createCreateGeometryButton(contentElement, cdata, object, settings, extent, true));
                 } else {
-                    buttons.push(createCreateGeometryButton(contentElement, cdata, settings, wfsData, extent));
+                    buttons.push(createCreateGeometryButton(contentElement, cdata, object, settings, extent));
                 }
-                buttons.push(createLinkExistingGeometryButton(contentElement, cdata, settings));
+                buttons.push(createLinkExistingGeometryButton(contentElement, cdata, object, settings));
             }
         } else {
             if (configuration.get().show_edit_button) {
-                buttons.push(createEditGeometryButton(contentElement, cdata, settings, wfsData, selectedGeometryId));
+                buttons.push(createEditGeometryButton(contentElement, cdata, object, settings, wfsData, selectedGeometryId));
             }
             if (configuration.get().show_delete_button) {
-                buttons.push(createDeleteGeometryButton(contentElement, cdata, settings, selectedGeometryId));
+                buttons.push(createDeleteGeometryButton(contentElement, cdata, object, settings, selectedGeometryId));
             }
             if (configuration.get().show_replace_button) {
-                buttons.push(createReplaceGeometryButton(contentElement, cdata, settings, wfsData, selectedGeometryId));
+                buttons.push(createReplaceGeometryButton(contentElement, cdata, object, settings, wfsData, selectedGeometryId));
             }
         }
 
@@ -112,10 +112,10 @@ function isAddingGeometriesAllowed(cdata, settings) {
     return settings.isMultiSelect || !cdata.geometry_ids?.length
 }
 
-function renderViewGeometriesButton(contentElement, settings, wfsData) {
+function renderViewGeometriesButton(object, contentElement, settings, wfsData) {
     return extent => {
         const showGeometryButton = new CUI.ButtonHref({
-            href: masterportal.getViewGeometriesUrl(settings.fieldConfiguration, settings.geometryIdFieldName, extent, wfsData),
+            href: masterportal.getViewGeometriesUrl(object, settings.fieldConfiguration, settings.geometryIdFieldName, extent, wfsData),
             target: '_blank',
             icon_left: new CUI.Icon({ class: 'fa-external-link' }),
             text: $$('custom.data.type.nfis.geometry.viewGeometry')
@@ -125,72 +125,72 @@ function renderViewGeometriesButton(contentElement, settings, wfsData) {
     };
 }
 
-function createEditGeometryButton(contentElement, cdata, settings, wfsData, uuid) {
+function createEditGeometryButton(contentElement, cdata, object, settings, wfsData, uuid) {
     return new CUI.Button({
         text: $$('custom.data.type.nfis.geometry.editGeometry'),
         icon_left: new CUI.Icon({ class: 'fa-pencil' }),
-        onClick: () => editGeometry(contentElement, cdata, settings, wfsData, uuid)
+        onClick: () => editGeometry(contentElement, cdata, object, settings, wfsData, uuid)
     });
 }
 
-function createDeleteGeometryButton(contentElement, cdata, settings, uuid) {
+function createDeleteGeometryButton(contentElement, cdata, object, settings, uuid) {
     return new CUI.Button({
         text: $$('custom.data.type.nfis.geometry.deleteGeometry'),
         icon_left: new CUI.Icon({ class: 'fa-trash' }),
-        onClick: () => deleteGeometry(contentElement, cdata, settings, uuid)
+        onClick: () => deleteGeometry(contentElement, cdata, object, settings, uuid)
     });
 }
 
-function createReplaceGeometryButton(contentElement, cdata, settings, wfsData, uuid) {
+function createReplaceGeometryButton(contentElement, cdata, object, settings, wfsData, uuid) {
     return new CUI.Button({
         text: $$('custom.data.type.nfis.geometry.replaceGeometry'),
         icon_left: new CUI.Icon({ class: 'fa-refresh' }),
-        onClick: () => replaceGeometry(contentElement, cdata, settings, wfsData, uuid)
+        onClick: () => replaceGeometry(contentElement, cdata, object, settings, wfsData, uuid)
     });
 }
 
-function createCreateGeometryButton(contentElement, cdata, settings, wfsData, extent, showDrawLabel = false) {
+function createCreateGeometryButton(contentElement, cdata, object, settings, extent, showDrawLabel = false) {
     return new CUI.Button({
         text: showDrawLabel
             ? $$('custom.data.type.nfis.geometry.drawNewGeometry')
             : $$('custom.data.type.nfis.geometry.createNewGeometry'),
         icon_left: new CUI.Icon({ class: 'fa-plus' }),
-        onClick: () => createGeometry(contentElement, cdata, settings, wfsData, extent)
+        onClick: () => createGeometry(contentElement, cdata, object, settings, extent)
     });
 }
 
-function createUploadGeometryButton(contentElement, cdata, settings, wfsData, extent) {
+function createUploadGeometryButton(contentElement, cdata, object, settings, extent) {
     return new CUI.Button({
         text: $$('custom.data.type.nfis.geometry.uploadNewGeometry'),
         icon_left: new CUI.Icon({ class: 'fa-upload' }),
-        onClick: () => createGeometry(contentElement, cdata, settings, wfsData, extent, true)
+        onClick: () => createGeometry(contentElement, cdata, object, settings, extent, true)
     });
 }
 
-function createLinkExistingGeometryButton(contentElement, cdata, settings) {
+function createLinkExistingGeometryButton(contentElement, cdata, object, settings) {
     const label = $$('custom.data.type.nfis.geometry.linkExistingGeometry');
     return new CUI.Button({
         text: label,
         icon_left: new CUI.Icon({ class: 'fa-link' }),
-        onClick: () => openSetGeometryModal(contentElement, cdata, settings, label)
+        onClick: () => openSetGeometryModal(contentElement, cdata, object, settings, label)
     });
 }
 
-function editGeometry(contentElement, cdata, settings, wfsData, uuid) {
+function editGeometry(contentElement, cdata, object, settings, wfsData, uuid) {
     const extent = getExtent(wfsData, settings, uuid);
     if (!extent) return;
 
-    window.open(masterportal.getEditGeometryUrl(settings.fieldConfiguration, wfsData, extent), '_blank');
-    openEditGeometryModal(contentElement, cdata, settings, wfsData);
+    window.open(masterportal.getEditGeometryUrl(object, settings.fieldConfiguration, extent), '_blank');
+    openEditGeometryModal(contentElement, cdata, object, settings, wfsData);
 }
 
-function createGeometry(contentElement, cdata, settings, wfsData, extent, upload = false) {
+function createGeometry(contentElement, cdata, object, settings, extent, upload = false) {
     const newGeometryId = generateGeometryId();
-    window.open(masterportal.getEditGeometryUrl(settings.fieldConfiguration, wfsData, extent, upload ? newGeometryId : undefined, upload), '_blank');
-    openCreateGeometryModal(contentElement, cdata, settings, newGeometryId, undefined, !upload);
+    window.open(masterportal.getEditGeometryUrl(object, settings.fieldConfiguration, extent, upload ? newGeometryId : undefined, upload), '_blank');
+    openCreateGeometryModal(contentElement, cdata, object, settings, newGeometryId, undefined, !upload);
 }
 
-function openEditGeometryModal(contentElement, cdata, settings) {
+function openEditGeometryModal(contentElement, cdata, object, settings) {
     const modalDialog = new CUI.ConfirmationDialog({
         title: $$('custom.data.type.nfis.geometry.edit.modal.title'),
         text: $$('custom.data.type.nfis.geometry.edit.modal.text'),
@@ -199,7 +199,7 @@ function openEditGeometryModal(contentElement, cdata, settings) {
             text: $$('custom.data.type.nfis.geometry.modal.ok'),
             primary: true,
             onClick: () => {
-                reloadEditorContent(contentElement, cdata, settings);
+                reloadEditorContent(contentElement, cdata, object, settings);
                 modalDialog.destroy();
             }
         }]
@@ -208,7 +208,7 @@ function openEditGeometryModal(contentElement, cdata, settings) {
     return modalDialog.show();
 }
 
-function openCreateGeometryModal(contentElement, cdata, settings, newGeometryId, replacedGeometryId, drawn, error) {
+function openCreateGeometryModal(contentElement, cdata, object, settings, newGeometryId, replacedGeometryId, drawn, error) {
     let text = '';
     if (error) text += $$('custom.data.type.nfis.geometry.create.modal.error.notFound') + '\n\n';
     text += $$('custom.data.type.nfis.geometry.create.modal.text.1') + '\n\n'
@@ -234,12 +234,12 @@ function openCreateGeometryModal(contentElement, cdata, settings, newGeometryId,
             text: $$('custom.data.type.nfis.geometry.modal.ok'),
             primary: true,
             onClick: () => {
-                setGeometryId(contentElement, cdata, settings, newGeometryId, replacedGeometryId, drawn).then(
+                setGeometryId(contentElement, cdata, object, settings, newGeometryId, replacedGeometryId, drawn).then(
                     () => {},
                     error => {
                         if (error) console.error(error);
                         openCreateGeometryModal(
-                            contentElement, cdata, settings, newGeometryId, replacedGeometryId, drawn, true
+                            contentElement, cdata, object, settings, newGeometryId, replacedGeometryId, drawn, true
                         );
                     }
                 );
@@ -251,7 +251,7 @@ function openCreateGeometryModal(contentElement, cdata, settings, newGeometryId,
     return modalDialog.show();
 }
 
-function openSetGeometryModal(contentElement, cdata, settings, title, error) {
+function openSetGeometryModal(contentElement, cdata, object, settings, title, error) {
     let text = $$('custom.data.type.nfis.geometry.set.modal.text');
     if (error) text = $$('custom.data.type.nfis.geometry.set.modal.error.notFound') + '\n\n' + text;
 
@@ -260,17 +260,17 @@ function openSetGeometryModal(contentElement, cdata, settings, title, error) {
         text,
         min_length: 36
     }).done(geometryId => {
-        setGeometryId(contentElement, cdata, settings, geometryId).then(
+        setGeometryId(contentElement, cdata, object, settings, geometryId).then(
             () => {},
             error => {
                 if (error) console.error(error);
-                openSetGeometryModal(contentElement, cdata, settings, title, true);
+                openSetGeometryModal(contentElement, cdata, object, settings, title, true);
             }
         );
     });
 }
 
-function setGeometryId(contentElement, cdata, settings, newGeometryId, replacedGeometryId, drawn = false) {
+function setGeometryId(contentElement, cdata, object, settings, newGeometryId, replacedGeometryId, drawn = false) {
     return new Promise((resolve, reject) => {
         wfs.loadData(settings.fieldConfiguration, [newGeometryId], settings.geometryIdFieldName, getAuthorizationString()).then((wfsData) => {
             if (wfsData.totalFeatures > 0) {
@@ -283,9 +283,9 @@ function setGeometryId(contentElement, cdata, settings, newGeometryId, replacedG
                         cdata.replaced_geometry_ids[replacedGeometryId] = newGeometryId;
                     }
                 }
-                if (replacedGeometryId) deleteGeometry(contentElement, cdata, settings, replacedGeometryId, false);
+                if (replacedGeometryId) deleteGeometry(contentElement, cdata, object, settings, replacedGeometryId, false);
                 applyChanges(
-                    contentElement, cdata, settings, wfsData,
+                    contentElement, cdata, object, settings, wfsData,
                     settings.isMultiSelect ? undefined : newGeometryId
                 );
                 resolve();
@@ -296,23 +296,23 @@ function setGeometryId(contentElement, cdata, settings, newGeometryId, replacedG
     });
 }
 
-function deleteGeometry(contentElement, cdata, settings, uuid, reload = true) {
+function deleteGeometry(contentElement, cdata, object, settings, uuid, reload = true) {
     cdata.geometry_ids = cdata.geometry_ids.filter(geometryId => geometryId !== uuid);
 
     if (reload) {
         notifyEditor(contentElement);
-        reloadEditorContent(contentElement, cdata, settings);
+        reloadEditorContent(contentElement, cdata, object, settings);
     }
 }
 
-function replaceGeometry(contentElement, cdata, settings, wfsData, uuid) {
+function replaceGeometry(contentElement, cdata, object, settings, wfsData, uuid) {
     const extent = getExtent(wfsData, settings, uuid);
     if (!extent) return;
 
     markGeometryForDeletion(settings, uuid).then(() => {
         const newGeometryId = generateGeometryId();
-        openCreateGeometryModal(contentElement, cdata, settings, newGeometryId, uuid, false);
-        window.open(masterportal.getEditGeometryUrl(settings.fieldConfiguration, wfsData, extent, newGeometryId, true), '_blank');
+        openCreateGeometryModal(contentElement, cdata, object, settings, newGeometryId, uuid, false);
+        window.open(masterportal.getEditGeometryUrl(object, settings.fieldConfiguration, extent, newGeometryId, true), '_blank');
     });
 }
 
@@ -332,25 +332,25 @@ function setMarkedForDeletion(settings, uuid, value) {
         : Promise.resolve();
 }
 
-function reloadEditorContent(contentElement, cdata, settings) {
+function reloadEditorContent(contentElement, cdata, object, settings) {
     CUI.dom.removeChildren(contentElement);
 
     wfs.loadData(settings.fieldConfiguration, cdata.geometry_ids, settings.geometryIdFieldName, getAuthorizationString()).then(
-        wfsData => renderContent(contentElement, cdata, settings, 'editor', wfsData),
+        wfsData => renderContent(contentElement, cdata, object, settings, 'editor', wfsData),
         error => console.error(error)
     );
 }
 
-function applyChanges(contentElement, cdata, settings, wfsData, selectedGeometryId) {
+function applyChanges(contentElement, cdata, object, settings, wfsData, selectedGeometryId) {
     CUI.dom.removeChildren(contentElement);
-    renderContent(contentElement, cdata, settings, 'editor', wfsData, selectedGeometryId);
+    renderContent(contentElement, cdata, object, settings, 'editor', wfsData, selectedGeometryId);
     notifyEditor(contentElement);
 }
 
-function rerenderEditorButtons(contentElement, cdata, settings, wfsData, extent, selectedGeometryId) {
+function rerenderEditorButtons(contentElement, cdata, object, settings, wfsData, extent, selectedGeometryId) {
     const buttonsBarElement = CUI.dom.findElement(contentElement, '.cui-buttonbar');
     CUI.dom.remove(buttonsBarElement);
-    renderEditorButtons(contentElement, cdata, settings, wfsData, selectedGeometryId)(extent);
+    renderEditorButtons(contentElement, cdata, object, settings, wfsData, selectedGeometryId)(extent);
 }
 
 function notifyEditor(contentElement) {
@@ -364,12 +364,12 @@ function notifyEditor(contentElement) {
     });
 }
 
-function renderMap(contentElement, cdata, settings, wfsData, allowSelection, onLoad) {
+function renderMap(contentElement, cdata, object, settings, wfsData, allowSelection, onLoad) {
     const mapElement = CUI.dom.div('nfis-geometry-map');
     CUI.dom.append(contentElement, mapElement);
     CUI.dom.append(mapElement, createLegendButton(mapElement, settings.fieldConfiguration));
 
-    initializeMap(contentElement, mapElement, cdata, settings, wfsData, allowSelection, onLoad);
+    initializeMap(contentElement, mapElement, cdata, object, settings, wfsData, allowSelection, onLoad);
 }
 
 function createLegendButton(mapElement, fieldConfiguration) {
@@ -407,7 +407,7 @@ function toggleLegend(legendElement) {
     }
 }
 
-function initializeMap(contentElement, mapElement, cdata, settings, wfsData, allowSelection, onLoad) {
+function initializeMap(contentElement, mapElement, cdata, object, settings, wfsData, allowSelection, onLoad) {
     const projection = getMapProjection();
     let minZoom = configuration.get().min_zoom_level ?? 2;
     let maxZoom = Math.max(minZoom, configuration.get().max_zoom_level ?? 19);
@@ -435,7 +435,7 @@ function initializeMap(contentElement, mapElement, cdata, settings, wfsData, all
     
             configureMouseWheelZoom(map);
             if (allowSelection) {
-                configureGeometrySelection(map, contentElement, cdata, settings, wfsData, extent);
+                configureGeometrySelection(map, contentElement, cdata, object, settings, wfsData, extent);
                 configureCursor(map);
             }
         }); 
@@ -561,7 +561,7 @@ function configureMouseWheelZoom(map) {
     });
 }
 
-function configureGeometrySelection(map, contentElement, cdata, settings, wfsData, extent) {
+function configureGeometrySelection(map, contentElement, cdata, object, settings, wfsData, extent) {
     const select = new Select({
         condition: click,
         style: new Style({
@@ -581,7 +581,7 @@ function configureGeometrySelection(map, contentElement, cdata, settings, wfsDat
         const selectedGeometryId = event.selected.length > 0
             ? event.selected[0].get(settings.geometryIdFieldName)
             : undefined;
-        rerenderEditorButtons(contentElement, cdata, settings, wfsData, extent, selectedGeometryId);
+        rerenderEditorButtons(contentElement, cdata, object, settings, wfsData, extent, selectedGeometryId);
     });
 }
 

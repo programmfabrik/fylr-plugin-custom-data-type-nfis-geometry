@@ -62,6 +62,8 @@ async function updateObject(object, rootObject, currentObject, tagGroups) {
     if (currentObject) addDataFromCurrentObject(object, currentObject);
     addToObjectCache(object);
 
+    const values = getValues(rootObject, configuration);
+
     const linkedObjectConfiguration = getLinkedObjectConfiguration(object._objecttype, configuration);
     if (linkedObjectConfiguration) return await updateLinkedObjects(object, linkedObjectConfiguration);
 
@@ -75,7 +77,7 @@ async function updateObject(object, rootObject, currentObject, tagGroups) {
             return throwErrorToFrontend('Eine oder mehrere Geometrien sind bereits mit anderen Objekten verknüpft.', undefined, 'multipleGeometryLinking');
         }
 
-        await editGeometries(object, fieldConfiguration, geometryIds);
+        await editGeometries(object, fieldConfiguration, geometryIds, values);
         if (currentObject) await deleteGeometries(fieldConfiguration, geometryIds, currentObject);
         if (rootObject) {
             if (await handleNewlyDrawnGeometries(rootObject, tagGroups, geometryIds, fieldConfiguration)) changed = true;
@@ -184,9 +186,9 @@ function getGeometryFieldPaths(configuration) {
     return fieldPaths;
 }
 
-async function editGeometries(object, fieldConfiguration, geometryIds) {
+async function editGeometries(object, fieldConfiguration, geometryIds, values) {
     if (isSendingDataToGeoserverActivated(fieldConfiguration, geometryIds)) {
-        const changeMap = await getChangeMap(object, fieldConfiguration);
+        const changeMap = await getChangeMap(object, fieldConfiguration, values);
         if (Object.keys(changeMap).length) {
             const requestXml = getEditRequestXml(geometryIds.all, changeMap, fieldConfiguration.edit_wfs_feature_type);
             await performEditTransaction(geometryIds.all, requestXml, fieldConfiguration);
@@ -245,17 +247,17 @@ function hasLinkedObjectData(fieldContent) {
     return Object.values(fieldContent).find(subfield => subfield._mask && subfield._objecttype);
 }
 
-async function getChangeMap(object, fieldConfiguration) {
+async function getChangeMap(object, fieldConfiguration, values) {
     const changeMap = {};
 
-    addPoolFieldToChangeMap(object, fieldConfiguration, changeMap);
-    await addFieldsToChangeMap(object, fieldConfiguration, changeMap);
+    addPoolFieldToChangeMap(fieldConfiguration, values, changeMap);
+    await addFieldsToChangeMap(object, fieldConfiguration, values, changeMap);
     await addTagsToChangeMap(object, fieldConfiguration, changeMap)
 
     return changeMap;
 }
 
-async function addFieldsToChangeMap(object, fieldConfiguration, changeMap) {
+async function addFieldsToChangeMap(object, fieldConfiguration, values, changeMap) {
     if (!fieldConfiguration.fields) return;
 
     for (let field of fieldConfiguration.fields) {
@@ -265,7 +267,7 @@ async function addFieldsToChangeMap(object, fieldConfiguration, changeMap) {
         if (wfsFieldName && (fylrFieldName || fylrFunction)) {
             const fieldValue = fylrFieldName
                 ? (await getFieldValues(object, fylrFieldName.split('.')))?.[0]
-                : getValueFromCustomFunction(object, fylrFunction);
+                : executeCustomFunction(object, values, fylrFunction);
             addToChangeMap(wfsFieldName, fieldValue, changeMap);
         }
     }
@@ -360,35 +362,11 @@ async function fetchObject(objectType, mask, id) {
     }
 }
 
-function getValueFromCustomFunction(object, functionDefinition) {
-    const customFunction = new Function('object', functionDefinition);
-    return customFunction(object);
-}
-
-function addPoolFieldToChangeMap(object, fieldConfiguration, changeMap) {
+function addPoolFieldToChangeMap(fieldConfiguration, values, changeMap) {
     const targetFieldName = fieldConfiguration.wfs_pool_field;
     if (!targetFieldName) return;
 
-    const poolName = getPoolName(object, fieldConfiguration);
-    if (poolName) changeMap[targetFieldName] = poolName;
-}
-
-function getPoolName(object, fieldConfiguration) {
-    if (!object._pool) return undefined;
-
-    const poolNames = getPoolNamesForDataTransfer(fieldConfiguration);
-    for (let entry of object._pool._path) {
-        const poolName = entry.pool.name?.['de-DE'];
-        if (poolNames.includes(poolName)) return poolName;
-    }
-
-    return object._pool.pool?.name?.['de-DE'];
-}
-
-function getPoolNamesForDataTransfer(fieldConfiguration) {
-    return fieldConfiguration.pool_names?.map(entry => {
-        return entry.pool_name;
-    }) ?? [];
+    if (values.poolName) changeMap[targetFieldName] = values.poolName;
 }
 
 function addToChangeMap(wfsFieldName, fieldValue, changeMap) {

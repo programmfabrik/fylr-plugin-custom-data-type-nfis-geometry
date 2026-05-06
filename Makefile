@@ -17,13 +17,17 @@ build: clean buildinfojson
 	mkdir -p build/$(PLUGIN_NAME)/server
 	mkdir -p build/$(PLUGIN_NAME)/l10n
 
+	cp src/webfrontend/js/core/masterportal.js src/webfrontend/js/core/masterportal_original.js 
+	cat src/shared/shared.js >> src/webfrontend/js/core/masterportal.js
 	cd src/webfrontend && npm run bundle
 	cp src/webfrontend/coreBundle.js build/$(PLUGIN_NAME)/webfrontend/$(PLUGIN_NAME).js
 	cat src/webfrontend/js/customDataType.js >> build/$(PLUGIN_NAME)/webfrontend/${PLUGIN_NAME}.js
 	cat src/webfrontend/js/collectionPlugin.js >> build/$(PLUGIN_NAME)/webfrontend/${PLUGIN_NAME}.js
 	rm src/webfrontend/coreBundle.js
+	mv src/webfrontend/js/core/masterportal_original.js src/webfrontend/js/core/masterportal.js
 
 	cp src/server/${SERVER_FILE} build/${PLUGIN_NAME}/server/${SERVER_FILE}
+	cat src/shared/shared.js >> build/${PLUGIN_NAME}/server/${SERVER_FILE}
 
 	cp $(MAIN_CSS) build/$(PLUGIN_NAME)/webfrontend/${PLUGIN_NAME}.css
 	cat $(OPENLAYERS_CSS) >> build/$(PLUGIN_NAME)/webfrontend/${PLUGIN_NAME}.css

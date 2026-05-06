@@ -1,11 +1,10 @@
 import configuration from './configuration';
 
 
-function getViewGeometriesUrl(fieldConfiguration, geometryIdFieldName, extent, wfsData) {
-    if (fieldConfiguration === 'test') return 'Success!';
+function getViewGeometriesUrl(object, fieldConfiguration, geometryIdFieldName, extent, wfsData) {
     const url = getMasterportalUrl();
     const masterportalVersion = configuration.get().masterportal_version;
-    const layerId = getVectorLayerId(fieldConfiguration, wfsData);
+    const layerId = getVectorLayerId(object, fieldConfiguration);
 
     if (!url || !layerId) return '';
 
@@ -76,9 +75,9 @@ function getFilters(geometryIds, geometryIdFieldName, masterportalConfiguration)
     });
 }
 
-function getEditGeometryUrl(fieldConfiguration, wfsData, extent, geometryId, upload = false) {
+function getEditGeometryUrl(object, fieldConfiguration, extent, geometryId, upload = false) {
     let url = getMasterportalUrl();
-    const layerIds = getLayerIds(fieldConfiguration, wfsData);
+    const layerIds = getLayerIds(object, fieldConfiguration);
     if (!url) return '';
     
     if (extent) url += 'zoomToExtent=' + extent.join(',') + '&';
@@ -93,9 +92,9 @@ function getEditGeometryUrl(fieldConfiguration, wfsData, extent, geometryId, upl
     return url;
 }
 
-function getLayerIds(fieldConfiguration, wfsData) {
+function getLayerIds(object, fieldConfiguration) {
     const rasterLayerId = fieldConfiguration.masterportal_raster_layer_id;
-    const vectorLayerId = getVectorLayerId(fieldConfiguration, wfsData);
+    const vectorLayerId = getVectorLayerId(object, fieldConfiguration);
 
     const result = [];
     if (rasterLayerId) result.push(rasterLayerId);
@@ -104,12 +103,13 @@ function getLayerIds(fieldConfiguration, wfsData) {
     return result;
 }
 
-function getVectorLayerId(fieldConfiguration, wfsData) {
-    const fieldName = fieldConfiguration.masterportal_vector_layer_field_name;
+function getVectorLayerId(object, fieldConfiguration) {
+    const values = getValues(object, configuration.get());
+
     const mapping = fieldConfiguration.masterportal_vector_layer_ids;
 
     return mapping.find(entry => {
-        return (!entry.field_value || wfsData?.features.find(feature => feature.properties[fieldName] === entry.field_value))
+        return (!entry.function || executeCustomFunction(object, values, entry.function))
             && (!entry.group_id || getUserGroupIds().includes(entry.group_id));
     })?.layer_id;
 }

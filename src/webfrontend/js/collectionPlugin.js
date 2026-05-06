@@ -88,7 +88,7 @@ CollectionPluginNFISGeometry = (function(superClass) {
                 object[object._objecttype],
                 fieldConfiguration.field_path.split('.').concat(['geometry_ids'])
             );
-            const layerId = Core.masterportal.getVectorLayerId(fieldConfiguration);
+            const layerId = Core.masterportal.getVectorLayerId(object, fieldConfiguration);
             if (geometryIds?.length && layerId) {
                 if (!result[layerId]) result[layerId] = [];
                 result[layerId] = result[layerId].concat(geometryIds);
