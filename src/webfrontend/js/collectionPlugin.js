@@ -15,9 +15,13 @@ CollectionPluginNFISGeometry = (function(superClass) {
         const configuration = Core.configuration.get();
         if (!configuration.show_masterportal_context_menu_option) return [];
 
+        const supportedObjectTypes = configuration.wfs_configuration.map(entry => entry.object_type);
+
         let objects;
         try {
-            objects = collection.getObjects().map(collectionObject => collectionObject.getObject());
+            objects = collection.getObjects()
+                .map(collectionObject => collectionObject.getObject())
+                .filter(object => supportedObjectTypes.includes(object._objecttype));
         } catch (err) {
             console.warn('Get Objects failed', err);
         }
