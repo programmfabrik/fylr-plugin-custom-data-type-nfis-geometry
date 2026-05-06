@@ -184,9 +184,6 @@ base_config:
                     type: text
                     position: 3
                 position: 12
-              - name: wfs_pool_field
-                type: text
-                position: 13
             position: 1
         position: 19
       linked_objects:
