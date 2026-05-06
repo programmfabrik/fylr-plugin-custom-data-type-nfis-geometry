@@ -35,6 +35,10 @@ The ZIP can be downloaded and installed using the plugin manager, or used direct
 * *ID of tag for marking objects with temporary geometries*: If a tag ID is entered here, the corresponding tag is set on the fylr object after a geometry has been created by drawing it via the Masterportal WFS tool
 * *Minimum zoom level*: The minimum zoom level of the plugin map shown in fylr (Default: 2)
 * *Maximum zoom level*: The maximum zoom level of the plugin map shown in fylr (Default: 19)
+* *Values*: Allows defining values that can be used in custom JavaScript functions defined in the plugin configuration (see section "Custom JavaScript functions" below).
+   * *Name*: Name of the value. The value can be accessed by this name from within a custom JavaScript function.
+   * *JavaScript function*: The function to determine the value.
+* *Pool names (for value "poolName")*: The pool name is automatically added to the "values" object. This field can be used to define the level of the pool hierarchy that should be used for determining that pool name. If the pool that the fylr object belongs to is a child of one of these pools, the pool (of the higher hierarchy level) specified here is used. Otherwise, the actual pool is used.
 * *Object types*: 
     * *Object type name*: The name of the object type
     * *Geometry fields*: The geometry fields to be configured
@@ -46,23 +50,22 @@ The ZIP can be downloaded and installed using the plugin manager, or used direct
         * *WFS URL for editing data*: The base URL of the WFS to be used for editing and deleting geometries. It has to be a WFS-T provided by the configured Geoserver instance.
         * *WFS feature type for editing data*: The feature type to use when editing or deleting geometries via WFS
         * *Masterportal: Raster layer ID*: The ID of a raster layer that should be displayed in addition to the vector data in Masterportal. Only displayed when opening Masterportal via the editor.
-        * *Masterportal: Name of WFS field for assigning Masterportal vector layer ID*: The value of this field is used for selecting Masterportal layers based on WFS data (see next setting). Only displayed when opening Masterportal via the editor.
         * *Masterportal: Vector layer IDs*: The list of possible layer IDs is iterated until an entry is found that matches all conditions.
+           * *JavaScript function*: A function body that has to return true for this condition to be matched (see section "Custom JavaScript functions" below).
            * *User group ID*: The ID of a user group that the user must be a member of
-           * *Field value*: The value that has to be entered in the configured WFS field
            * *Layer ID*: The ID of the layer to show in Masterportal if the two conditions above are matched (or empty)
         * *Data transfer to Geoserver*: If activated, field data is transferred from the fylr object to the Geoserver (via the configured WFS).
         * *Field data to be transferred*: Mappings of a source field (fylr) to a target field (WFS). For each geometry field defined, entered field data is added to the corresponding geometry via a WFS provided by the configured Geoserver instance
            * *Name of WFS target field*: The target field of the WFS to which the data is transferred. If the same target field is used in multiple mapping entries, the values are concatenated with a space character as delimiter.
            * *Name of field in fylr object*: The source field that contains the data to be transferred
-           * *JavaScript function for reading the value from the fylr object*: Alternatively to specifying a field name, a custom JavaScript function body for reading the value from the fylr object can be entered. The object data can be accessed via the variable "object" (e. g. "return object._id;")
+           * *JavaScript function for reading the value from the fylr object*: Alternatively to specifying a field name, a custom JavaScript function body for reading the value from the fylr object can be entered (see section "Custom JavaScript functions" below)
         * *Tags to be transferred*: Mappings of a tag ID (fylr) to a target field (WFS). For each geometry field defined, the target field of the corresponding geometry dataset is either set to a defined text value (if the tag is set) or to true/false (depending on whether the tag is set or not) via a WFS provided by the configured Geoserver instance
            * *Name of WFS target field*: The target field of the WFS which should be updated according to the tag
            * *Path to tags in fylr object*: The path to the tags field to be used for reading the tags. If empty, the default "_tags" field is used. This option can be used to refer to tags in linked objects.
            * *Tag ID*: The ID of the tag to check
            * *Value to enter in WFS target field (optional)*: If the tag exists in the object, this value is entered in the WFS target field. If this option is left empty, the value true is entered if the tag exists, otherwise the value false is entered (the WFS target field is expected to be a boolean field then).
         * *WFS target field for pool name* The field of the WFS where the name of the pool that the fylr object belongs to should be stored
-        * *Pool names for data transfer*: This field can be used to define the level of the pool hierarchy that should be used for writing the pool name into the WFS target field. If the pool that the fylr object belongs to is a child of one of these pools, the pool (of the higher hierarchy level) specified here is used. Otherwise, the actual pool is used.
+
 * *Linked objects*:
 
    This option can be used to trigger Geoserver updates in linked objects instead of the object itself.
@@ -74,6 +77,47 @@ The ZIP can be downloaded and installed using the plugin manager, or used direct
    * *Identifier*: Interal identifier for this configuration (for usage by the Fylr plugin only)
    * *Name*: Name of the configuration (as displayed in the selection field in the user settings)
    * *Name of configuration file*: The file name of the configuration file. This file name is included in any Masterportal URL to apply the configuration.
+
+#### Custom JavaScript functions
+
+Custom JavaScript functions can be used in three sections of the plugin configuration:
+
+* For defining values that can be used in other custom JavaScript functions
+* For determining which vector layer ID to use for a Masterportal URL
+* For transferring object data to the Geoserver
+
+Each JavaScript field expects a function body that has to return a value. The following objects are available from within the function:
+
+* *object*: This includes the object data of the fylr object in question (not the top level data, just the actual field data).
+* *values*: This includes all the values that you have set up in the section "Values" of the plugin configuration. In addition, it always includes these default values:
+   * uuid: The object UUID
+   * objectType: The object type
+   * tagIds: An array containing the IDs of all tags that are set for the object
+   * poolName: The name of the pool that the object belongs to. Optionally, this can be restricted to the pool name of a higher pool in the hierarchy via the configuration field "Pool names".
+
+When defining values, you already have access to previously defined values via the object "values".
+
+##### Example
+
+Define a value "exampleValue":
+
+if (object.field1 === 'A' && object.field2 === 'B') {
+   return 'value1'; 
+} else {
+   return 'value2';
+}
+
+Use the value in a custom function for transferring object data to the Geoserver:
+
+if (values.exampleValue === 'value1') {
+   if (object.number !== 200) {
+      return 'Number ' + object.number;
+   } else {
+      return object.description;
+   }
+} else {
+   return 'Some text';
+}
 
 ### Data model configuration
 
