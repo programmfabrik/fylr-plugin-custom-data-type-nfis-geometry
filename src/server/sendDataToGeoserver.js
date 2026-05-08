@@ -62,13 +62,13 @@ async function updateObject(object, rootObject, currentObject, tagGroups) {
     if (currentObject) addDataFromCurrentObject(object, currentObject);
     addToObjectCache(object);
 
-    const values = getValues(rootObject, configuration);
-
     const linkedObjectConfiguration = getLinkedObjectConfiguration(object._objecttype, configuration);
     if (linkedObjectConfiguration) return await updateLinkedObjects(object, linkedObjectConfiguration);
 
     const wfsConfiguration = getWFSConfiguration(configuration, object._objecttype);
     if (!wfsConfiguration) return;
+
+    const values = getValues(object, configuration);
 
     for (let fieldConfiguration of wfsConfiguration.geometry_fields) {
         const geometryFieldValues = await getFieldValues(object, fieldConfiguration.field_path.split('.'));
