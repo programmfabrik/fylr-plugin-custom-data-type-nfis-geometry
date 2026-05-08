@@ -6,7 +6,7 @@ function getValues(rootObject, configuration) {
     const values = {
         uuid: rootObject._uuid,
         objectType: rootObject._objecttype,
-        tagIds: rootObject._tags.map(tag => tag._id),
+        tagIds: rootObject._tags ? rootObject._tags.map(tag => tag._id) : [],
         poolName: getPoolName(object, configuration)
     };
 
