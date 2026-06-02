@@ -1,4 +1,7 @@
-// These functions are used by server/sendDataToGeoserver.js and webfrontend/js/core/masterportal.js
+// These functions are used by:
+//      server/sendDataToGeoserver.js
+//      webfrontend/js/core/map.js
+//      webfrontend/js/core/masterportal.js
 
 function getValues(rootObject, configuration) {
     const object = rootObject[rootObject._objecttype] ?? rootObject;

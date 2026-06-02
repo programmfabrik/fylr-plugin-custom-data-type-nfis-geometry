@@ -27,12 +27,24 @@ function load(contentElement, cdata, object, objectType, fieldPath, isMultiSelec
     const settings = {
         isMultiSelect,
         fieldConfiguration,
-        geometryIdFieldName: getGeometryIdFieldName()
+        geometryIdFieldName: getGeometryIdFieldName(),
+        isAvailableInMasterportal: isAvailableInMasterportal(object)
     };
 
     wfs.loadData(settings.fieldConfiguration, cdata.geometry_ids, settings.geometryIdFieldName, getAuthorizationString()).then(
         wfsData => renderContent(contentElement, cdata, object, settings, mode, wfsData),
         error => console.error(error)
+    );
+}
+
+function isAvailableInMasterportal(object) {
+    const functionDefinition = configuration.get().masterportal_buttons_condition;
+    if (!functionDefinition?.length) return true;
+
+    return executeCustomFunction(
+        object,
+        getValues(object, configuration.get()),
+        functionDefinition
     );
 }
 
@@ -80,25 +92,27 @@ function renderEditorButtons(contentElement, cdata, object, settings, wfsData, s
     return extent => {
         const buttons = [];
 
-        if (!selectedGeometryId) {
-            if (isAddingGeometriesAllowed(cdata, settings)) {
-                if (configuration.get().show_upload_button) {
-                    buttons.push(createUploadGeometryButton(contentElement, cdata, object, settings, extent));
-                    buttons.push(createCreateGeometryButton(contentElement, cdata, object, settings, extent, true));
-                } else {
-                    buttons.push(createCreateGeometryButton(contentElement, cdata, object, settings, extent));
+        if (settings.isAvailableInMasterportal) {
+            if (!selectedGeometryId) {
+                if (isAddingGeometriesAllowed(cdata, settings)) {
+                    if (configuration.get().show_upload_button) {
+                        buttons.push(createUploadGeometryButton(contentElement, cdata, object, settings, extent));
+                        buttons.push(createCreateGeometryButton(contentElement, cdata, object, settings, extent, true));
+                    } else {
+                        buttons.push(createCreateGeometryButton(contentElement, cdata, object, settings, extent));
+                    }
+                    buttons.push(createLinkExistingGeometryButton(contentElement, cdata, object, settings));
                 }
-                buttons.push(createLinkExistingGeometryButton(contentElement, cdata, object, settings));
-            }
-        } else {
-            if (configuration.get().show_edit_button) {
-                buttons.push(createEditGeometryButton(contentElement, cdata, object, settings, wfsData, selectedGeometryId));
-            }
-            if (configuration.get().show_delete_button) {
-                buttons.push(createDeleteGeometryButton(contentElement, cdata, object, settings, selectedGeometryId));
-            }
-            if (configuration.get().show_replace_button) {
-                buttons.push(createReplaceGeometryButton(contentElement, cdata, object, settings, wfsData, selectedGeometryId));
+            } else {
+                if (configuration.get().show_edit_button) {
+                    buttons.push(createEditGeometryButton(contentElement, cdata, object, settings, wfsData, selectedGeometryId));
+                }
+                if (configuration.get().show_delete_button) {
+                    buttons.push(createDeleteGeometryButton(contentElement, cdata, object, settings, selectedGeometryId));
+                }
+                if (configuration.get().show_replace_button) {
+                    buttons.push(createReplaceGeometryButton(contentElement, cdata, object, settings, wfsData, selectedGeometryId));
+                }
             }
         }
 
@@ -114,6 +128,8 @@ function isAddingGeometriesAllowed(cdata, settings) {
 
 function renderViewGeometriesButton(object, contentElement, settings, wfsData) {
     return extent => {
+        if (!settings.isAvailableInMasterportal) return;
+
         const showGeometryButton = new CUI.ButtonHref({
             href: masterportal.getViewGeometriesUrl(object, settings.fieldConfiguration, settings.geometryIdFieldName, extent, wfsData),
             target: '_blank',

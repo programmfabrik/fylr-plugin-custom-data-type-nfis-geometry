@@ -106,6 +106,9 @@ base_config:
             type: text
             position: 0
         position: 19
+      masterportal_buttons_condition:
+        type: text
+        position: 20
       wfs_configuration:
         type: table
         fields:
@@ -188,7 +191,7 @@ base_config:
                     position: 3
                 position: 12
             position: 1
-        position: 20
+        position: 21
       linked_objects:
         type: table
         fields:
@@ -198,7 +201,7 @@ base_config:
           - name: link_field_name
             type: text
             position: 1
-        position: 21
+        position: 22
       masterportal_configurations:
         type: table
         fields:
@@ -211,7 +214,7 @@ base_config:
           - name: file
             type: file
             position: 2
-        position: 22
+        position: 23
 
 callbacks:
   db_pre_save:
