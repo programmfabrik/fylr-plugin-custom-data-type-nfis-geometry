@@ -74,7 +74,7 @@ async function updateObject(object, rootObject, currentObject, tagGroups) {
         const geometryFieldValues = await getFieldValues(object, fieldConfiguration.field_path.split('.'));
         const geometryIds = await getGeometryIds(geometryFieldValues);
         if (geometryIds.all.length && await hasUsedGeometryIds(configuration, geometryIds, object._uuid)) {
-            return throwErrorToFrontend('Eine oder mehrere Geometrien sind bereits mit anderen Objekten verknüpft.', undefined, 'multipleGeometryLinking');
+            return throwErrorToFrontend('Eine oder mehrere Geometrien sind bereits mit anderen Objekten verknüpft.', 'multipleGeometryLinking');
         }
 
         await editGeometries(object, fieldConfiguration, geometryIds, values);
@@ -169,7 +169,7 @@ async function hasUsedGeometryIds(configuration, geometryIds, uuid) {
         return result.objects.length > 1
             || (result.objects.length === 1 && (!uuid || result.objects[0]._uuid !== uuid));
     } catch (err) {
-        throwErrorToFrontend('Bei der Prüfung auf mehrfach verknüpfte Geometrien ist ein Fehler aufgetreten:', err.toString());
+        throwErrorToFrontend('Bei der Prüfung auf mehrfach verknüpfte Geometrien ist ein Fehler aufgetreten: ' + err.toString());
     }    
 }
 
@@ -358,7 +358,7 @@ async function fetchObject(objectType, mask, id) {
             ? getObjectData(result[0])
             : undefined;
     } catch (err) {
-        throwErrorToFrontend('Objektabfrage fehlgeschlagen.', JSON.stringify(err));
+        throwErrorToFrontend('Objektabfrage fehlgeschlagen: ' + JSON.stringify(err));
     }
 }
 
@@ -399,7 +399,7 @@ async function performEditTransaction(geometryIds, requestXml, fieldConfiguratio
     const result = await performTransaction(requestXml, fieldConfiguration.edit_wfs_url);
 
     if (!new RegExp('<wfs:totalUpdated>' + geometryIds.length + '<\/wfs:totalUpdated>').test(result)) {
-        throwErrorToFrontend('Bei der Aktualisierung von Geometrie-Datensätzen ist ein Fehler aufgetreten:', result);
+        throwErrorToFrontend('Bei der Aktualisierung von Geometrie-Datensätzen mit den Geometrie-IDs ' + geometryIds.join() + ' ist ein Fehler aufgetreten: ' + result);
     }
 }
 
@@ -410,7 +410,7 @@ async function performDeleteTransaction(geometryIds, fieldConfiguration) {
     );
 
     if (!new RegExp('<wfs:totalDeleted>' + geometryIds.length + '<\/wfs:totalDeleted>').test(result)) {
-        throwErrorToFrontend('Beim Löschen von Geometrie-Datensätzen ist ein Fehler aufgetreten:', result);
+        throwErrorToFrontend('Beim Löschen von Geometrie-Datensätzen mit den Geometrie-IDs ' + geometryIds.join() + ' ist ein Fehler aufgetreten: ' + result);
     }
 }
 
@@ -428,7 +428,7 @@ async function performTransaction(requestXml, wfsUrl) {
         });
         return await response.text();
     } catch (err) {
-        throwErrorToFrontend('Beim Zugriff auf den WFS-T ist ein Fehler aufgetreten:', err.toString());
+        throwErrorToFrontend('Beim Zugriff auf den WFS-T ist ein Fehler aufgetreten: ' + err.toString());
     }    
 }
 
@@ -556,19 +556,18 @@ async function getTagGroups() {
         const response = await fetch(url, { method: 'GET' });
         return await response.json();
     } catch (err) {
-        throwErrorToFrontend('Die Abfrage der konfigurierten Tags ist fehlgeschlagen.', JSON.stringify(err));
+        throwErrorToFrontend('Die Abfrage der konfigurierten Tags ist fehlgeschlagen: ' + JSON.stringify(err));
     }
 }
 
-function throwErrorToFrontend(error, description, realm) {
+function throwErrorToFrontend(error, realm) {
     console.log(JSON.stringify({
         error: {
             code: 'error.nfisGeometry',
             statuscode: 400,
             realm: realm ?? 'api',
             error,
-            parameters: {},
-            description
+            parameters: {}
         }
     }));
 
