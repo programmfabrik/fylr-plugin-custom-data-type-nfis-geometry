@@ -31,6 +31,7 @@ custom_types:
     mapping:
       geometry_ids:
         type: text_oneline
+        skipTerms: true
 base_config:
   - name: nfisGeoservices
     parameters:
