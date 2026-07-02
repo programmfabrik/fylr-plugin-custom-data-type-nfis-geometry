@@ -23,36 +23,29 @@ async function getFilterGeometriesUrl(geometryIds, geometryIdFieldName) {
     const url = getMasterportalUrl();
     const masterportalConfiguration = await getConfigurationFile();
 
-    const menuSettings = {
+    const menuSettings = getMenuSettings(masterportalConfiguration, geometryIds, geometryIdFieldName);
+    const layerSettings = getLayerSettings(masterportalConfiguration, geometryIds);
+
+    return url + 'menu=' + JSON.stringify(menuSettings) + '&layers=' + JSON.stringify(layerSettings);
+}
+
+function getMenuSettings(masterportalConfiguration, geometryIds, geometryIdFieldName) {
+    return {
         main: {
             currentComponent: 'root'
         },
         secondary: {
             currentComponent: 'filter',
             attributes: {
-                rulesOfFilters: getFilters(geometryIds, geometryIdFieldName, masterportalConfiguration),
+                rulesOfFilters: getFilters(masterportalConfiguration, geometryIds, geometryIdFieldName),
                 selectedAccordions: getAccordions(masterportalConfiguration)
             },
             selectedGroups: []
         }
     };
-
-    const layerSettings = masterportalConfiguration.layerConfig.baselayer.elements.filter(layer => layer.type !== 'folder').map(layer => {
-        return {
-            id: Array.isArray(layer.id) ? layer.id.join('-') : layer.id,
-            visibility: layer.visibility
-        };
-    }).concat(masterportalConfiguration.layerConfig.subjectlayer.elements.filter(layer => layer.type !== 'folder').map(layer => {
-        return {
-            id: Array.isArray(layer.id) ? layer.id.join('-') : layer.id,
-            visibility: Object.keys(geometryIds).includes(layer.id)
-        };
-    }));
-
-    return url + 'menu=' + JSON.stringify(menuSettings) + '&layers=' + JSON.stringify(layerSettings);
 }
 
-function getFilters(geometryIds, geometryIdFieldName, masterportalConfiguration) {
+function getFilters(masterportalConfiguration, geometryIds, geometryIdFieldName) {
     const filtersConfiguration = getFiltersConfiguration(masterportalConfiguration);
     if (!filtersConfiguration) return [];
 
@@ -86,6 +79,20 @@ function getAccordions(masterportalConfiguration) {
     return getFiltersConfiguration(masterportalConfiguration).layers.map((layer, index) => {
         return { layerId: layer.layerId, filterId: index };
     });
+}
+
+function getLayerSettings(masterportalConfiguration, geometryIds) {
+    return masterportalConfiguration.layerConfig.baselayer.elements.filter(layer => layer.type !== 'folder').map(layer => {
+        return {
+            id: Array.isArray(layer.id) ? layer.id.join('-') : layer.id,
+            visibility: layer.visibility
+        };
+    }).concat(masterportalConfiguration.layerConfig.subjectlayer.elements.filter(layer => layer.type !== 'folder').map(layer => {
+        return {
+            id: Array.isArray(layer.id) ? layer.id.join('-') : layer.id,
+            visibility: Object.keys(geometryIds).includes(layer.id)
+        };
+    }));
 }
 
 function getFiltersConfiguration(masterportalConfiguration) {
