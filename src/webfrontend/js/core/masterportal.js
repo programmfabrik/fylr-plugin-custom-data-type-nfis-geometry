@@ -31,7 +31,7 @@ async function getFilterGeometriesUrl(geometryIds, geometryIdFieldName) {
             currentComponent: 'filter',
             attributes: {
                 rulesOfFilters: getFilters(geometryIds, geometryIdFieldName, masterportalConfiguration),
-                selectedAccordions: []
+                selectedAccordions: getAccordions(masterportalConfiguration)
             },
             selectedGroups: []
         }
@@ -53,10 +53,10 @@ async function getFilterGeometriesUrl(geometryIds, geometryIdFieldName) {
 }
 
 function getFilters(geometryIds, geometryIdFieldName, masterportalConfiguration) {
-    const filterConfiguration = masterportalConfiguration.portalConfig.secondaryMenu.sections?.[0].find(section => section.type === 'filter');
-    if (!filterConfiguration) return [];
+    const filtersConfiguration = getFiltersConfiguration(masterportalConfiguration);
+    if (!filtersConfiguration) return [];
 
-    return filterConfiguration.layers.map(layerConfiguration => {
+    return filtersConfiguration.layers.map(layerConfiguration => {
         if (!geometryIds[layerConfiguration.layerId]) return null;
 
         const snippetConfiguration = layerConfiguration.snippets.find(snippet => snippet.attrName === geometryIdFieldName);
@@ -73,6 +73,16 @@ function getFilters(geometryIds, geometryIdFieldName, masterportalConfiguration)
             value: geometryIds[layerConfiguration.layerId]
         }];
     });
+}
+
+function getAccordions(masterportalConfiguration) {
+    return getFiltersConfiguration(masterportalConfiguration).layers.map((layer, index) => {
+        return { layerId: layer.layerId, filterId: index };
+    });
+}
+
+function getFiltersConfiguration(masterportalConfiguration) {
+    return masterportalConfiguration.portalConfig.secondaryMenu.sections?.[0].find(section => section.type === 'filter');
 }
 
 function getEditGeometryUrl(object, fieldConfiguration, extent, geometryId, upload = false) {
