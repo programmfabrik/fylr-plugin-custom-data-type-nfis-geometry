@@ -57,21 +57,28 @@ function getFilters(geometryIds, geometryIdFieldName, masterportalConfiguration)
     if (!filtersConfiguration) return [];
 
     return filtersConfiguration.layers.map(layerConfiguration => {
-        if (!geometryIds[layerConfiguration.layerId]) return null;
+        return geometryIds[layerConfiguration.layerId]
+            ? getSnippets(layerConfiguration, geometryIds, geometryIdFieldName)
+            : null;
+    });
+}
 
-        const snippetConfiguration = layerConfiguration.snippets.find(snippet => snippet.attrName === geometryIdFieldName);
-        const snippetIndex = layerConfiguration.snippets.indexOf(snippetConfiguration);
-
-        return [{
-            snippetId: snippetIndex,
-            startup: false,
-            fixed: false,
-            attrName: geometryIdFieldName,
-            attrLabel: snippetConfiguration.title,
-            operatorForAttrName: 'AND',
-            operator: 'EQ',
-            value: geometryIds[layerConfiguration.layerId]
-        }];
+function getSnippets(layerConfiguration, geometryIds, geometryIdFieldName) {
+    return layerConfiguration.snippets.map((snippet, index) => {
+        if (snippet.attrName === geometryIdFieldName) {
+            return {
+                snippetId: index,
+                startup: false,
+                fixed: false,
+                attrName: geometryIdFieldName,
+                attrLabel: snippet.title,
+                operatorForAttrName: 'AND',
+                operator: 'EQ',
+                value: geometryIds[layerConfiguration.layerId]
+            };
+        } else {
+            return null;
+        }
     });
 }
 
