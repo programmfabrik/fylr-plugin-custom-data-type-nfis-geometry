@@ -55,11 +55,9 @@ CollectionPluginNFISGeometry = (function(superClass) {
     Plugin.__getGeometryIds = async function(objects) {
         const result = {};
 
-        for (let object of objects) {
-            const objectType = object._objecttype;
-            const fullObject = await this.__fetchObject(objectType, object._mask, object[objectType]._id);
-            if (!fullObject) continue;
+        const fullObjects = await this.__fetchFullObjects(objects);
 
+        for (let fullObject of fullObjects) {
             const geometryIds = this.__getGeometryIdsForObject(fullObject);
             
             for (let layerId of Object.keys(geometryIds)) {
@@ -71,20 +69,6 @@ CollectionPluginNFISGeometry = (function(superClass) {
 
         return result;
     };
-
-    Plugin.__fetchObject = async function(objectType, mask, id) {
-        const url = ez5.session.data.instance.external_url + '/api/v1/db/' + objectType + '/' + mask + '/' + id
-            + '?access_token=' + ez5.session.data.access_token;
-
-        try {
-            const response = await fetch(url, { method: 'GET' });
-            const result = await response.json();
-            return result[0];
-        } catch (err) {
-            console.error(err);
-            return undefined;
-        }
-    }
 
     Plugin.__getGeometryIdsForObject = function(object) {
         const fieldConfigurations = Core.configuration.getObjectConfiguration(object._objecttype)?.geometry_fields;
@@ -121,6 +105,33 @@ CollectionPluginNFISGeometry = (function(superClass) {
         } else {
             return this.__getFieldValues(field, pathSegments);
         }
+    };
+
+    Plugin.__fetchFullObjects = async function(objects) {
+        const url = ez5.session.data.instance.external_url + '/api/v1/search?access_token=' + ez5.session.data.access_token;
+
+        const searchRequest = {
+            search: [
+                {
+                    type: 'in',
+                    bool: 'must',
+                    fields: ['_uuid'],
+                    in: objects.map(object => object._uuid)
+                }
+            ]
+        };
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(searchRequest)
+        });
+
+        if (!response.ok) throw JSON.stringify(await response.json());
+
+        return (await response.json()).objects;
     };
 
     return CollectionPluginNFISGeometry;
