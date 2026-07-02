@@ -62,7 +62,7 @@ function renderContent(contentElement, cdata, object, settings, mode, wfsData, s
 }
 
 function renderDetailContent(contentElement, cdata, object, settings, wfsData) {
-    if (!wfsData?.totalFeatures) {
+    if (!hasGeometries(wfsData)) {
         renderPlaceholder(contentElement, 'empty');
     } else {
         renderMap(
@@ -77,7 +77,7 @@ function renderEditorContent(contentElement, cdata, object, settings, wfsData, s
         selectedGeometryId = cdata.geometry_ids[0];
     }
 
-    if (wfsData?.totalFeatures) {
+    if (hasGeometries(wfsData)) {
         renderMap(
             contentElement, cdata, object, settings, wfsData,
             settings.isMultiSelect || cdata.geometry_ids?.length > 1,
@@ -86,6 +86,10 @@ function renderEditorContent(contentElement, cdata, object, settings, wfsData, s
     } else {
         renderEditorButtons(contentElement, cdata, object, settings, wfsData, selectedGeometryId)(undefined);
     }
+}
+
+function hasGeometries(wfsData) {
+    return wfsData?.totalFeatures && wfsData.features.find(feature => feature.geometry);
 }
 
 function renderEditorButtons(contentElement, cdata, object, settings, wfsData, selectedGeometryId) {
