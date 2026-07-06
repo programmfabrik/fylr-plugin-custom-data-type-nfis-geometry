@@ -23,13 +23,13 @@ async function getFilterGeometriesUrl(geometryIds, geometryIdFieldName) {
     const url = getMasterportalUrl();
     const masterportalConfiguration = await getConfigurationFile();
 
-    const menuSettings = getMenuSettings(masterportalConfiguration, geometryIds, geometryIdFieldName);
+    const menuSettings = getFilterMenuSettings(masterportalConfiguration, geometryIds, geometryIdFieldName);
     const layerSettings = getLayerSettings(masterportalConfiguration, geometryIds);
 
     return url + 'menu=' + JSON.stringify(menuSettings) + '&layers=' + JSON.stringify(layerSettings);
 }
 
-function getMenuSettings(masterportalConfiguration, geometryIds, geometryIdFieldName) {
+function getFilterMenuSettings(masterportalConfiguration, geometryIds, geometryIdFieldName) {
     return {
         main: {
             currentComponent: 'root'
@@ -106,33 +106,12 @@ async function getEditGeometryUrl(object, fieldConfiguration, extent, geometryId
 
     if (extent) url += 'zoomToExtent=' + extent.join(',') + '&';
 
-    const masterportalVersion = configuration.get().masterportal_version;
-    const masterportalConfiguration = await getConfigurationFile();
-
-    const wfstLayerIds = masterportalConfiguration.portalConfig.secondaryMenu.sections?.[0]?.find(section => section.type === 'wfst')?.layerIds;
-    const layerIndex = wfstLayerIds?.indexOf(vectorLayerId);
-    if (!wfstLayerIds || layerIndex === -1) return '';
+    const masterportalVersion = configuration.get().masterportal_version;    
 
     if (masterportalVersion === '3') {
-        const menu = {
-            main: {
-                currentComponent: 'root'
-            },
-            secondary: {
-                currentComponent: 'wfst',
-                attributes: {
-                    currentLayerIndex: layerIndex
-                }
-            }
-        };
-        if (geometryIdFieldName && geometryId) {
-            menu.secondary.attributes.featurePropertiesValues = [
-                {
-                    key: geometryIdFieldName,
-                    value: geometryId
-                }
-            ];
-        }
+        const menu = await getEditMenuSettings(vectorLayerId, geometryIdFieldName, geometryId);
+        if (!menu) return '';
+        
         url += 'menu=' + JSON.stringify(menu);
     } else {
         url += 'isinitopen=wfst';
@@ -143,6 +122,37 @@ async function getEditGeometryUrl(object, fieldConfiguration, extent, geometryId
     return url;
 }
 
+async function getEditMenuSettings(vectorLayerId, geometryIdFieldName, geometryId) {
+    const masterportalConfiguration = await getConfigurationFile();
+    const wfstLayerIds = masterportalConfiguration.portalConfig.secondaryMenu.sections?.[0]?.find(section => section.type === 'wfst')?.layerIds;
+    const layerIndex = wfstLayerIds?.indexOf(vectorLayerId);
+
+    if (!wfstLayerIds || layerIndex === -1) return undefined;
+
+    const menu = {
+        main: {
+            currentComponent: 'root'
+        },
+        secondary: {
+            currentComponent: 'wfst',
+            attributes: {
+                currentLayerIndex: layerIndex
+            }
+        }
+    };
+
+    if (geometryIdFieldName && geometryId) {
+        menu.secondary.attributes.featurePropertiesValues = [
+            {
+                key: geometryIdFieldName,
+                value: geometryId
+            }
+        ];
+    }
+
+    return menu;
+}
+
 function getUploadGeometryUrl(object, fieldConfiguration, extent, geometryId) {
     let url = getMasterportalUrl();
     const { layerIds, vectorLayerId } = getLayerIds(object, fieldConfiguration);
@@ -150,7 +160,15 @@ function getUploadGeometryUrl(object, fieldConfiguration, extent, geometryId) {
 
     if (extent) url += 'zoomToExtent=' + extent.join(',') + '&';
 
-    const menu = {
+    url += 'menu=' + JSON.stringify(getUploadMenuSettings()) + '&uploadlayerid=' + vectorLayerId + '&uuid=' + geometryId;
+    
+    if (layerIds?.length) url += '&layerids=' + layerIds.join(',');
+
+    return url;
+}
+
+function getUploadMenuSettings() {
+    return {
         main: {
             currentComponent: 'root'
         },
@@ -158,12 +176,6 @@ function getUploadGeometryUrl(object, fieldConfiguration, extent, geometryId) {
             currentComponent: 'wfstUploader'
         }
     };
-
-    url += 'menu=' + JSON.stringify(menu) + '&uploadlayerid=' + vectorLayerId + '&uuid=' + geometryId;
-    
-    if (layerIds?.length) url += '&layerids=' + layerIds.join(',');
-
-    return url;
 }
 
 function getLayerIds(object, fieldConfiguration) {
