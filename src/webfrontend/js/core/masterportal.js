@@ -108,7 +108,7 @@ async function getEditGeometryUrl(object, fieldConfiguration, extent, geometryId
 
     const masterportalVersion = configuration.get().masterportal_version;    
 
-    if (masterportalVersion === '3') {
+    if (masterportalVersion !== '2') {
         const menu = await getEditMenuSettings(vectorLayerId, geometryIdFieldName, geometryId);
         if (!menu) return '';
         
@@ -117,7 +117,7 @@ async function getEditGeometryUrl(object, fieldConfiguration, extent, geometryId
         url += 'isinitopen=wfst';
     }
     
-    if (layerIds?.length) url += '&layerids=' + layerIds.join(',');
+    if (masterportalVersion === '2' && layerIds?.length) url += '&layerids=' + layerIds.join(',');
 
     return url;
 }
