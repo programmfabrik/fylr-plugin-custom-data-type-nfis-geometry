@@ -128,7 +128,7 @@ async function getEditGeometryUrl(object, fieldConfiguration, extent, geometryId
             }
         };
         if (geometryIdFieldName && geometryId) {
-            menu.secondary.attributes.featureValues = [
+            menu.secondary.attributes.featurePropertiesValues = [
                 {
                     key: geometryIdFieldName,
                     value: geometryId
