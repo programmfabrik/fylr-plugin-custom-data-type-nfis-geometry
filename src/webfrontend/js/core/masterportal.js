@@ -38,7 +38,7 @@ function getMenuSettings(masterportalConfiguration, geometryIds, geometryIdField
             currentComponent: 'filter',
             attributes: {
                 rulesOfFilters: getFilters(masterportalConfiguration, geometryIds, geometryIdFieldName),
-                selectedAccordions: getAccordions(masterportalConfiguration, geometryIds)
+                selectedAccordions: getAccordions(masterportalConfiguration)
             },
             selectedGroups: []
         }
@@ -75,12 +75,10 @@ function getSnippets(layerConfiguration, geometryIds, geometryIdFieldName) {
     });
 }
 
-function getAccordions(masterportalConfiguration, geometryIds) {
-    return getFiltersConfiguration(masterportalConfiguration).layers
-        .map((layerConfiguration, index) => {
-            return { layerId: layerConfiguration.layerId, filterId: index };
-        }).filter(layerConfiguration => geometryIds[layerConfiguration.layerId]);
-        
+function getAccordions(masterportalConfiguration) {
+    return getFiltersConfiguration(masterportalConfiguration).layers.map((layer, index) => {
+        return { layerId: layer.layerId, filterId: index };
+    });
 }
 
 function getLayerSettings(masterportalConfiguration, geometryIds) {
