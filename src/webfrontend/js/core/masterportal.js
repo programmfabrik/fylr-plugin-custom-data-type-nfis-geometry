@@ -125,7 +125,9 @@ async function getEditGeometryUrl(object, fieldConfiguration, extent, geometryId
 async function getEditMenuSettings(vectorLayerId, geometryIdFieldName, geometryId) {
     const masterportalConfiguration = await getConfigurationFile();
     const wfstLayerIds = masterportalConfiguration.portalConfig.secondaryMenu.sections?.[0]?.find(section => section.type === 'wfst')?.layerIds;
-    const layerIndex = wfstLayerIds?.indexOf(vectorLayerId);
+    const subjectLayerIds = masterportalConfiguration.layerConfig.subjectlayer.elements.map(layer => layer.id)
+        .filter(layerId => wfstLayerIds.includes(layerId));
+    const layerIndex = subjectLayerIds?.indexOf(vectorLayerId);
 
     if (!wfstLayerIds || layerIndex === -1) return undefined;
 
