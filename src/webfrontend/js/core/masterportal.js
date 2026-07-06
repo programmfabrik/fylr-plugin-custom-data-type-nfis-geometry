@@ -98,20 +98,70 @@ function getLayerSettings(masterportalConfiguration, geometryIds) {
 }
 
 function getFiltersConfiguration(masterportalConfiguration) {
-    return masterportalConfiguration.portalConfig.secondaryMenu.sections?.[0].find(section => section.type === 'filter');
+    return masterportalConfiguration.portalConfig.secondaryMenu.sections?.[0]?.find(section => section.type === 'filter');
 }
 
-function getEditGeometryUrl(object, fieldConfiguration, extent, geometryId, upload = false) {
+async function getEditGeometryUrl(object, fieldConfiguration, extent, geometryIdFieldName, geometryId) {
     let url = getMasterportalUrl();
-    const layerIds = getLayerIds(object, fieldConfiguration);
+    const { layerIds, vectorLayerId } = getLayerIds(object, fieldConfiguration);
     if (!url) return '';
-    
-    if (extent) url += 'zoomToExtent=' + extent.join(',') + '&';
-    url += upload
-        ? 'menu={%22secondary%22:{%22currentComponent%22:%22wfstUploader%22}}'
-        : 'isinitopen=wfst';
 
-    if (geometryId) url += '&uuid=' + geometryId;
+    if (extent) url += 'zoomToExtent=' + extent.join(',') + '&';
+
+    const masterportalVersion = configuration.get().masterportal_version;
+    const masterportalConfiguration = await getConfigurationFile();
+
+    const wfstLayerIds = masterportalConfiguration.portalConfig.secondaryMenu.sections?.[0]?.find(section => section.type === 'wfst')?.layerIds;
+    const layerIndex = wfstLayerIds?.indexOf(vectorLayerId);
+    if (!wfstLayerIds || layerIndex === -1) return '';
+
+    if (masterportalVersion === '3') {
+        const menu = {
+            main: {
+                currentComponent: 'root'
+            },
+            secondary: {
+                currentComponent: 'wfst',
+                attributes: {
+                    currentLayerIndex: layerIndex
+                }
+            }
+        };
+        if (geometryIdFieldName && geometryId) {
+            menu.secondary.attributes.featureValues = [
+                {
+                    key: geometryIdFieldName,
+                    value: geometryId
+                }
+            ];
+        }
+        url += 'menu=' + JSON.stringify(menu);
+    } else {
+        url += 'isinitopen=wfst';
+    }
+    
+    if (layerIds?.length) url += '&layerids=' + layerIds.join(',');
+
+    return url;
+}
+
+function getUploadGeometryUrl(object, fieldConfiguration, extent, geometryId) {
+    let url = getMasterportalUrl();
+    const { layerIds, vectorLayerId } = getLayerIds(object, fieldConfiguration);
+    if (!url) return '';
+
+    if (extent) url += 'zoomToExtent=' + extent.join(',') + '&';
+
+    const menu = {
+        main: {
+            currentComponent: 'root'
+        },
+        secondary: {
+            currentComponent: 'wfstUploader'
+        }
+    };
+
+    url += 'menu=' + JSON.stringify(menu) + '&uploadlayerid=' + vectorLayerId + '&uuid=' + geometryId;
     
     if (layerIds?.length) url += '&layerids=' + layerIds.join(',');
 
@@ -122,11 +172,11 @@ function getLayerIds(object, fieldConfiguration) {
     const rasterLayerId = fieldConfiguration.masterportal_raster_layer_id;
     const vectorLayerId = getVectorLayerId(object, fieldConfiguration);
 
-    const result = [];
-    if (rasterLayerId) result.push(rasterLayerId);
-    if (vectorLayerId) result.push(vectorLayerId);
+    const layerIds = [];
+    if (rasterLayerId) layerIds.push(rasterLayerId);
+    if (vectorLayerId) layerIds.push(vectorLayerId);
 
-    return result;
+    return { layerIds, vectorLayerId };
 }
 
 function getVectorLayerId(object, fieldConfiguration) {
@@ -173,6 +223,7 @@ function getUserGroupIds() {
 export default {
     getViewGeometriesUrl,
     getEditGeometryUrl,
+    getUploadGeometryUrl,
     getLayerIds,
     getVectorLayerId,
     getFilterGeometriesUrl

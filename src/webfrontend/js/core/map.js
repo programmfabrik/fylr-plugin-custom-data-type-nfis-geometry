@@ -183,7 +183,7 @@ function createUploadGeometryButton(contentElement, cdata, object, settings, ext
     return new CUI.Button({
         text: $$('custom.data.type.nfis.geometry.uploadNewGeometry'),
         icon_left: new CUI.Icon({ class: 'fa-upload' }),
-        onClick: () => createGeometry(contentElement, cdata, object, settings, extent, true)
+        onClick: () => uploadGeometry(contentElement, cdata, object, settings, extent)
     });
 }
 
@@ -200,14 +200,26 @@ function editGeometry(contentElement, cdata, object, settings, wfsData, uuid) {
     const extent = getExtent(wfsData, settings, uuid);
     if (!extent) return;
 
-    window.open(masterportal.getEditGeometryUrl(object, settings.fieldConfiguration, extent), '_blank');
-    openEditGeometryModal(contentElement, cdata, object, settings, wfsData);
+    masterportal.getEditGeometryUrl(object, settings.fieldConfiguration, extent).then(url => {
+        window.open(url, '_blank');
+        openEditGeometryModal(contentElement, cdata, object, settings, wfsData);
+    });
 }
 
-function createGeometry(contentElement, cdata, object, settings, extent, upload = false) {
+function createGeometry(contentElement, cdata, object, settings, extent) {
     const newGeometryId = generateGeometryId();
-    window.open(masterportal.getEditGeometryUrl(object, settings.fieldConfiguration, extent, upload ? newGeometryId : undefined, upload), '_blank');
-    openCreateGeometryModal(contentElement, cdata, object, settings, newGeometryId, undefined, !upload);
+
+    masterportal.getEditGeometryUrl(object, settings.fieldConfiguration, extent, settings.geometryIdFieldName, newGeometryId).then(url => {
+        window.open(url, '_blank');
+        openCreateGeometryModal(contentElement, cdata, object, settings, newGeometryId, undefined, true);
+    });
+}
+
+function uploadGeometry(contentElement, cdata, object, settings, extent) {
+    const newGeometryId = generateGeometryId();
+
+    window.open(masterportal.getUploadGeometryUrl(object, settings.fieldConfiguration, extent, newGeometryId), '_blank');
+    openCreateGeometryModal(contentElement, cdata, object, settings, newGeometryId, undefined, false);
 }
 
 function openEditGeometryModal(contentElement, cdata, object, settings) {
