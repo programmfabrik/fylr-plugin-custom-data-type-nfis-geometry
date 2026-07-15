@@ -166,6 +166,8 @@ async function hasUsedGeometryIds(configuration, geometryIds, uuid) {
             body: JSON.stringify(searchRequest)
         });
         const result = await response.json();
+        if (!response.ok) throw JSON.stringify(result);
+
         return result.objects.length > 1
             || (result.objects.length === 1 && (!uuid || result.objects[0]._uuid !== uuid));
     } catch (err) {
