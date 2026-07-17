@@ -1,6 +1,6 @@
 plugin:
   name: custom-data-type-nfis-geometry
-  version: 1.3
+  version: 1.4
   url: https://github.com/programmfabrik/fylr-plugin-custom-data-type-nfis-geometry
   displayname:
     de-DE: Geometrieverknüpfung per WFS-T und Masterportal
