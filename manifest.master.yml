@@ -237,3 +237,19 @@ callbacks:
                   value: "%_exec.pluginDir%/server/sendDataToGeoserver.js"
                 - type: "value"
                   value: "%info.json%"
+
+extensions:
+  isUniqueGeometry:
+    exec:
+      service: "node"
+      commands:
+        - prog: "node"
+          stdin:
+            type: "body"
+          stdout:
+            type: "body"
+          args:
+            - type: "value"
+              value: "%_exec.pluginDir%/server/extension/isUniqueGeometry.js"
+            - type: "value"
+              value: "%info.json%"

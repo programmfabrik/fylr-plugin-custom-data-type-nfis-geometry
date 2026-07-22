@@ -73,7 +73,7 @@ async function updateObject(object, rootObject, currentObject, tagGroups) {
     for (let fieldConfiguration of wfsConfiguration.geometry_fields) {
         const geometryFieldValues = await getFieldValues(object, fieldConfiguration.field_path.split('.'));
         const geometryIds = await getGeometryIds(geometryFieldValues);
-        if (geometryIds.all.length && await hasUsedGeometryIds(configuration, geometryIds, object._uuid)) {
+        if (geometryIds.all.length && (!await isUniqueGeometryId(geometryIds, object._uuid))) {
             return throwErrorToFrontend('Eine oder mehrere Geometrien sind bereits mit anderen Objekten verknüpft.', 'multipleGeometryLinking');
         }
 
@@ -143,18 +143,12 @@ async function cleanUpGeometryIds(rootObject, fieldConfiguration) {
     return changed;
 }
 
-async function hasUsedGeometryIds(configuration, geometryIds, uuid) {
-    const geometryFieldPaths = getGeometryFieldPaths(configuration);
-    const url = info.api_url + '/api/v1/search?access_token=' + info.api_user_access_token;
-    const searchRequest = {
-        search: geometryIds.all.map(geometryId => {
-            return {
-                type: 'match',
-                bool: 'should',
-                fields: geometryFieldPaths,
-                string: geometryId
-            };
-        })
+async function isUniqueGeometryId(geometryIds, uuid) {
+    const url = info.api_url + '/api/v1/plugin/extension/custom-data-type-nfis-geometry/isUniqueGeometry?access_token=' + info.api_user_access_token;
+    
+    const requestBody = {
+        geometryIds: geometryIds.all,
+        objectUuid: uuid
     };
 
     try {
@@ -163,29 +157,17 @@ async function hasUsedGeometryIds(configuration, geometryIds, uuid) {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(searchRequest)
+            body: JSON.stringify(requestBody)
         });
-        const result = await response.json();
-        if (!response.ok) throw JSON.stringify(result);
+        if (!response.ok) throw JSON.stringify(await response.json());
 
-        return result.objects.length > 1
-            || (result.objects.length === 1 && (!uuid || result.objects[0]._uuid !== uuid));
+        const json = await response.json();
+        if (json.error) throw json.error;
+
+        return json.result;
     } catch (err) {
         throwErrorToFrontend('Bei der Prüfung auf mehrfach verknüpfte Geometrien ist ein Fehler aufgetreten: ' + err.toString());
     }    
-}
-
-function getGeometryFieldPaths(configuration) {
-    const fieldPaths = [];
-
-    for (let wfsConfiguration of configuration.wfs_configuration) {
-        const objectType = wfsConfiguration.object_type;
-        for (let geometryFieldPath of wfsConfiguration.geometry_fields) {
-            fieldPaths.push(objectType + '.' + geometryFieldPath.field_path + '.geometry_ids');
-        }
-    }
-
-    return fieldPaths;
 }
 
 async function editGeometries(object, fieldConfiguration, geometryIds, values) {

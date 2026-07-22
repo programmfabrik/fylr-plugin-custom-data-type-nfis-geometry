@@ -2,6 +2,7 @@ PLUGIN_NAME = custom-data-type-nfis-geometry
 ZIP_NAME = "CustomDataTypeNFISGeometry.zip"
 
 SERVER_FILE = sendDataToGeoserver.js
+EXTENSION_FILE = isUniqueGeometry.js
 MAIN_CSS = src/webfrontend/css/main.css
 OPENLAYERS_CSS = src/webfrontend/node_modules/ol/ol.css
 
@@ -11,10 +12,8 @@ install:
 	cd src/webfrontend && npm install
 
 build: clean buildinfojson
-	mkdir -p build
-	mkdir -p build/$(PLUGIN_NAME)
 	mkdir -p build/$(PLUGIN_NAME)/webfrontend
-	mkdir -p build/$(PLUGIN_NAME)/server
+	mkdir -p build/$(PLUGIN_NAME)/server/extension
 	mkdir -p build/$(PLUGIN_NAME)/l10n
 
 	cp src/webfrontend/js/core/map.js src/webfrontend/js/core/map_original.js
@@ -31,6 +30,7 @@ build: clean buildinfojson
 
 	cp src/server/${SERVER_FILE} build/${PLUGIN_NAME}/server/${SERVER_FILE}
 	cat src/shared/shared.js >> build/${PLUGIN_NAME}/server/${SERVER_FILE}
+	cp src/server/extension/${EXTENSION_FILE} build/${PLUGIN_NAME}/server/extension/${EXTENSION_FILE}
 
 	cp $(MAIN_CSS) build/$(PLUGIN_NAME)/webfrontend/${PLUGIN_NAME}.css
 	cat $(OPENLAYERS_CSS) >> build/$(PLUGIN_NAME)/webfrontend/${PLUGIN_NAME}.css
