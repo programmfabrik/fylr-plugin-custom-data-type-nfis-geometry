@@ -125,8 +125,7 @@ async function getEditGeometryUrl(object, fieldConfiguration, extent, geometryId
 async function getEditMenuSettings(vectorLayerId, geometryIdFieldName, geometryId) {
     const masterportalConfiguration = await getConfigurationFile();
     const wfstLayerIds = masterportalConfiguration.portalConfig.secondaryMenu.sections?.[0]?.find(section => section.type === 'wfst')?.layerIds;
-    const subjectLayerIds = masterportalConfiguration.layerConfig.subjectlayer.elements.map(layer => layer.id)
-        .filter(layerId => wfstLayerIds.includes(layerId));
+    const subjectLayerIds = getSubjectLayerIds(masterportalConfiguration).filter(layerId => wfstLayerIds.includes(layerId));
     const layerIndex = subjectLayerIds?.indexOf(vectorLayerId);
 
     if (!wfstLayerIds || layerIndex === -1) return undefined;
@@ -153,6 +152,23 @@ async function getEditMenuSettings(vectorLayerId, geometryIdFieldName, geometryI
     }
 
     return menu;
+}
+
+function getSubjectLayerIds(masterportalConfiguration) {
+    const elements = masterportalConfiguration.layerConfig.subjectlayer.elements;
+    return elements.reduce((result, element) => {
+        return result.concat(getSubjectLayerIdsFromElement(element));
+    }, []);
+}
+
+function getSubjectLayerIdsFromElement(element) {
+    if (element.id) {
+        return Array.isArray(element.id) ? element.id : [element.id];
+    } else {
+        return element.elements.reduce((result, subElement) => {
+            return result.concat(getSubjectLayerIdsFromElement(subElement));
+        }, []);
+    }
 }
 
 function getUploadGeometryUrl(object, fieldConfiguration, extent, geometryId) {
