@@ -1,0 +1,24 @@
+server:
+  install:
+  - l10n/custom-data-type-nfis-geometry.csv
+  bundles:
+    - out: server/sendDataToGeoserver.js
+      sources:
+      - src/server/sendDataToGeoserver.js
+      - src/shared/shared.js
+    - out: server/extension/isUniqueGeometry.js
+      sources:
+      - src/server/extension/isUniqueGeometry.js
+webfrontend:
+  bundles:
+    - out: webfrontend/custom-data-type-nfis-geometry.css
+      sources:
+      - src/webfrontend/css/main.css
+    - out: webfrontend/custom-data-type-nfis-geometry.js
+      sources:
+      - src/webfrontend/coreBundle.js
+      - src/webfrontend/js/customDataType.js
+      - src/webfrontend/js/collectionPlugin.js
+
+zip_aliases:
+- CustomDataTypeNFISGeometry.zip
