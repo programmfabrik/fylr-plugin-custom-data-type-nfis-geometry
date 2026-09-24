@@ -32,18 +32,22 @@ bundle:
 	cat src/shared/shared.js >> src/webfrontend/js/core/map.js
 	cat src/shared/shared.js >> src/webfrontend/js/core/masterportal.js
 	cd src/webfrontend && npm run bundle
+	cp src/webfrontend/css/main.css src/webfrontend/css/main_original.css
+	cat src/webfrontend/node_modules/ol/ol.css >> src/webfrontend/css/main.css
 
 build: install bundle ## build the plugin into build/<name>/ — loadable by fylr via plugin.paths
 	$(FYLR_BUILD_PLUGIN) build $(RELEASE_FLAGS)
 	rm src/webfrontend/coreBundle.js
 	mv src/webfrontend/js/core/map_original.js src/webfrontend/js/core/map.js
 	mv src/webfrontend/js/core/masterportal_original.js src/webfrontend/js/core/masterportal.js
+	mv src/webfrontend/css/main_original.css src/webfrontend/css/main.css
 
 zip: install bundle ## build the release zip
 	$(FYLR_BUILD_PLUGIN) zip $(RELEASE_FLAGS)
 	rm src/webfrontend/coreBundle.js
 	mv src/webfrontend/js/core/map_original.js src/webfrontend/js/core/map.js
 	mv src/webfrontend/js/core/masterportal_original.js src/webfrontend/js/core/masterportal.js
+	mv src/webfrontend/css/main_original.css src/webfrontend/css/main.css
 
 seal: ## build + seal the release zip (fylr dev/CI key unless -pubkey is passed to the tool)
 	$(FYLR_BUILD_PLUGIN) seal $(RELEASE_FLAGS)
