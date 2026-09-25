@@ -482,11 +482,24 @@ function getVectorStyle(fieldConfiguration) {
         }).then(({ output: parsedStyle }) => {
             const openLayersParser = new OpenLayersParser();
             openLayersParser.writeStyle(parsedStyle)
-                .then(({ output: openLayersStyle }) => resolve(openLayersStyle))
-                .catch(error => reject(error));
+                .then(({ output: openLayersStyle }) => {
+                    resolve(getStyleFunction(openLayersStyle, fieldConfiguration.custom_style_function));
+                }).catch(error => reject(error));
         })
         .catch(error => reject(error));
     });
+}
+
+function getStyleFunction(openLayersStyle, customStyleFunctionDefinition) {
+    if (!customStyleFunctionDefinition) return openLayersStyle;
+
+    return (feature, resolution) => {
+        const styles = openLayersStyle(feature, resolution);
+        if (!styles) return undefined;
+
+        const customStyleFunction = new Function('styles', 'feature', customStyleFunctionDefinition);
+        return customStyleFunction(styles, feature);
+    };
 }
 
 function loadSLDFile(fieldConfiguration) {
