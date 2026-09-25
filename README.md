@@ -50,6 +50,8 @@ The ZIP can be downloaded and installed using the plugin manager, or used direct
         * *WFS feature type for map display*: The feature type to use when displaying data on the map
         * *WFS URL for editing data*: The base URL of the WFS to be used for editing and deleting geometries. It has to be a WFS-T provided by the configured Geoserver instance.
         * *WFS feature type for editing data*: The feature type to use when editing or deleting geometries via WFS
+        * *Add points for displaying icons*: If activated, a point is added to the center of polygons. This point can be styled via the SLD file (e. g. to display a symbol icon at the center of polygons)
+        * *Custom style function*: A function body for manipulating OpenLayers styles (see section "Custom styling functions") 
         * *Masterportal: Raster layer ID*: The ID of a raster layer that should be displayed in addition to the vector data in Masterportal. Only displayed when opening Masterportal via the editor.
         * *Masterportal: Vector layer IDs*: The list of possible layer IDs is iterated until an entry is found that matches all conditions.
            * *JavaScript function*: A function body that has to return true for this condition to be matched (see section "Custom JavaScript functions" below).
@@ -87,6 +89,8 @@ Custom JavaScript functions can be used in three sections of the plugin configur
 * For determining which vector layer ID to use for a Masterportal URL
 * For transferring object data to the Geoserver
 
+For custom styling functions (which are also JavaScript functions but work in a different way), see the section "Custom styling functions".
+
 Each JavaScript field expects a function body that has to return a value. The following objects are available from within the function:
 
 * *object*: This includes the object data of the fylr object in question (not the top level data, just the actual field data).
@@ -119,6 +123,13 @@ if (values.exampleValue === 'value1') {
 } else {
    return 'Some text';
 }
+
+#### Custom styling functions
+
+Custom styling functions can be used to manipulate OpenLayers stylings after they have been parsed from the SLD file. The configuration field expects a JavaScript function body. The following objects are available from within the function:
+
+* *styles*: The OpenLayers styles generated from the SLD file. These styles can be manipulated in the function body and have to be returned by the function.
+* *feature*: The OpenLayers feature for which the styling function is called. Feature values can be retrieved via "feature.values_".
 
 ### Data model configuration
 
