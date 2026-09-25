@@ -399,7 +399,10 @@ function notifyEditor(contentElement) {
 function renderMap(contentElement, cdata, object, settings, wfsData, allowSelection, onLoad) {
     const mapElement = CUI.dom.div('nfis-geometry-map');
     CUI.dom.append(contentElement, mapElement);
-    CUI.dom.append(mapElement, createLegendButton(mapElement, settings.fieldConfiguration));
+
+    if (settings.fieldConfiguration.legend_image_file) {
+        CUI.dom.append(mapElement, createLegendButton(mapElement, settings.fieldConfiguration));
+    }
 
     initializeMap(contentElement, mapElement, cdata, object, settings, wfsData, allowSelection, onLoad);
 }
