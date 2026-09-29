@@ -263,7 +263,7 @@ async function addTagsToChangeMap(object, fieldConfiguration, changeMap) {
     for (let tagConfiguration of fieldConfiguration.tags) {
         const wfsFieldName = tagConfiguration.wfs_field_name;
         const wfsFieldValue = tagConfiguration.wfs_field_value;
-        const tagsPath = tagConfiguration.fylr_tags_path ?? '_tags';
+        const tagsPath = tagConfiguration.fylr_tags_path?.length ? tagConfiguration.fylr_tags_path : '_tags';
         const tagId = tagConfiguration.fylr_tag_id;
 
         if (wfsFieldName && tagId) {
