@@ -6,6 +6,11 @@
   overflow: hidden;
 }
 
+.nfis-geometry-map .ol-attribution a:focus {
+  outline: none;
+  box-shadow: none;
+}
+
 .nfis-geometry-ids-options {
   display: none;
 }
