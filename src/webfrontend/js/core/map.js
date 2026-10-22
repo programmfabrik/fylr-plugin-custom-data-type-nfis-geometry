@@ -12,6 +12,8 @@ import { shiftKeyOnly, platformModifierKeyOnly, click } from 'ol/events/conditio
 import * as olProj from 'ol/proj';
 import * as olProj4 from 'ol/proj/proj4';
 import * as olLoadingstrategy from 'ol/loadingstrategy';
+import { defaults as defaultControls } from 'ol/control.js'; 
+import ScaleLine from 'ol/control/ScaleLine'; 
 import proj4 from 'proj4';
 import SLDParser from 'geostyler-sld-parser';
 import OpenLayersParser from 'geostyler-openlayers-parser';
@@ -446,6 +448,7 @@ function initializeMap(contentElement, mapElement, cdata, object, settings, wfsD
     const projection = getMapProjection();
     let minZoom = configuration.get().min_zoom_level ?? 2;
     let maxZoom = Math.max(minZoom, configuration.get().max_zoom_level ?? 19);
+
     const map = new Map({
         target: mapElement,
         view: new View({
@@ -455,7 +458,8 @@ function initializeMap(contentElement, mapElement, cdata, object, settings, wfsD
             maxZoom,
             zoom: Math.max(minZoom, Math.min(7, maxZoom))
         }),
-        interactions: defaults({ mouseWheelZoom: false })
+        interactions: defaults({ mouseWheelZoom: false }),
+        controls: getMapControls()
     });
 
     getVectorStyle(settings.fieldConfiguration).then(vectorStyle => {
@@ -475,6 +479,18 @@ function initializeMap(contentElement, mapElement, cdata, object, settings, wfsD
             }
         }); 
     }).catch(error => console.error('Failed to parse SLD data:', error));
+}
+
+function getMapControls() {
+    return configuration.get().show_scale_line
+        ? defaultControls().extend([
+            new ScaleLine({
+                units: 'metric',
+                bar: true,
+                text: true,
+                dpi: 96
+            })
+        ]) : defaultControls();
 }
 
 function getVectorStyle(fieldConfiguration) {

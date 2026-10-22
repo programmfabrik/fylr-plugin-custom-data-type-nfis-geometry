@@ -50,6 +50,8 @@ server.config.parameter.system.nfisGeoservices.wfs_temporary_geometry_field_name
 server.config.parameter.system.nfisGeoservices.temporary_geometry_tag_id.label,ID des Tags zur Kennzeichnung von Objekten mit provisorischen Geometrien,ID of tag for marking objects with temporary geometries
 server.config.parameter.system.nfisGeoservices.min_zoom_level.label,Minimales Zoom-Level (Standard: 2),Minimum zoom level (Default: 2)
 server.config.parameter.system.nfisGeoservices.max_zoom_level.label,Maximales Zoom-Level (Standard: 19),Maximum zoom level (Default: 19)
+server.config.parameter.system.nfisGeoservices.show_scale_line.label,Maßstabsleiste,Scale line
+server.config.parameter.system.nfisGeoservices.show_scale_line.checkbox,Auf Karte anzeigen,Show on map
 server.config.parameter.system.nfisGeoservices.values.label,Werte,Values
 server.config.parameter.system.nfisGeoservices.values.name.label,Name,Name
 server.config.parameter.system.nfisGeoservices.values.function.label,JavaScript-Funktion,JavaScript function
