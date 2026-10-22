@@ -537,7 +537,12 @@ function getRasterSource(projection) {
         params: {
             LAYERS: 'de_basemapde_web_raster_farbe'
         },
-        projection
+        projection,
+        attributions: '<span>'
+            + '© GeoBasis-DE / <a href="https://www.bkg.bund.de/" target="_blank">BKG</a> '
+            + new Date().getFullYear()
+            + ' <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">CC BY 4.0</a>'
+            + '</span>'
     });
 }
 
