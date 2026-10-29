@@ -44,3 +44,39 @@ jobs:
           # glob keeps the workflow out of the naming rule.
           files: |
             build/*.zip
+
+      # releases/latest skips prereleases: the newest published release,
+      # prerelease or not, also goes to GitHub Pages as <repo>-prerelease.zip,
+      # the "plugin prerelease url" of the plugins sheet
+      - name: Prepare GitHub Pages upload
+        run: |
+          mkdir -p public
+          cp build/${{ github.event.repository.name }}.zip \
+             public/${{ github.event.repository.name }}-prerelease.zip
+
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: ./public
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
+
+      - name: Show the prerelease url
+        run: |
+          echo "prerelease url: ${PAGE_URL%/}/${{ github.event.repository.name }}-prerelease.zip" \
+            >> "$GITHUB_STEP_SUMMARY"
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
