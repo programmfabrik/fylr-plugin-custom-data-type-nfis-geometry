@@ -36,6 +36,7 @@ The ZIP can be downloaded and installed using the plugin manager, or used direct
 * *ID of tag for marking objects with temporary geometries*: If a tag ID is entered here, the corresponding tag is set on the fylr object after a geometry has been created by drawing it via the Masterportal WFS tool
 * *Minimum zoom level*: The minimum zoom level of the plugin map shown in fylr (Default: 2)
 * *Maximum zoom level*: The maximum zoom level of the plugin map shown in fylr (Default: 19)
+* *Scale line*: If enabled, a scale line is displayed on the plugin map
 * *Values*: Allows defining values that can be used in custom JavaScript functions defined in the plugin configuration (see section "Custom JavaScript functions" below).
    * *Name*: Name of the value. The value can be accessed by this name from within a custom JavaScript function.
    * *JavaScript function*: The function to determine the value.
