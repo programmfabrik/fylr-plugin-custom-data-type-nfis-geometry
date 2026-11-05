@@ -108,7 +108,8 @@ CollectionPluginNFISGeometry = (function(superClass) {
     };
 
     Plugin.__fetchFullObjects = async function(objects) {
-        const url = ez5.session.data.instance.external_url + '/api/v1/search?access_token=' + ez5.session.data.access_token;
+        const url = ez5.session.data.instance.external_url + '/api/v1/search?access_token='
+            + (ez5.session.token ?? ez5.session.data.access_token);
 
         const searchRequest = {
             search: [
