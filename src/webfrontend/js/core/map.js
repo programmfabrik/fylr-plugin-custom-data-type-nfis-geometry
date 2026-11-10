@@ -345,10 +345,8 @@ function replaceGeometry(contentElement, cdata, object, settings, wfsData, uuid)
 
     markGeometryForDeletion(settings, uuid).then(() => {
         const newGeometryId = generateGeometryId();
+        window.open(masterportal.getUploadGeometryUrl(object, settings.fieldConfiguration, extent, newGeometryId), '_blank');
         openCreateGeometryModal(contentElement, cdata, object, settings, newGeometryId, uuid, false);
-        masterportal.getEditGeometryUrl(object, settings.fieldConfiguration, extent, newGeometryId, true).then(url => {
-            window.open(url, '_blank');
-        });
     });
 }
 
