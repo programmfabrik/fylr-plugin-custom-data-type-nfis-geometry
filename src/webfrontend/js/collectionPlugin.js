@@ -108,6 +108,20 @@ CollectionPluginNFISGeometry = (function(superClass) {
     };
 
     Plugin.__fetchFullObjects = async function(objects) {
+        const uuids = objects.map(object => object._uuid);
+
+        const batchSize = 100;
+        const promises = [];
+
+        for (i = 0; i < uuids.length; i += batchSize) {
+            promises.push(this.__fetchFullObjectsBatch(uuids.slice(i, i + batchSize)));
+        }
+
+        const result = await Promise.all(promises);
+        return result.flat();
+    };
+
+    Plugin.__fetchFullObjectsBatch = async function(uuids) {
         const url = ez5.session.data.instance.external_url + '/api/v1/search?access_token='
             + (ez5.session.token ?? ez5.session.data.access_token);
 
@@ -117,7 +131,8 @@ CollectionPluginNFISGeometry = (function(superClass) {
                     type: 'in',
                     bool: 'must',
                     fields: ['_uuid'],
-                    in: objects.map(object => object._uuid)
+                    in: uuids,
+                    limit: uuids.length
                 }
             ]
         };
